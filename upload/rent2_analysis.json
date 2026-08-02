@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Here are all form field names/labels extracted from the image, in order and grouped by section:\n\n**Section: Renter Information**\n1. Renter Name\n2. Renter Address\n3. Renter GhanaPost GPS\n4. Phone\n5. Email\n6. TIN\n7. National ID\n\n**Section: Other**\n8. Excluded from renting (checkbox label)\n9. Comments\n\n**Action Buttons (at bottom):**\n- Cancel\n- Save",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1785738194,
+  "id": "2026080314231100a3f928d7004f7e",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026080314231100a3f928d7004f7e",
+  "usage": {
+    "completion_tokens": 98,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1054,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 1152
+  }
+}

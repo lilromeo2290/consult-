@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Here are all form field names/labels from the image, listed in order by section:\n\n**Location Section**\n- Street Name\n- House No.\n- Street Code\n- Neighbourhood\n- Floor\n- Door No.\n\n**Rent Object Section**\n- Rent Object Name\n- Rent Class\n- Rent Unit\n- Rent Value (GHS)\n- Vacant\n\n**Contract Section**\n- Start Date\n- End Date\n- Contract ID\n- Contract Value (GHS)\n- Area m²",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1785738185,
+  "id": "20260803142303b471ba157b534023",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260803142303b471ba157b534023",
+  "usage": {
+    "completion_tokens": 103,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1054,
+    "prompt_tokens_details": {
+      "cached_tokens": 1
+    },
+    "total_tokens": 1157
+  }
+}
