@@ -25,7 +25,7 @@ interface SubRate {
 interface RateType {
   id: string;
   name: string;
-  category: 'Business' | 'Property';
+  category: 'Business' | 'Property' | 'Rent';
   subRates: SubRate[];
   status: 'Active' | 'Inactive';
   effectiveDate: string;
@@ -36,7 +36,7 @@ interface RateType {
 interface RateFormData {
   id: string;
   name: string;
-  category: 'Business' | 'Property';
+  category: 'Business' | 'Property' | 'Rent';
   subRateName: string;
   amount: number;
   effectiveDate: string;
@@ -126,12 +126,12 @@ export function RateConfigPage() {
 
   // ── Modal open for Add ──────────────────────────────────────────────────
 
-  const openAddModal = () => {
+  const openAddModal = (preselectedCategory: 'Business' | 'Property' | 'Rent' = 'Business') => {
     setEditingRate(null);
     setFormData({
       id: '',
       name: '',
-      category: 'Business',
+      category: preselectedCategory,
       subRateName: '',
       amount: 0,
       effectiveDate: '',
@@ -238,10 +238,20 @@ export function RateConfigPage() {
             Manage revenue rate types, sub-rates, and fee structures.
           </p>
         </div>
-        <button onClick={openAddModal} className={btnPrimary}>
-          <Plus className="w-4 h-4" />
-          Add New Rate Type
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => openAddModal('Business')} className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap">
+            <Plus className="w-4 h-4" />
+            Add New Business Rate
+          </button>
+          <button onClick={() => openAddModal('Property')} className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap">
+            <Plus className="w-4 h-4" />
+            Add Property Rate
+          </button>
+          <button onClick={() => openAddModal('Rent')} className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap">
+            <Plus className="w-4 h-4" />
+            Add Rent Rate
+          </button>
+        </div>
       </div>
 
       {/* ── Filters ────────────────────────────────────────────────────── */}
@@ -264,6 +274,7 @@ export function RateConfigPage() {
           <option value="All">All Categories</option>
           <option value="Business">Business</option>
           <option value="Property">Property</option>
+          <option value="Rent">Rent</option>
         </select>
         <select
           value={statusFilter}
@@ -352,7 +363,9 @@ export function RateConfigPage() {
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                               rate.category === 'Business'
                                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
-                                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                                : rate.category === 'Property'
+                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                                  : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400'
                             }`}
                           >
                             {rate.category}
@@ -476,7 +489,7 @@ export function RateConfigPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-6 py-4">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                {editingRate ? 'Edit Rate Type' : 'Add New Rate Type'}
+                {editingRate ? `Edit ${formData.category} Rate` : `Add New ${formData.category} Rate`}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -510,13 +523,14 @@ export function RateConfigPage() {
                   onChange={(e) =>
                     setFormData((p) => ({
                       ...p,
-                      category: e.target.value as 'Business' | 'Property',
+                      category: e.target.value as 'Business' | 'Property' | 'Rent',
                     }))
                   }
                   className={inputClass}
                 >
                   <option value="Business">Business</option>
                   <option value="Property">Property</option>
+                  <option value="Rent">Rent</option>
                 </select>
               </div>
 
