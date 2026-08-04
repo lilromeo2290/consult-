@@ -35,12 +35,12 @@ interface Rent {
   id: string;
   upn: string;
   // Location
-  streetName: string;
-  houseNo: string;
-  streetCode: string;
-  neighbourhood: string;
-  floor: string;
-  doorNo: string;
+  rentPropertyLocation: string;
+  locationCode: string;
+  exactLocation: string;
+  propertyGhanaPostGPS: string;
+  propertyLatitude: string;
+  propertyLongitude: string;
   // Rent Object
   rentObjectName: string;
   rentCode: string;
@@ -191,12 +191,12 @@ export function RentPage() {
   // ── Form State ───────────────────────────────────────────────────────────
   const defaultForm = {
     upn: '',
-    streetName: '',
-    houseNo: '',
-    streetCode: '',
-    neighbourhood: '',
-    floor: '',
-    doorNo: '',
+    rentPropertyLocation: '',
+    locationCode: '',
+    exactLocation: '',
+    propertyGhanaPostGPS: '',
+    propertyLatitude: '',
+    propertyLongitude: '',
     rentObjectName: '',
     rentCode: '',
     rentClass: '',
@@ -229,7 +229,7 @@ export function RentPage() {
     if (!navigator.geolocation) { alert('Geolocation is not supported.'); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => { setForm((p) => ({ ...p, renterLatitude: pos.coords.latitude.toFixed(6), renterLongitude: pos.coords.longitude.toFixed(6) })); setLocating(false); },
+      (pos) => { setForm((p) => ({ ...p, propertyLatitude: pos.coords.latitude.toFixed(6), propertyLongitude: pos.coords.longitude.toFixed(6) })); setLocating(false); },
       (err) => { alert('Unable to retrieve location: ' + err.message); setLocating(false); },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     );
@@ -241,7 +241,7 @@ export function RentPage() {
     return (
       r.renterName.toLowerCase().includes(q) ||
       r.upn.toLowerCase().includes(q) ||
-      r.streetName.toLowerCase().includes(q) ||
+      r.rentPropertyLocation.toLowerCase().includes(q) ||
       r.rentObjectName.toLowerCase().includes(q) ||
       r.rentClass.toLowerCase().includes(q) ||
       r.contractId.toLowerCase().includes(q)
@@ -299,12 +299,12 @@ export function RentPage() {
   const handleEdit = (rent: Rent) => {
     setForm({
       upn: rent.upn,
-      streetName: rent.streetName,
-      houseNo: rent.houseNo,
-      streetCode: rent.streetCode,
-      neighbourhood: rent.neighbourhood,
-      floor: rent.floor,
-      doorNo: rent.doorNo,
+      rentPropertyLocation: rent.rentPropertyLocation,
+      locationCode: rent.locationCode,
+      exactLocation: rent.exactLocation,
+      propertyGhanaPostGPS: rent.propertyGhanaPostGPS,
+      propertyLatitude: rent.propertyLatitude,
+      propertyLongitude: rent.propertyLongitude,
       rentObjectName: rent.rentObjectName,
       rentCode: rent.rentCode || '',
       rentClass: rent.rentClass,
@@ -416,7 +416,7 @@ export function RentPage() {
                     paged.map((rent) => (
                       <tr key={rent.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                         <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{rent.upn}</td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{rent.streetName}, {rent.houseNo}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{rent.rentPropertyLocation || rent.exactLocation || '-'}</td>
                         <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{rent.rentObjectName || '--NA--'}</td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{rent.renterName}</td>
                         <td className="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">{rent.rentValue ? `GHS ${Number(rent.rentValue).toLocaleString()}` : '-'}</td>
@@ -511,39 +511,43 @@ export function RentPage() {
             <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Location</h2>
           </div>
           <div className={cardBodyClass}>
-            {/* UPN — full width */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               <div>
                 <label className={`${labelClass} block`}>UPN <span className="text-red-500">*</span></label>
                 <input type="text" name="upn" value={form.upn} onChange={handleFormChange} placeholder="e.g. 865-0775-0553" className={inputClass} />
               </div>
+              <div className="sm:col-span-2">
+                <label className={`${labelClass} block`}>Rent Property Location</label>
+                <input type="text" name="rentPropertyLocation" value={form.rentPropertyLocation} onChange={handleFormChange} placeholder="Enter rent property location" className={inputClass} />
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4 mt-1">
               <div>
-                <label className={`${labelClass} block`}>Street Name</label>
-                <input type="text" name="streetName" value={form.streetName} onChange={handleFormChange} placeholder="Enter street name" className={inputClass} />
+                <label className={`${labelClass} block`}>Location Code</label>
+                <input type="text" name="locationCode" value={form.locationCode} onChange={handleFormChange} placeholder="Enter location code" className={inputClass} />
               </div>
-              <div>
-                <label className={`${labelClass} block`}>House No.</label>
-                <input type="text" name="houseNo" value={form.houseNo} onChange={handleFormChange} placeholder="e.g. 26" className={inputClass} />
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>Street Code</label>
-                <input type="text" name="streetCode" value={form.streetCode} onChange={handleFormChange} placeholder="Enter street code" className={inputClass} />
+              <div className="sm:col-span-2">
+                <label className={`${labelClass} block`}>Exact Location</label>
+                <input type="text" name="exactLocation" value={form.exactLocation} onChange={handleFormChange} placeholder="Enter exact location description" className={inputClass} />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4 mt-1">
               <div>
-                <label className={`${labelClass} block`}>Neighbourhood</label>
-                <input type="text" name="neighbourhood" value={form.neighbourhood} onChange={handleFormChange} placeholder="Enter neighbourhood" className={inputClass} />
+                <label className={`${labelClass} block`}>Ghana Post GPS / Digital Address</label>
+                <input type="text" name="propertyGhanaPostGPS" value={form.propertyGhanaPostGPS} onChange={handleFormChange} placeholder="XX-XXX-XXXX" className={inputClass} />
               </div>
               <div>
-                <label className={`${labelClass} block`}>Floor</label>
-                <input type="text" name="floor" value={form.floor} onChange={handleFormChange} placeholder="e.g. 2nd" className={inputClass} />
+                <label className={`${labelClass} block`}>GPS Coordinates (Lat)</label>
+                <div className="flex gap-1.5">
+                  <input type="text" name="propertyLatitude" value={form.propertyLatitude} onChange={handleFormChange} placeholder="e.g. 5.603717" className={inputClass} />
+                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-medium transition-colors" title="Detect GPS">
+                    {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
               </div>
               <div>
-                <label className={`${labelClass} block`}>Door No.</label>
-                <input type="text" name="doorNo" value={form.doorNo} onChange={handleFormChange} placeholder="e.g. A1" className={inputClass} />
+                <label className={`${labelClass} block`}>GPS Coordinates (Long)</label>
+                <input type="text" name="propertyLongitude" value={form.propertyLongitude} onChange={handleFormChange} placeholder="e.g. -0.187028" className={inputClass} />
               </div>
             </div>
           </div>

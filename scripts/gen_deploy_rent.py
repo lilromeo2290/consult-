@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate Python heredoc deploy command for rate-config.tsx + rate-overrides.ts."""
+"""Generate Python heredoc deploy command for rent.tsx + import-export.ts."""
 import base64
 import os
 
 files = [
-    ("/home/z/my-project/src/components/rms/rate-config.tsx", "/home/consult-rms-new/src/components/rms/rate-config.tsx"),
-    ("/home/z/my-project/src/lib/rate-overrides.ts", "/home/consult-rms-new/src/lib/rate-overrides.ts"),
+    ("/home/z/my-project/src/components/rms/rent.tsx", "/home/consult-rms-new/src/components/rms/rent.tsx"),
+    ("/home/z/my-project/src/lib/import-export.ts", "/home/consult-rms-new/src/lib/import-export.ts"),
 ]
 
 lines = ["python3 << 'PYEOF'", "import base64"]
@@ -18,7 +18,7 @@ for src, dst in files:
     lines.append(f"{varname} = '{b64}'")
     lines.append(f"with open('{dst}', 'wb') as f:")
     lines.append(f"    f.write(base64.b64decode({varname}))")
-    lines.append(f"print('Written {len(raw)} bytes -> {os.path.relpath(dst, "/home/consult-rms-new")}')")
+    lines.append(f"print('Written {len(raw)} bytes -> {os.path.relpath(dst, '/home/consult-rms-new')}')")
 
 lines.append("PYEOF")
 lines.append("")
@@ -27,7 +27,7 @@ lines.append("pm2 restart all")
 lines.append("echo 'DONE'")
 
 script = "\n".join(lines)
-out_path = "/home/z/my-project/scripts/deploy_v2.sh"
+out_path = "/home/z/my-project/scripts/deploy_rent.sh"
 with open(out_path, "w") as f:
     f.write(script)
 

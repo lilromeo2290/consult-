@@ -80,12 +80,12 @@ export const PROPERTY_FIELDS: { key: string; label: string }[] = [
 
 export const RENT_FIELDS: { key: string; label: string }[] = [
   { key: 'upn', label: 'UPN' },
-  { key: 'streetName', label: 'Street Name' },
-  { key: 'houseNo', label: 'House No' },
-  { key: 'streetCode', label: 'Street Code' },
-  { key: 'neighbourhood', label: 'Neighbourhood' },
-  { key: 'floor', label: 'Floor' },
-  { key: 'doorNo', label: 'Door No' },
+  { key: 'rentPropertyLocation', label: 'Rent Property Location' },
+  { key: 'locationCode', label: 'Location Code' },
+  { key: 'exactLocation', label: 'Exact Location' },
+  { key: 'propertyGhanaPostGPS', label: 'Ghana Post GPS / Digital Address' },
+  { key: 'propertyLatitude', label: 'Property Latitude' },
+  { key: 'propertyLongitude', label: 'Property Longitude' },
   { key: 'rentObjectName', label: 'Rent Object Name' },
   { key: 'rentCode', label: 'Rent Code' },
   { key: 'rentClass', label: 'Rent Class' },
