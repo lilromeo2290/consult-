@@ -25,14 +25,7 @@ const TABS: RateTab[] = ['Business', 'Property', 'Fines', 'Fees', 'Rent'];
 const PAGE_SIZE = 25;
 
 function buildBusinessRows(): RateRow[] {
-  return Object.entries(FEE_CODE_LOOKUP).map(([code, entry]: [string, FeeCodeEntry]) => ({
-    code,
-    businessClass: entry.businessClass,
-    category: entry.category,
-    amount: entry.amount,
-    originalAmount: entry.amount,
-    selected: false,
-  }));
+  return [];
 }
 
 export function RateConfigPage() {
