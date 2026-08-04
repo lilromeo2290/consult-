@@ -194,11 +194,11 @@ export function RateConfigPage() {
                     <div>
                       <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Business Class Code</label>
                       <Combobox
-                        options={BUSINESS_CLASS_CODES}
+                        name="addRateCode"
                         value={newCode}
-                        onValueChange={handleCodeSelect}
+                        onChange={(e) => handleCodeSelect(e.target.value)}
+                        options={BUSINESS_CLASS_CODES.map((c) => ({ value: c, label: c }))}
                         placeholder="Select or search code..."
-                        displayValue={(v) => v}
                       />
                     </div>
                     <div>
