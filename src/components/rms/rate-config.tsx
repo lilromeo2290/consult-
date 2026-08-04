@@ -107,19 +107,15 @@ export function RateConfigPage() {
         Rate Configuration
       </h1>
 
-      <div className="bg-blue-700 text-white text-center py-2 font-bold text-base rounded-t-lg">
-        {new Date().getFullYear()}
-      </div>
-
-      <div className="flex bg-gradient-to-r from-amber-500 to-yellow-500">
+      <div className="flex bg-slate-100 dark:bg-slate-800 rounded-t-lg p-1">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-6 py-2.5 text-sm font-semibold transition-colors border-b-2 ${
+            className={`px-6 py-2.5 text-sm font-semibold transition-colors rounded-md ${
               activeTab === tab
-                ? 'bg-white text-amber-700 border-amber-500'
-                : 'text-blue-900 border-transparent hover:bg-white/30'
+                ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             {tab}
@@ -136,7 +132,7 @@ export function RateConfigPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-48 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-amber-500 focus:border-amber-500 outline-none transition"
+            className="w-48 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
             placeholder="Search rates..."
           />
         </div>
@@ -190,7 +186,7 @@ export function RateConfigPage() {
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[260px] truncate">{row.businessClass}</td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[300px] truncate">{row.category}</td>
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
-                      <input type="number" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-amber-500 rounded" step="0.01" min="0" />
+                      <input type="number" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" />
                     </td>
                   </tr>
                 ))
