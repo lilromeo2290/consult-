@@ -5,6 +5,8 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronsUpDown,
+  Plus,
+  X,
 } from 'lucide-react';
 import { FEE_CODE_LOOKUP, FeeCodeEntry } from '@/lib/fee-code-lookup';
 
@@ -36,6 +38,11 @@ export function RateConfigPage() {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [page, setPage] = useState(1);
   const [radioCode, setRadioCode] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newCode, setNewCode] = useState('');
+  const [newClass, setNewClass] = useState('');
+  const [newCategory, setNewCategory] = useState('');
+  const [newAmount, setNewAmount] = useState('');
 
   const filtered = useMemo(() => {
     let data = activeTab === 'Business' ? rows : [];
@@ -87,6 +94,28 @@ export function RateConfigPage() {
 
   const isMod = (r: RateRow) => r.amount !== r.originalAmount;
 
+  const handleAddRate = () => {
+    const trimmedCode = newCode.trim();
+    if (!trimmedCode || !newClass.trim() || !newCategory.trim()) return;
+    const amt = parseFloat(newAmount) || 0;
+    setRows((prev) => {
+      if (prev.some((r) => r.code === trimmedCode)) return prev;
+      return [...prev, {
+        code: trimmedCode,
+        businessClass: newClass.trim(),
+        category: newCategory.trim(),
+        amount: amt,
+        originalAmount: amt,
+        selected: false,
+      }];
+    });
+    setNewCode('');
+    setNewClass('');
+    setNewCategory('');
+    setNewAmount('');
+    setShowAddForm(false);
+  };
+
   const SortIcon = ({ col }: { col: SortColumn }) => {
     if (sortCol !== col) return <ChevronsUpDown className="w-3 h-3 inline ml-0.5 opacity-40" />;
     return sortDir === 'asc'
@@ -116,7 +145,8 @@ export function RateConfigPage() {
         ))}
       </div>
 
-      <div className="flex items-center justify-end bg-slate-100 dark:bg-slate-800 px-4 py-2 border border-t-0 border-slate-200 dark:border-slate-700">
+      <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 px-4 py-2 border border-t-0 border-slate-200 dark:border-slate-700">
+        <div />
         <div className="flex items-center gap-2">
           <label className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
             Search:
@@ -128,6 +158,78 @@ export function RateConfigPage() {
             className="w-48 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
             placeholder="Search rates..."
           />
+          {activeTab === 'Business' && (
+            <div className="relative ml-2">
+              <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add Rate
+              </button>
+              {showAddForm && (
+                <div className="absolute right-0 top-full mt-1 z-50 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">New Rate Entry</h3>
+                    <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="space-y-2.5">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Code</label>
+                      <input
+                        type="text"
+                        value={newCode}
+                        onChange={(e) => setNewCode(e.target.value)}
+                        className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+                        placeholder="e.g. BIZ-001"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Class</label>
+                      <input
+                        type="text"
+                        value={newClass}
+                        onChange={(e) => setNewClass(e.target.value)}
+                        className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+                        placeholder="e.g. Retail"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Category</label>
+                      <input
+                        type="text"
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+                        placeholder="e.g. General Merchandise"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Amount</label>
+                      <input
+                        type="number"
+                        value={newAmount}
+                        onChange={(e) => setNewAmount(e.target.value)}
+                        className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+                        placeholder="0.00"
+                        step="0.01"
+                        min="0"
+                      />
+                    </div>
+                    <button
+                      onClick={handleAddRate}
+                      disabled={!newCode.trim() || !newClass.trim() || !newCategory.trim()}
+                      className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Add Entry
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
