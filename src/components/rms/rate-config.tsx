@@ -8,7 +8,11 @@ import {
   Plus,
   X,
 } from 'lucide-react';
-import { FEE_CODE_LOOKUP, FeeCodeEntry } from '@/lib/fee-code-lookup';
+import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
+import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
+import { CODE_TO_CLASS } from '@/lib/business-class-code-map';
+import { getRateOverride, setRateOverride } from '@/lib/rate-overrides';
+import { Combobox } from '@/components/ui/combobox';
 
 type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent';
 type SortColumn = 'code' | 'class' | 'category' | 'amount';
@@ -43,6 +47,15 @@ export function RateConfigPage() {
   const [newClass, setNewClass] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [newAmount, setNewAmount] = useState('');
+
+  // When a code is selected, auto-fill class and category
+  const handleCodeSelect = (code: string) => {
+    setNewCode(code);
+    const cls = CODE_TO_CLASS[code] || '';
+    setNewClass(cls);
+    const entry = FEE_CODE_LOOKUP[code];
+    setNewCategory(entry ? entry.category : '');
+  };
 
   const filtered = useMemo(() => {
     let data = activeTab === 'Business' ? rows : [];
@@ -85,6 +98,7 @@ export function RateConfigPage() {
   const handleAmountEdit = (code: string, val: string) => {
     const num = parseFloat(val) || 0;
     setRows((prev) => prev.map((r) => (r.code === code ? { ...r, amount: num } : r)));
+    setRateOverride(code, num);
   };
 
   const handleRadio = (code: string) => setRadioCode(code);
@@ -98,8 +112,13 @@ export function RateConfigPage() {
     const trimmedCode = newCode.trim();
     if (!trimmedCode || !newClass.trim() || !newCategory.trim()) return;
     const amt = parseFloat(newAmount) || 0;
+    // Write to shared rate override store (affects Business Information)
+    setRateOverride(trimmedCode, amt);
     setRows((prev) => {
-      if (prev.some((r) => r.code === trimmedCode)) return prev;
+      const existing = prev.findIndex((r) => r.code === trimmedCode);
+      if (existing >= 0) {
+        return prev.map((r) => (r.code === trimmedCode ? { ...r, amount: amt, originalAmount: amt, businessClass: newClass.trim(), category: newCategory.trim() } : r));
+      }
       return [...prev, {
         code: trimmedCode,
         businessClass: newClass.trim(),
@@ -168,7 +187,7 @@ export function RateConfigPage() {
                 Add Rate
               </button>
               {showAddForm && (
-                <div className="absolute right-0 top-full mt-1 z-50 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl p-4">
+                <div className="absolute right-0 top-full mt-1 z-50 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">New Rate Entry</h3>
                     <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
@@ -177,23 +196,23 @@ export function RateConfigPage() {
                   </div>
                   <div className="space-y-2.5">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Code</label>
-                      <input
-                        type="text"
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Business Class Code</label>
+                      <Combobox
+                        options={BUSINESS_CLASS_CODES}
                         value={newCode}
-                        onChange={(e) => setNewCode(e.target.value)}
-                        className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
-                        placeholder="e.g. BIZ-001"
+                        onValueChange={handleCodeSelect}
+                        placeholder="Select or search code..."
+                        displayValue={(v) => v}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Class</label>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Business Class</label>
                       <input
                         type="text"
                         value={newClass}
-                        onChange={(e) => setNewClass(e.target.value)}
-                        className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
-                        placeholder="e.g. Retail"
+                        readOnly
+                        className="w-full rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 outline-none"
+                        placeholder="Auto-filled from code"
                       />
                     </div>
                     <div>
@@ -201,9 +220,9 @@ export function RateConfigPage() {
                       <input
                         type="text"
                         value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
-                        placeholder="e.g. General Merchandise"
+                        readOnly
+                        className="w-full rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 outline-none"
+                        placeholder="Auto-filled from code"
                       />
                     </div>
                     <div>
@@ -220,7 +239,7 @@ export function RateConfigPage() {
                     </div>
                     <button
                       onClick={handleAddRate}
-                      disabled={!newCode.trim() || !newClass.trim() || !newCategory.trim()}
+                      disabled={!newCode.trim() || !newAmount.trim()}
                       className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       Add Entry

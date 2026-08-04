@@ -34,6 +34,7 @@ import { REVENUE_CODE_MAP, DESCRIPTION_TO_CODE, CODE_TO_DESCRIPTION } from '@/li
 import { CLASS_TO_FIRST_CODE, CLASS_TO_CODES, CODE_TO_CLASS } from '@/lib/business-class-code-map';
 import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
 import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
+import { getRateOverride } from '@/lib/rate-overrides';
 import { Combobox } from '@/components/ui/combobox';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -251,9 +252,10 @@ export function BusinessesPage() {
   const selectedCategoryFee = availableCategories.find(
     (c) => c.name === form.category
   );
-  // Use FEE_CODE_LOOKUP amount when available (from code selection), fallback to USER_CATEGORIES
-  const codeLookupEntry = form.businessClassCode ? FEE_CODE_LOOKUP[form.businessClassCode] : null;
-  const displayAmount = codeLookupEntry ? codeLookupEntry.amount : (selectedCategoryFee ? selectedCategoryFee.amount : null);
+  // Check rate overrides first (set via Rate Configuration), otherwise show nothing
+  const displayAmount = form.businessClassCode
+    ? getRateOverride(form.businessClassCode) ?? null
+    : null;
 
   // ── Filtering & Pagination ───────────────────────────────────────────────
   const filtered = businesses.filter((b) => {
