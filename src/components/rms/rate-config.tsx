@@ -15,16 +15,15 @@ import { FEE_CODE_LOOKUP, FeeCodeEntry } from '@/lib/fee-code-lookup';
 
 type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent';
 
-type SortColumn = 'code' | 'class' | 'category' | 'metro' | 'municipal';
+type SortColumn = 'code' | 'class' | 'category' | 'amount';
 type SortDir = 'asc' | 'desc';
 
 interface RateRow {
   code: string;
   businessClass: string;
   category: string;
-  metro: number;
-  municipal: number;
-  originalMunicipal: number;
+  amount: number;
+  originalAmount: number;
   selected: boolean;
 }
 
@@ -38,9 +37,8 @@ function buildBusinessRows(): RateRow[] {
     code,
     businessClass: entry.businessClass,
     category: entry.category,
-    metro: entry.amount,
-    municipal: entry.amount,
-    originalMunicipal: entry.amount,
+    amount: entry.amount,
+    originalAmount: entry.amount,
     selected: false,
   }));
 }
@@ -89,10 +87,8 @@ export function RateConfigPage() {
           return a.businessClass.localeCompare(b.businessClass) * dir;
         case 'category':
           return a.category.localeCompare(b.category) * dir;
-        case 'metro':
-          return (a.metro - b.metro) * dir;
-        case 'municipal':
-          return (a.municipal - b.municipal) * dir;
+        case 'amount':
+          return (a.amount - b.amount) * dir;
         default:
           return 0;
       }
@@ -117,9 +113,9 @@ export function RateConfigPage() {
     [sortCol],
   );
 
-  const handleMunicipalEdit = (code: string, val: string) => {
+  const handleAmountEdit = (code: string, val: string) => {
     const num = parseFloat(val) || 0;
-    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, municipal: num } : r)));
+    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, amount: num } : r)));
   };
 
   const handleRadio = (code: string) => setRadioCode(code);
@@ -127,8 +123,8 @@ export function RateConfigPage() {
     setRows((prev) => prev.map((r) => (r.code === code ? { ...r, selected: !r.selected } : r)));
   };
 
-  const modifiedCount = rows.filter((r) => r.municipal !== r.originalMunicipal).length;
-  const isMod = (r: RateRow) => r.municipal !== r.originalMunicipal;
+  const modifiedCount = rows.filter((r) => r.amount !== r.originalAmount).length;
+  const isMod = (r: RateRow) => r.amount !== r.originalAmount;
 
   // ── Sort icon helper ────────────────────────────────────────────────────
 
@@ -268,16 +264,10 @@ export function RateConfigPage() {
                   Category <SortIcon col="category" />
                 </th>
                 <th
-                  onClick={() => handleSort('metro')}
+                  onClick={() => handleSort('amount')}
                   className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap"
                 >
-                  Metro <SortIcon col="metro" />
-                </th>
-                <th
-                  onClick={() => handleSort('municipal')}
-                  className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap"
-                >
-                  Municipal <SortIcon col="municipal" />
+                  Amount <SortIcon col="amount" />
                 </th>
               </tr>
             </thead>
@@ -287,7 +277,7 @@ export function RateConfigPage() {
               {activeTab !== 'Business' ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     className="text-center py-16 text-slate-400 dark:text-slate-500"
                   >
                     <RefreshCw className="w-8 h-8 mx-auto mb-2 opacity-40" />
@@ -297,7 +287,7 @@ export function RateConfigPage() {
               ) : paged.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     className="text-center py-16 text-slate-400 dark:text-slate-500"
                   >
                     No rates found matching your search.
@@ -344,11 +334,7 @@ export function RateConfigPage() {
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[300px] truncate">
                       {row.category}
                     </td>
-                    {/* Metro (read-only) */}
-                    <td className="px-3 py-1.5 text-right text-slate-800 dark:text-slate-200 font-mono whitespace-nowrap">
-                      {row.metro.toFixed(2)}
-                    </td>
-                    {/* Municipal (editable, pink if modified) */}
+                    {/* Amount (editable, pink if modified) */}
                     <td
                       className={`px-1 py-0.5 ${
                         isMod(row)
@@ -358,8 +344,8 @@ export function RateConfigPage() {
                     >
                       <input
                         type="number"
-                        value={row.municipal || ''}
-                        onChange={(e) => handleMunicipalEdit(row.code, e.target.value)}
+                        value={row.amount || ''}
+                        onChange={(e) => handleAmountEdit(row.code, e.target.value)}
                         className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-amber-500 rounded"
                         step="0.01"
                         min="0"
