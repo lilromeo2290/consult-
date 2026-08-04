@@ -31,7 +31,17 @@ const TABS: RateTab[] = ['Business', 'Property', 'Fines', 'Fees', 'Rent'];
 const PAGE_SIZE = 25;
 
 function buildBusinessRows(): RateRow[] {
-  return [];
+  return BUSINESS_CLASS_CODES.map((code) => {
+    const entry = FEE_CODE_LOOKUP[code];
+    return {
+      code,
+      businessClass: entry ? entry.businessClass : '',
+      category: entry ? entry.category : '',
+      amount: 0,
+      originalAmount: 0,
+      selected: false,
+    };
+  });
 }
 
 export function RateConfigPage() {
@@ -110,24 +120,10 @@ export function RateConfigPage() {
 
   const handleAddRate = () => {
     const trimmedCode = newCode.trim();
-    if (!trimmedCode || !newClass.trim() || !newCategory.trim()) return;
+    if (!trimmedCode || !newAmount.trim()) return;
     const amt = parseFloat(newAmount) || 0;
-    // Write to shared rate override store (affects Business Information)
     setRateOverride(trimmedCode, amt);
-    setRows((prev) => {
-      const existing = prev.findIndex((r) => r.code === trimmedCode);
-      if (existing >= 0) {
-        return prev.map((r) => (r.code === trimmedCode ? { ...r, amount: amt, originalAmount: amt, businessClass: newClass.trim(), category: newCategory.trim() } : r));
-      }
-      return [...prev, {
-        code: trimmedCode,
-        businessClass: newClass.trim(),
-        category: newCategory.trim(),
-        amount: amt,
-        originalAmount: amt,
-        selected: false,
-      }];
-    });
+    setRows((prev) => prev.map((r) => (r.code === trimmedCode ? { ...r, amount: amt } : r)));
     setNewCode('');
     setNewClass('');
     setNewCategory('');

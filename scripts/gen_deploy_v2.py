@@ -1,28 +1,30 @@
 #!/usr/bin/env python3
-"""Generate a single Python heredoc deploy command for rate-config.tsx."""
+"""Generate Python heredoc deploy command for rate-config.tsx + rate-overrides.ts."""
 import base64
+import os
 
-FILE_PATH = "/home/z/my-project/src/components/rms/rate-config.tsx"
-
-with open(FILE_PATH, "rb") as f:
-    raw = f.read()
-
-b64 = base64.b64encode(raw).decode("ascii")
-
-# Build a Python heredoc script - base64 chars are safe in bash heredoc with single-quoted delimiter
-lines = [
-    "python3 << 'PYEOF'",
-    "import base64",
-    f"data = '{b64}'",
-    "with open('/home/consult-rms-new/src/components/rms/rate-config.tsx', 'wb') as f:",
-    "    f.write(base64.b64decode(data))",
-    "print('Written', len(base64.b64decode(data)), 'bytes')",
-    "PYEOF",
-    "",
-    "cd /home/consult-rms-new && npm run build 2>&1 | tail -10",
-    "pm2 restart all",
-    "echo 'DONE'",
+files = [
+    ("/home/z/my-project/src/components/rms/rate-config.tsx", "/home/consult-rms-new/src/components/rms/rate-config.tsx"),
+    ("/home/z/my-project/src/lib/rate-overrides.ts", "/home/consult-rms-new/src/lib/rate-overrides.ts"),
 ]
+
+lines = ["python3 << 'PYEOF'", "import base64"]
+
+for src, dst in files:
+    with open(src, "rb") as f:
+        raw = f.read()
+    b64 = base64.b64encode(raw).decode("ascii")
+    varname = os.path.basename(src).replace(".", "_").replace("-", "_")
+    lines.append(f"{varname} = '{b64}'")
+    lines.append(f"with open('{dst}', 'wb') as f:")
+    lines.append(f"    f.write(base64.b64decode({varname}))")
+    lines.append(f"print('Written {len(raw)} bytes -> {os.path.relpath(dst, "/home/consult-rms-new")}')")
+
+lines.append("PYEOF")
+lines.append("")
+lines.append("cd /home/consult-rms-new && npm run build 2>&1 | tail -10")
+lines.append("pm2 restart all")
+lines.append("echo 'DONE'")
 
 script = "\n".join(lines)
 out_path = "/home/z/my-project/scripts/deploy_v2.sh"
@@ -30,6 +32,7 @@ with open(out_path, "w") as f:
     f.write(script)
 
 print(f"Deploy script: {out_path}")
-print(f"File size: {len(raw)} bytes")
-print(f"Script size: {len(script)} chars")
-print(f"Lines: {len(lines)}")
+for src, dst in files:
+    sz = os.path.getsize(src)
+    print(f"  {os.path.basename(src)}: {sz} bytes")
+print(f"Script total: {len(script)} chars")
