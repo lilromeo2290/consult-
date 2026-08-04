@@ -1,225 +1,144 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
-  Plus,
-  Pencil,
-  Trash2,
-  ChevronDown,
-  ChevronRight,
-  Search,
-  Power,
+  Download,
+  RefreshCw,
   Save,
-  X,
-  Settings2,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
 } from 'lucide-react';
+import { FEE_CODE_LOOKUP, FeeCodeEntry } from '@/lib/fee-code-lookup';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface SubRate {
-  id: string;
-  name: string;
-  amount: number;
+type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent';
+
+type SortColumn = 'code' | 'class' | 'category' | 'metro' | 'municipal';
+type SortDir = 'asc' | 'desc';
+
+interface RateRow {
+  code: string;
+  businessClass: string;
+  category: string;
+  metro: number;
+  municipal: number;
+  originalMunicipal: number;
+  selected: boolean;
 }
 
-interface RateType {
-  id: string;
-  name: string;
-  category: 'Business' | 'Property' | 'Rent';
-  subRates: SubRate[];
-  status: 'Active' | 'Inactive';
-  effectiveDate: string;
-  expiryDate: string;
-  annualIncrement: number;
-}
+// ─── Constants ───────────────────────────────────────────────────────────────
 
-interface RateFormData {
-  id: string;
-  name: string;
-  category: 'Business' | 'Property' | 'Rent';
-  subRateName: string;
-  amount: number;
-  effectiveDate: string;
-  expiryDate: string;
-  status: 'Active' | 'Inactive';
-  annualIncrement: number;
-}
+const TABS: RateTab[] = ['Business', 'Property', 'Fines', 'Fees', 'Rent'];
+const PAGE_SIZE = 25;
 
-// ─── Mock Data ───────────────────────────────────────────────────────────────
-
-const initialRates: RateType[] = [];
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function formatCurrency(amount: number): string {
-  return `GH₵ ${amount.toLocaleString()}`;
+function buildBusinessRows(): RateRow[] {
+  return Object.entries(FEE_CODE_LOOKUP).map(([code, entry]: [string, FeeCodeEntry]) => ({
+    code,
+    businessClass: entry.businessClass,
+    category: entry.category,
+    metro: entry.amount,
+    municipal: entry.amount,
+    originalMunicipal: entry.amount,
+    selected: false,
+  }));
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function RateConfigPage() {
-  const [rates, setRates] = useState<RateType[]>(initialRates);
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<RateTab>('Business');
+  const [rows, setRows] = useState<RateRow[]>(buildBusinessRows);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('All');
-  const [statusFilter, setStatusFilter] = useState<string>('All');
-  const [showModal, setShowModal] = useState(false);
-  const [editingRate, setEditingRate] = useState<RateType | null>(null);
-  const [formData, setFormData] = useState<RateFormData>({
-    id: '',
-    name: '',
-    category: 'Business',
-    subRateName: '',
-    amount: 0,
-    effectiveDate: '',
-    expiryDate: '',
-    status: 'Active',
-    annualIncrement: 0,
-  });
+  const [sortCol, setSortCol] = useState<SortColumn>('code');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [page, setPage] = useState(1);
+  const [radioCode, setRadioCode] = useState<string | null>(null);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const saveRef = useRef<HTMLDivElement>(null);
 
-  // ── Filtering ───────────────────────────────────────────────────────────
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (saveRef.current && !saveRef.current.contains(e.target as Node)) setSaveOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // ── Filtering + Sorting + Pagination ─────────────────────────────────────
 
   const filtered = useMemo(() => {
-    return rates.filter((r) => {
-      const matchSearch =
-        searchQuery === '' ||
-        r.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCategory =
-        categoryFilter === 'All' || r.category === categoryFilter;
-      const matchStatus =
-        statusFilter === 'All' || r.status === statusFilter;
-      return matchSearch && matchCategory && matchStatus;
-    });
-  }, [rates, searchQuery, categoryFilter, statusFilter]);
-
-  // ── Toggle expand ───────────────────────────────────────────────────────
-
-  const toggleExpand = (id: string) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  // ── Toggle status ──────────────────────────────────────────────────────
-
-  const toggleStatus = (id: string) => {
-    setRates((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, status: r.status === 'Active' ? 'Inactive' : 'Active' }
-          : r
-      )
-    );
-  };
-
-  // ── Delete ──────────────────────────────────────────────────────────────
-
-  const handleDelete = (id: string) => {
-    setRates((prev) => prev.filter((r) => r.id !== id));
-  };
-
-  // ── Modal open for Add ──────────────────────────────────────────────────
-
-  const openAddModal = (preselectedCategory: 'Business' | 'Property' | 'Rent' = 'Business') => {
-    setEditingRate(null);
-    setFormData({
-      id: '',
-      name: '',
-      category: preselectedCategory,
-      subRateName: '',
-      amount: 0,
-      effectiveDate: '',
-      expiryDate: '',
-      status: 'Active',
-      annualIncrement: 0,
-    });
-    setShowModal(true);
-  };
-
-  // ── Modal open for Edit ─────────────────────────────────────────────────
-
-  const openEditModal = (rate: RateType) => {
-    setEditingRate(rate);
-    setFormData({
-      id: rate.id,
-      name: rate.name,
-      category: rate.category,
-      subRateName: rate.subRates[0]?.name ?? '',
-      amount: rate.subRates[0]?.amount ?? 0,
-      effectiveDate: rate.effectiveDate,
-      expiryDate: rate.expiryDate,
-      status: rate.status,
-      annualIncrement: rate.annualIncrement,
-    });
-    setShowModal(true);
-  };
-
-  // ── Save ────────────────────────────────────────────────────────────────
-
-  const handleSave = () => {
-    if (!formData.name.trim() || !formData.subRateName.trim() || formData.amount <= 0) return;
-
-    if (editingRate) {
-      // Update existing rate
-      setRates((prev) =>
-        prev.map((r) =>
-          r.id === editingRate.id
-            ? {
-                ...r,
-                name: formData.name,
-                category: formData.category,
-                subRates: [{ id: r.subRates[0]?.id ?? `${r.id}-sub`, name: formData.subRateName, amount: formData.amount }],
-                effectiveDate: formData.effectiveDate,
-                expiryDate: formData.expiryDate,
-                status: formData.status,
-                annualIncrement: formData.annualIncrement,
-              }
-            : r
-        )
+    let data = activeTab === 'Business' ? rows : [];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      data = data.filter(
+        (r) =>
+          r.code.toLowerCase().includes(q) ||
+          r.businessClass.toLowerCase().includes(q) ||
+          r.category.toLowerCase().includes(q),
       );
-    } else {
-      // Add new rate
-      const newId = `RT-${String(rates.length + 1).padStart(3, '0')}`;
-      const newRate: RateType = {
-        id: newId,
-        name: formData.name,
-        category: formData.category,
-        subRates: [{ id: `${newId}-sub`, name: formData.subRateName, amount: formData.amount }],
-        effectiveDate: formData.effectiveDate,
-        expiryDate: formData.expiryDate,
-        status: formData.status,
-        annualIncrement: formData.annualIncrement,
-      };
-      setRates((prev) => [...prev, newRate]);
     }
+    const dir = sortDir === 'asc' ? 1 : -1;
+    data = [...data].sort((a, b) => {
+      switch (sortCol) {
+        case 'code':
+          return a.code.localeCompare(b.code) * dir;
+        case 'class':
+          return a.businessClass.localeCompare(b.businessClass) * dir;
+        case 'category':
+          return a.category.localeCompare(b.category) * dir;
+        case 'metro':
+          return (a.metro - b.metro) * dir;
+        case 'municipal':
+          return (a.municipal - b.municipal) * dir;
+        default:
+          return 0;
+      }
+    });
+    return data;
+  }, [rows, activeTab, searchQuery, sortCol, sortDir]);
 
-    setShowModal(false);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // Reset page when search/tab changes
+  useEffect(() => { setPage(1); }, [searchQuery, activeTab]);
+
+  // ── Handlers ────────────────────────────────────────────────────────────
+
+  const handleSort = useCallback(
+    (col: SortColumn) => {
+      if (sortCol === col) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+      else { setSortCol(col); setSortDir('asc'); }
+    },
+    [sortCol],
+  );
+
+  const handleMunicipalEdit = (code: string, val: string) => {
+    const num = parseFloat(val) || 0;
+    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, municipal: num } : r)));
   };
 
-  // ── CSS classes ──────────────────────────────────────────────────────────
+  const handleRadio = (code: string) => setRadioCode(code);
+  const handleCheck = (code: string) => {
+    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, selected: !r.selected } : r)));
+  };
 
-  const inputClass =
-    'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition';
-  const labelClass =
-    'block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5';
-  const btnPrimary =
-    'inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap';
-  const btnSecondary =
-    'inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap';
+  const modifiedCount = rows.filter((r) => r.municipal !== r.originalMunicipal).length;
+  const isMod = (r: RateRow) => r.municipal !== r.originalMunicipal;
 
-  // ── Compute display amount from sub-rates ────────────────────────────────
+  // ── Sort icon helper ────────────────────────────────────────────────────
 
-  const getDisplayAmount = (rate: RateType) => {
-    if (rate.subRates.length === 1) return formatCurrency(rate.subRates[0].amount);
-    const min = Math.min(...rate.subRates.map((s) => s.amount));
-    const max = Math.max(...rate.subRates.map((s) => s.amount));
-    return `${formatCurrency(min)} – ${formatCurrency(max)}`;
+  const SortIcon = ({ col }: { col: SortColumn }) => {
+    if (sortCol !== col) return <ChevronsUpDown className="w-3 h-3 inline ml-0.5 opacity-40" />;
+    return sortDir === 'asc' ? (
+      <ChevronUp className="w-3 h-3 inline ml-0.5" />
+    ) : (
+      <ChevronDown className="w-3 h-3 inline ml-0.5" />
+    );
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -227,460 +146,275 @@ export function RateConfigPage() {
   // ══════════════════════════════════════════════════════════════════════════
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Rate Configuration
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage revenue rate types, sub-rates, and fee structures.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => openAddModal('Business')} className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap">
-            <Plus className="w-4 h-4" />
-            Add New Business Rate
-          </button>
-          <button onClick={() => openAddModal('Property')} className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap">
-            <Plus className="w-4 h-4" />
-            Add Property Rate
-          </button>
-          <button onClick={() => openAddModal('Rent')} className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap">
-            <Plus className="w-4 h-4" />
-            Add Rent Rate
-          </button>
-        </div>
+    <div className="space-y-0">
+      {/* ── Page Title ───────────────────────────────────────────────────── */}
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+        Rate Configuration
+      </h1>
+
+      {/* ── Year Header Bar ─────────────────────────────────────────────── */}
+      <div className="bg-blue-700 text-white text-center py-2 font-bold text-base rounded-t-lg">
+        {new Date().getFullYear()}
       </div>
 
-      {/* ── Filters ────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      {/* ── Tab Navigation Bar ──────────────────────────────────────────── */}
+      <div className="flex bg-gradient-to-r from-amber-500 to-yellow-500">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-6 py-2.5 text-sm font-semibold transition-colors border-b-2 ${
+              activeTab === tab
+                ? 'bg-white text-amber-700 border-amber-500'
+                : 'text-blue-900 border-transparent hover:bg-white/30'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Toolbar ─────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-slate-100 dark:bg-slate-800 px-4 py-2 border border-t-0 border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Export */}
+          <button className="inline-flex items-center gap-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium px-3 py-2 rounded transition-colors">
+            <Download className="w-3.5 h-3.5" />
+            Export
+            <ChevronDown className="w-3 h-3" />
+          </button>
+
+          {/* Reload */}
+          <button className="inline-flex items-center gap-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium px-3 py-2 rounded transition-colors">
+            <RefreshCw className="w-3.5 h-3.5" />
+            Reload rates from database
+          </button>
+
+          {/* Save as new rates */}
+          <div className="relative" ref={saveRef}>
+            <button
+              onClick={() => setSaveOpen((o) => !o)}
+              className="inline-flex items-center gap-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium px-3 py-2 rounded transition-colors"
+            >
+              <Save className="w-3.5 h-3.5" />
+              Save as new rates
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {saveOpen && (
+              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded shadow-lg z-20 min-w-[180px]">
+                <button
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-600 dark:text-slate-200 transition-colors"
+                  onClick={() => setSaveOpen(false)}
+                >
+                  For next year
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-600 dark:text-slate-200 transition-colors"
+                  onClick={() => setSaveOpen(false)}
+                >
+                  For current year
+                </button>
+              </div>
+            )}
+          </div>
+
+          {modifiedCount > 0 && (
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+              {modifiedCount} unsaved change{modifiedCount > 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+
+        {/* Search */}
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+            Search:
+          </label>
           <input
             type="text"
-            placeholder="Search rate types..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`${inputClass} pl-10`}
+            className="w-48 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-amber-500 focus:border-amber-500 outline-none transition"
+            placeholder="Search rates..."
           />
         </div>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className={`${inputClass} w-full sm:w-44`}
-        >
-          <option value="All">All Categories</option>
-          <option value="Business">Business</option>
-          <option value="Property">Property</option>
-          <option value="Rent">Rent</option>
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className={`${inputClass} w-full sm:w-44`}
-        >
-          <option value="All">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
       </div>
 
-      {/* ── Table ───────────────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      {/* ── Data Table ──────────────────────────────────────────────────── */}
+      <div className="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs">
+            {/* Header */}
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap w-10" />
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  Rate Name
+              <tr className="bg-slate-100 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
+                <th className="w-10 px-1 py-2.5" />
+                <th className="w-10 px-1 py-2.5" />
+                <th
+                  onClick={() => handleSort('code')}
+                  className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap"
+                >
+                  Code <SortIcon col="code" />
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  Category
+                <th
+                  onClick={() => handleSort('class')}
+                  className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap"
+                >
+                  Class <SortIcon col="class" />
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  Amount
+                <th
+                  onClick={() => handleSort('category')}
+                  className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap"
+                >
+                  Category <SortIcon col="category" />
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  Status
+                <th
+                  onClick={() => handleSort('metro')}
+                  className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap"
+                >
+                  Metro <SortIcon col="metro" />
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden md:table-cell">
-                  Effective Date
-                </th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden md:table-cell">
-                  Expiry Date
-                </th>
-                <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  Actions
+                <th
+                  onClick={() => handleSort('municipal')}
+                  className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap"
+                >
+                  Municipal <SortIcon col="municipal" />
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-              {filtered.length === 0 ? (
+
+            {/* Body */}
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+              {activeTab !== 'Business' ? (
                 <tr>
                   <td
-                    colSpan={8}
-                    className="text-center py-12 text-slate-400 dark:text-slate-500"
+                    colSpan={7}
+                    className="text-center py-16 text-slate-400 dark:text-slate-500"
                   >
-                    <Settings2 className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                    No rate types found matching your criteria.
+                    <RefreshCw className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                    No rates loaded for {activeTab}. Click &quot;Reload rates from database&quot; to load.
+                  </td>
+                </tr>
+              ) : paged.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="text-center py-16 text-slate-400 dark:text-slate-500"
+                  >
+                    No rates found matching your search.
                   </td>
                 </tr>
               ) : (
-                filtered.map((rate) => {
-                  const isExpanded = expandedRows.has(rate.id);
-                  return (
-                    <>
-                      {/* Parent row */}
-                      <tr
-                        key={rate.id}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
-                      >
-                        <td
-                          className="px-4 py-3 text-slate-400"
-                          onClick={() => toggleExpand(rate.id)}
-                        >
-                          {rate.subRates.length > 1 ? (
-                            isExpanded ? (
-                              <ChevronDown className="w-4 h-4" />
-                            ) : (
-                              <ChevronRight className="w-4 h-4" />
-                            )
-                          ) : (
-                            <span className="w-4 h-4 inline-block" />
-                          )}
-                        </td>
-                        <td
-                          className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap"
-                          onClick={() => toggleExpand(rate.id)}
-                        >
-                          {rate.name}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                              rate.category === 'Business'
-                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
-                                : rate.category === 'Property'
-                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
-                                  : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400'
-                            }`}
-                          >
-                            {rate.category}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                          {getDisplayAmount(rate)}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                              rate.status === 'Active'
-                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
-                            }`}
-                          >
-                            {rate.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap hidden md:table-cell">
-                          {rate.effectiveDate}
-                        </td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap hidden md:table-cell">
-                          {rate.expiryDate}
-                        </td>
-                        <td className="px-4 py-3 text-right whitespace-nowrap">
-                          <div className="inline-flex items-center gap-1">
-                            <button
-                              onClick={() => openEditModal(rate)}
-                              className="p-1.5 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
-                              title="Edit"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => toggleStatus(rate.id)}
-                              className="p-1.5 rounded-md text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                              title="Toggle Status"
-                            >
-                              <Power className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(rate.id)}
-                              className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-
-                      {/* Expanded sub-rate rows */}
-                      {isExpanded && rate.subRates.length > 1 && (
-                        <tr key={`${rate.id}-sub`} className="bg-slate-50/60 dark:bg-slate-800/30">
-                          <td />
-                          <td colSpan={7} className="py-0">
-                            <div className="px-6 py-3">
-                              <div className="ml-4 border-l-2 border-emerald-400 dark:border-emerald-600 pl-4">
-                                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
-                                  Sub-Rates
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                  {rate.subRates.map((sr) => (
-                                    <div
-                                      key={sr.id}
-                                      className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 px-4 py-2.5"
-                                    >
-                                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                        {sr.name}
-                                      </span>
-                                      <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
-                                        {formatCurrency(sr.amount)}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                                {rate.annualIncrement > 0 && (
-                                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                                    Annual increment: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{rate.annualIncrement}%</span>
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </>
-                  );
-                })
+                paged.map((row, idx) => (
+                  <tr
+                    key={row.code}
+                    className={
+                      idx % 2 === 0
+                        ? 'bg-white dark:bg-slate-900'
+                        : 'bg-slate-50 dark:bg-slate-800/40'
+                    }
+                  >
+                    {/* Radio */}
+                    <td className="px-1 py-1.5 text-center">
+                      <input
+                        type="radio"
+                        name="rateRadio"
+                        checked={radioCode === row.code}
+                        onChange={() => handleRadio(row.code)}
+                        className="accent-blue-600"
+                      />
+                    </td>
+                    {/* Checkbox */}
+                    <td className="px-1 py-1.5 text-center">
+                      <input
+                        type="checkbox"
+                        checked={row.selected}
+                        onChange={() => handleCheck(row.code)}
+                        className="accent-blue-600"
+                      />
+                    </td>
+                    {/* Code */}
+                    <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 font-mono whitespace-nowrap">
+                      {row.code}
+                    </td>
+                    {/* Class */}
+                    <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[260px] truncate">
+                      {row.businessClass}
+                    </td>
+                    {/* Category */}
+                    <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[300px] truncate">
+                      {row.category}
+                    </td>
+                    {/* Metro (read-only) */}
+                    <td className="px-3 py-1.5 text-right text-slate-800 dark:text-slate-200 font-mono whitespace-nowrap">
+                      {row.metro.toFixed(2)}
+                    </td>
+                    {/* Municipal (editable, pink if modified) */}
+                    <td
+                      className={`px-1 py-0.5 ${
+                        isMod(row)
+                          ? 'bg-red-100 dark:bg-red-900/30'
+                          : ''
+                      }`}
+                    >
+                      <input
+                        type="number"
+                        value={row.municipal || ''}
+                        onChange={(e) => handleMunicipalEdit(row.code, e.target.value)}
+                        className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-amber-500 rounded"
+                        step="0.01"
+                        min="0"
+                      />
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* ── Summary ────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
-        <span>
-          Showing {filtered.length} of {rates.length} rate types
-        </span>
-        {rates.filter((r) => r.status === 'Active').length > 0 && (
-          <span>
-            {rates.filter((r) => r.status === 'Active').length} active &middot;{' '}
-            {rates.filter((r) => r.status === 'Inactive').length} inactive
-          </span>
-        )}
-      </div>
-
-      {/* ── Add/Edit Modal ──────────────────────────────────────────────── */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowModal(false)}
-          />
-
-          {/* Modal */}
-          <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-6 py-4">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                {editingRate ? `Edit ${formData.category} Rate` : `Add New ${formData.category} Rate`}
-              </h2>
+        {/* ── Pagination ─────────────────────────────────────────────────── */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400">
+            <span>
+              Showing {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} of{' '}
+              {filtered.length}
+            </span>
+            <div className="flex items-center gap-1">
               <button
-                onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                disabled={safePage <= 1}
+                onClick={() => setPage(1)}
+                className="px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
               >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="px-6 py-5 space-y-4">
-              {/* Rate Name */}
-              <div>
-                <label className={labelClass}>Rate Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, name: e.target.value }))
-                  }
-                  placeholder="e.g. Business Operating Permit"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className={labelClass}>Category</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      category: e.target.value as 'Business' | 'Property' | 'Rent',
-                    }))
-                  }
-                  className={inputClass}
-                >
-                  <option value="Business">Business</option>
-                  <option value="Property">Property</option>
-                  <option value="Rent">Rent</option>
-                </select>
-              </div>
-
-              {/* Sub-rate name + Amount row */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Sub-rate Name</label>
-                  <input
-                    type="text"
-                    value={formData.subRateName}
-                    onChange={(e) =>
-                      setFormData((p) => ({
-                        ...p,
-                        subRateName: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g. Small, Medium"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Amount (GH₵)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={formData.amount || ''}
-                    onChange={(e) =>
-                      setFormData((p) => ({
-                        ...p,
-                        amount: Number(e.target.value),
-                      }))
-                    }
-                    placeholder="0"
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-
-              {/* Effective Date + Expiry Date */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Effective Date</label>
-                  <input
-                    type="date"
-                    value={formData.effectiveDate}
-                    onChange={(e) =>
-                      setFormData((p) => ({
-                        ...p,
-                        effectiveDate: e.target.value,
-                      }))
-                    }
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Expiry Date</label>
-                  <input
-                    type="date"
-                    value={formData.expiryDate}
-                    onChange={(e) =>
-                      setFormData((p) => ({
-                        ...p,
-                        expiryDate: e.target.value,
-                      }))
-                    }
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-
-              {/* Annual Increment */}
-              <div>
-                <label className={labelClass}>Annual Increment (%)</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={formData.annualIncrement || ''}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      annualIncrement: Number(e.target.value),
-                    }))
-                  }
-                  placeholder="0"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Status Toggle */}
-              <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-600 px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Status
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {formData.status === 'Active'
-                      ? 'This rate type is currently active'
-                      : 'This rate type is currently inactive'}
-                  </p>
-                </div>
-                <button
-                  onClick={() =>
-                    setFormData((p) => ({
-                      ...p,
-                      status:
-                        p.status === 'Active' ? 'Inactive' : 'Active',
-                    }))
-                  }
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
-                    formData.status === 'Active'
-                      ? 'bg-emerald-600'
-                      : 'bg-slate-300 dark:bg-slate-600'
-                  }`}
-                  role="switch"
-                  aria-checked={formData.status === 'Active'}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out ${
-                      formData.status === 'Active'
-                        ? 'translate-x-5'
-                        : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-700 px-6 py-4">
-              <button onClick={() => setShowModal(false)} className={btnSecondary}>
-                <X className="w-4 h-4" />
-                Cancel
+                «
               </button>
               <button
-                onClick={handleSave}
-                className={btnPrimary}
-                disabled={
-                  !formData.name.trim() ||
-                  !formData.subRateName.trim() ||
-                  formData.amount <= 0
-                }
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
               >
-                <Save className="w-4 h-4" />
-                {editingRate ? 'Update Rate' : 'Save Rate'}
+                ‹
+              </button>
+              <span className="px-2">
+                Page {safePage} of {totalPages}
+              </span>
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
+              >
+                ›
+              </button>
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage(totalPages)}
+                className="px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 transition-colors"
+              >
+                »
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
