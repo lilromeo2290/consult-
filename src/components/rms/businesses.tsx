@@ -729,8 +729,7 @@ export function BusinessesPage() {
     .watermark img { width: 100%; height: 100%; object-fit: contain; }
     /* Header */
     .header-section { text-align: center; margin-bottom: 4px; position: relative; z-index: 1; }
-    .seal-img { width: 90px; height: 90px; object-fit: contain; margin: 0 auto 6px; display: block; }
-    .assembly-name { font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #000; margin-bottom: 2px; }
+    .header-logo { width: 280px; height: auto; object-fit: contain; margin: 0 auto 8px; display: block; }
     .assembly-motto { font-size: 10px; font-weight: 700; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
     .permit-title-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; margin-bottom: 2px; }
     .title-ornament { width: 60px; height: 12px; display: flex; align-items: center; justify-content: center; }
@@ -789,9 +788,7 @@ export function BusinessesPage() {
 
       <!-- Header -->
       <div class="header-section">
-        <img class="seal-img" src="/logos/assembly-seal.png" />
-        <div class="assembly-name">${dynAssemblyName.toUpperCase()}</div>
-        <div class="assembly-motto">(Wisdom and Unity for Development)</div>
+        <img class="header-logo" src="/logos/kpando-header-logo.jpeg" />
 
         <div class="permit-title-row">
           <div class="title-ornament"><svg viewBox="0 0 60 12"><line x1="0" y1="6" x2="22" y2="6" stroke="#B8860B" stroke-width="1.5"/><line x1="38" y1="6" x2="60" y2="6" stroke="#B8860B" stroke-width="1.5"/><polygon points="30,1 33,6 30,11 27,6" fill="#B8860B"/></svg></div>
