@@ -305,8 +305,8 @@ export function RentPage() {
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!form.upn || !form.renterName) {
-      alert('Please fill in the required fields: UPN and Renter Name.');
+    if (!form.renterName) {
+      alert('Please fill in the required field: Renter Name.');
       return;
     }
     setSaving(true);
@@ -557,7 +557,7 @@ export function RentPage() {
           <button type="button" onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors cursor-pointer">
             <X className="w-4 h-4" /> Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!form.upn || !form.renterName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+          <button type="button" onClick={handleSave} disabled={!form.renterName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>
         </div>
@@ -781,7 +781,7 @@ export function RentPage() {
             <X className="w-4 h-4" />
             Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!form.upn || !form.renterName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" onClick={handleSave} disabled={!form.renterName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>
