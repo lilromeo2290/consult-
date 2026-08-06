@@ -84,7 +84,7 @@ def main():
     rhel_engine = os.path.join(LOCAL_PROJECT, 'node_modules/.prisma/client', 'libquery_engine-rhel-openssl-1.1.x.so.node')
     if os.path.exists(rhel_engine):
         print('  Uploading Prisma RHEL engine...')
-        os.makedirs(f'{VPS_APP_DIR}/node_modules/.prisma/client', exist_ok=True)
+        vps_run(c, f'mkdir -p {VPS_APP_DIR}/node_modules/.prisma/client')
         sftp = c.open_sftp()
         sftp.put(rhel_engine, f'{VPS_APP_DIR}/node_modules/.prisma/client/libquery_engine-rhel-openssl-1.1.x.so.node')
         sftp.close()
