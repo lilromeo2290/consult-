@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   Search,
@@ -36,6 +36,7 @@ import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
 import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
 import { getRateOverride } from '@/lib/rate-overrides';
 import { Combobox } from '@/components/ui/combobox';
+import { BUSINESS_REVENUE_CODES, BIZ_CODE_TO_DESC, BIZ_DESC_TO_CODE } from '@/lib/business-revenue-codes';
 import QRCode from 'qrcode';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -172,6 +173,12 @@ export function BusinessesPage() {
   const [viewingCert, setViewingCert] = useState<BusinessCert | null>(null);
   const [businesses, setBusinesses, dataLoading] = useSyncedStorage<Business[]>('rms-businesses', mockBusinesses);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bizRevenueCodeRef = useRef<HTMLDivElement>(null);
+  const bizRevenueDescRef = useRef<HTMLDivElement>(null);
+  const [bizRevenueCodeSearch, setBizRevenueCodeSearch] = useState('');
+  const [bizRevenueDescSearch, setBizRevenueDescSearch] = useState('');
+  const [bizRevenueCodeShowDropdown, setBizRevenueCodeShowDropdown] = useState(false);
+  const [bizRevenueDescShowDropdown, setBizRevenueDescShowDropdown] = useState(false);
   const itemsPerPage = 10;
 
   // ── Import / Export ───────────────────────────────────────────────────────
@@ -201,6 +208,44 @@ export function BusinessesPage() {
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  // ── Revenue Code/Description Search ───────────────────────────────────
+  const bizRevenueCodeFiltered = bizRevenueCodeSearch
+    ? BUSINESS_REVENUE_CODES.filter(
+        (item) =>
+          item.code.includes(bizRevenueCodeSearch) ||
+          item.description.toLowerCase().includes(bizRevenueCodeSearch.toLowerCase())
+      )
+    : BUSINESS_REVENUE_CODES;
+
+  const bizRevenueDescFiltered = bizRevenueDescSearch
+    ? BUSINESS_REVENUE_CODES.filter(
+        (item) =>
+          item.description.toLowerCase().includes(bizRevenueDescSearch.toLowerCase()) ||
+          item.code.includes(bizRevenueDescSearch)
+      )
+    : BUSINESS_REVENUE_CODES;
+
+  const handleBizRevenueSelect = (item: { code: string; description: string }) => {
+    setForm((prev) => ({ ...prev, code: item.code, revenueDescription: item.description }));
+    setBizRevenueCodeSearch(item.code);
+    setBizRevenueDescSearch(item.description);
+    setBizRevenueCodeShowDropdown(false);
+    setBizRevenueDescShowDropdown(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (bizRevenueCodeRef.current && !bizRevenueCodeRef.current.contains(e.target as Node)) {
+        setBizRevenueCodeShowDropdown(false);
+      }
+      if (bizRevenueDescRef.current && !bizRevenueDescRef.current.contains(e.target as Node)) {
+        setBizRevenueDescShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const getLocalityPrefix = (locality: string): string => {
     if (locality.startsWith('Kpando')) return 'KZC';
@@ -1244,21 +1289,55 @@ export function BusinessesPage() {
               {/* Row 2: Revenue Code, Revenue Description, Business TIN */}
               <div>
                 <label className={`${labelClass} block`}>Revenue Code</label>
-                <select name="code" value={form.code} onChange={handleFormChange} className={inputClass}>
-                  <option value="">Select Revenue Code</option>
-                  {REVENUE_CODE_MAP.filter(m => m.code).map((m) => (
-                    <option key={m.code} value={m.code}>{m.code}</option>
-                  ))}
-                </select>
+                <div className="relative" ref={bizRevenueCodeRef}>
+                  <input
+                    type="text"
+                    name="code"
+                    value={bizRevenueCodeShowDropdown ? bizRevenueCodeSearch : form.code}
+                    onChange={(e) => { setBizRevenueCodeSearch(e.target.value); setBizRevenueCodeShowDropdown(true); }}
+                    onFocus={() => { setBizRevenueCodeSearch(form.code || ''); setBizRevenueCodeShowDropdown(true); }}
+                    placeholder="Type to search code..."
+                    className={inputClass}
+                  />
+                  {bizRevenueCodeShowDropdown && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                      {bizRevenueCodeFiltered.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                      ) : bizRevenueCodeFiltered.slice(0, 50).map((item) => (
+                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
+                          <span className="font-mono text-xs text-slate-500 mr-2">{item.code}</span>
+                          <span className="text-slate-800 dark:text-white">{item.description}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className={`${labelClass} block`}>Revenue Description</label>
-                <select name="revenueDescription" value={form.revenueDescription} onChange={handleFormChange} className={inputClass}>
-                  <option value="">Select revenue description...</option>
-                  {REVENUE_CODE_MAP.filter(m => m.code).map((m) => (
-                    <option key={m.code} value={m.description}>{m.description}</option>
-                  ))}
-                </select>
+                <div className="relative" ref={bizRevenueDescRef}>
+                  <input
+                    type="text"
+                    name="revenueDescription"
+                    value={bizRevenueDescShowDropdown ? bizRevenueDescSearch : form.revenueDescription}
+                    onChange={(e) => { setBizRevenueDescSearch(e.target.value); setBizRevenueDescShowDropdown(true); }}
+                    onFocus={() => { setBizRevenueDescSearch(form.revenueDescription || ''); setBizRevenueDescShowDropdown(true); }}
+                    placeholder="Type to search description..."
+                    className={inputClass}
+                  />
+                  {bizRevenueDescShowDropdown && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                      {bizRevenueDescFiltered.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                      ) : bizRevenueDescFiltered.slice(0, 50).map((item) => (
+                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
+                          <span className="text-slate-800 dark:text-white">{item.description}</span>
+                          <span className="ml-2 font-mono text-xs text-slate-400">{item.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className={`${labelClass} block`}>Business TIN</label>
