@@ -28,8 +28,6 @@ import {
   Upload,
 } from 'lucide-react';
 import { exportToExcel, importFromExcel, RENT_FIELDS } from '@/lib/import-export';
-import { REVENUE_CODE_MAP, DESCRIPTION_TO_CODE, CODE_TO_DESCRIPTION } from '@/lib/revenue-code-map';
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Rent {
@@ -73,78 +71,32 @@ const mockRents: Rent[] = [];
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const RENT_CODE_MAP: Record<string, string> = {
-  'Bill Boards|CAT A': '50010001',
-  'Bill Boards|CAT B': '50010002',
-  'Bill Boards|CAT C': '50010003',
-  'Assembly Hall|CAT A - Large': '50020101',
-  'Assembly Hall|CAT B - Medium': '50020102',
-  'Assembly Hall|CAT C - Small': '50020103',
-  'Assembly Conference Room|Assembly Conference Room': '50020301',
-  'Community Centres|Community Centres': '50020401',
-  'Sub-district/Metro Halls|Sub-district/Metro Halls': '50020501',
-  'Assembly Forecourt|Assembly Forecourt': '50020601',
-  'Stores|CAT A - In CBD (Central Business District)': '50030101',
-  'Stores|CAT B - Satellite Markets': '50030102',
-  'Stores|CAT C - Outside CBD': '50030103',
-  'Stores|CAT D - Sub District Store': '50030104',
-  'Stalls|CAT A - In CBD': '50030201',
-  'Stalls|CAT B - Satellite Market': '50030202',
-  'Stalls|CAT C - Outside CBD': '50030203',
-  'Stalls|CAT D - Sub District Store': '50030204',
-  'Sheds|CAT A - In CBD': '50030301',
-  'Sheds|CAT B - Satellite Markets': '50030302',
-  'Sheds|CAT C - Outside CBD': '50030303',
-  'Sheds|CAT D - Sub District Store': '50030304',
-  'Others|Others': '50030401',
-  'Rent of Undeveloped Lands|Rent of Undeveloped Lands': '50040001',
-  'Hiring of Parks|CAT A - Government Recreational Park': '50040002',
-  'Hiring of Parks|CAT B - Lorry Park (space rent)': '50040003',
-  'Hiring of Parks|CAT C - Parade Grounds (Jubilee Parks)': '50040004',
-  'Hiring of Parks|CAT D - School Compound (Social functions)': '50040005',
-  'Rent on Leased Buildings|Rent on Leased Buildings': '50050001',
-  'Rent for Vendor Stands|Rent for Vendor Stands': '50060001',
-  'Guest House|Guest House': '50070001',
-  'Restaurant/Canteen|Restaurant/Canteen': '50070002',
-  'Club House|Club House': '50070003',
-  'Stadium|Stadium': '50070004',
+// Rent Property Type -> Type Code mapping
+const PROPERTY_TYPE_CODE_MAP: Record<string, string> = {
+  'Bill Boards': 'KpMA/KZC/DBB/KPD/',
+  'Assembly Hall': 'KpMA/KZC/ASH/KPD/',
+  'Assembly Conference Room': 'KpMA/KZC/ACR/KPD/',
+  'Community Centres': 'KpMA/KZC/CCH/KPD/',
+  'Sub-district/Metro Halls': 'KpMA/KZC/SDH/KPD/',
+  'Assembly Forecourt': 'KpMA/KZC/AFC/KPD/',
+  'Others': 'KpMA/KZC/OTH/KPD/',
+  'Stores': 'KpMA/KZC/LKS/MKS/',
+  'Stalls': 'KpMA/KZC/MKT/STL/',
+  'Sheds': 'KpMA/KZC/MKT/SHD/',
+  'Rent of Open Market Space': 'KpMA/KZC/MKT/OPS/',
+  'Rent of Market Warehouse': 'KpMA/KZC/MKT/MWH/',
+  'Rent of Undeveloped Lands': 'KpMA/KZC/RUL/KPD/',
+  'Hiring of Parks': 'KpMA/KZC/HPK/KPD/',
+  'Rent on Leased Buildings': 'KpMA/KZC/RLB/KPD/',
+  'Rent for Vendor Stands': 'KpMA/KZC/RVS/KPD/',
+  'Official Residence': 'KpMA/KZC/BGL/KPD/',
+  'Guest House': 'KpMA/KZC/GHR/KPD/',
+  'Restaurant/Canteen': 'KpMA/KZC/RCR/KPD/',
+  'Club House': 'KpMA/KZC/CHR/KPD/',
+  'Stadium': 'KpMA/KZC/SSR/KPD/',
 };
 
-const RENT_CLASS_CATEGORIES: Record<string, string[]> = {
-  'Bill Boards': ['CAT A', 'CAT B', 'CAT C'],
-  'Assembly Hall': ['CAT A - Large', 'CAT B - Medium', 'CAT C - Small'],
-  'Assembly Conference Room': ['Assembly Conference Room'],
-  'Community Centres': ['Community Centres'],
-  'Sub-district/Metro Halls': ['Sub-district/Metro Halls'],
-  'Assembly Forecourt': ['Assembly Forecourt'],
-  'Others': ['Others'],
-  'Stores': ['CAT A - In CBD (Central Business District)', 'CAT B - Satellite Markets', 'CAT C - Outside CBD', 'CAT D - Sub District Store'],
-  'Stalls': ['CAT A - In CBD', 'CAT B - Satellite Market', 'CAT C - Outside CBD', 'CAT D - Sub District Store'],
-  'Sheds': ['CAT A - In CBD', 'CAT B - Satellite Markets', 'CAT C - Outside CBD', 'CAT D - Sub District Store'],
-  'Rent of Undeveloped Lands': ['Rent of Undeveloped Lands'],
-  'Hiring of Parks': ['CAT A - Government Recreational Park', 'CAT B - Lorry Park (space rent)', 'CAT C - Parade Grounds (Jubilee Parks)', 'CAT D - School Compound (Social functions)'],
-  'Rent on Leased Buildings': ['Rent on Leased Buildings'],
-  'Rent for Vendor Stands': ['Rent for Vendor Stands'],
-  'Guest House': ['Guest House'],
-  'Restaurant/Canteen': ['Restaurant/Canteen'],
-  'Club House': ['Club House'],
-  'Stadium': ['Stadium'],
-};
-
-const RENT_CATEGORIES = [...new Set(Object.values(RENT_CLASS_CATEGORIES).flat())];
-
-const RENT_CLASSES = Object.keys(RENT_CLASS_CATEGORIES);
-
-const RENT_UNITS = [
-  'Whole Building',
-  'Single Room',
-  'Flat/Apartment',
-  'Office Space',
-  'Warehouse',
-  'Shop/Stall',
-  'Hall/Event Space',
-  'Other',
-];
+const PROPERTY_TYPES = Object.keys(PROPERTY_TYPE_CODE_MAP);
 
 const VACANT_OPTIONS = ['Yes', 'No'];
 
@@ -261,16 +213,18 @@ export function RentPage() {
     if (type === 'checkbox') {
       setForm((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
     } else if (name === 'rentPropertyType') {
-      // Auto-fill type code and category when property type is selected
-      const code = RENT_CODE_MAP[value] || '';
-      const category = RENT_CLASSES.includes(value) ? value : '';
-      const cats = RENT_CLASS_CATEGORIES[value] || [];
-      const autoCat = cats.length === 1 ? cats[0] : '';
+      // Auto-fill type code and generate property number
+      const typeCode = PROPERTY_TYPE_CODE_MAP[value] || '';
+      // Count existing rents with same type to determine next number
+      const existingCount = rents.filter((r) => r.rentPropertyType === value).length;
+      const nextNum = String(existingCount + 1).padStart(4, '0');
+      const propertyNumber = typeCode ? `${typeCode}${nextNum}` : '';
       setForm((prev) => ({
         ...prev,
         rentPropertyType: value,
-        rentPropertyTypeCode: code,
-        rentPropertyTypeCategory: autoCat || category,
+        rentPropertyTypeCode: typeCode,
+        rentPropertyNumber: propertyNumber,
+        rentPropertyTypeCategory: '',
       }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
@@ -415,9 +369,9 @@ export function RentPage() {
             onChange={(e) => { setClassFilter(e.target.value); setCurrentPage(1); }}
             className={`${inputClass} w-full sm:w-48`}
           >
-            <option value="All">All Rent Classes</option>
-            {RENT_CLASSES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+            <option value="All">All Property Types</option>
+            {PROPERTY_TYPES.map((t) => (
+              <option key={t} value={t}>{t}</option>
             ))}
           </select>
           <select
@@ -591,29 +545,24 @@ export function RentPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               <div>
                 <label className={`${labelClass} block`}>Rent Property Number</label>
-                <input type="text" name="rentPropertyNumber" value={form.rentPropertyNumber} onChange={handleFormChange} placeholder="Enter property number" className={inputClass} />
+                <input type="text" name="rentPropertyNumber" value={form.rentPropertyNumber} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
               </div>
               <div>
                 <label className={`${labelClass} block`}>Rent Property Type Code</label>
-                <input type="text" name="rentPropertyTypeCode" value={form.rentPropertyTypeCode} onChange={handleFormChange} placeholder="Auto-filled" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
+                <input type="text" name="rentPropertyTypeCode" value={form.rentPropertyTypeCode} placeholder="Auto-filled" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
               </div>
-              <div className="sm:col-span-2 lg:col-span-3">
+              <div className="sm:col-span-2">
                 <label className={`${labelClass} block`}>Rent Property Type</label>
                 <select name="rentPropertyType" value={form.rentPropertyType} onChange={handleFormChange} className={inputClass}>
                   <option value="">Search to select property type</option>
-                  {RENT_CLASSES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                  {PROPERTY_TYPES.map((t) => (
+                    <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className={`${labelClass} block`}>Rent Property Type Category</label>
-                <select name="rentPropertyTypeCategory" value={form.rentPropertyTypeCategory} onChange={handleFormChange} className={inputClass}>
-                  <option value="">Select category</option>
-                  {(RENT_CLASS_CATEGORIES[form.rentPropertyType] || []).map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                <input type="text" name="rentPropertyTypeCategory" value={form.rentPropertyTypeCategory} onChange={handleFormChange} placeholder="Enter category" className={inputClass} />
               </div>
               <div>
                 <label className={`${labelClass} block`}>Amount (GHS)</label>
