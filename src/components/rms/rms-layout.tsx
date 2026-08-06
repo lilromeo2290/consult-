@@ -52,6 +52,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', page: 'dashboard', icon: LayoutDashboard },
   { label: 'Businesses', page: 'businesses', icon: Building2 },
+  { label: 'Property Register', page: 'properties', icon: Home },
+  { label: 'Lease Management', page: 'rent', icon: Key },
   { label: 'Rate Config', page: 'rates', icon: Settings2 },
   { label: 'Billing', page: 'billing', icon: FileText },
   { label: 'Payments', page: 'payments', icon: CreditCard },
@@ -67,6 +69,8 @@ const NAV_ITEMS: NavItem[] = [
 const PAGE_TITLES: Record<RMSPage, string> = {
   dashboard: 'Dashboard',
   businesses: 'Businesses',
+  properties: 'Property Register',
+  rent: 'Lease Management',
   rates: 'Rate Configuration',
   billing: 'Billing',
   payments: 'Payments',
