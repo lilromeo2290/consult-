@@ -1,21 +1,31 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   ChevronDown,
   ChevronUp,
   ChevronsUpDown,
   Plus,
   X,
+  Download,
+  Upload,
 } from 'lucide-react';
 import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
 import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
 import { CODE_TO_CLASS } from '@/lib/business-class-code-map';
-import { getRateOverride, setRateOverride } from '@/lib/rate-overrides';
+import {
+  getRateOverride,
+  setRateOverride,
+  getRateCeiling,
+  setRateCeiling,
+  setRateEntry,
+  getAllOverrides,
+} from '@/lib/rate-overrides';
 import { Combobox } from '@/components/ui/combobox';
+import { exportToExcel, importFromExcel } from '@/lib/import-export';
 
 type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent';
-type SortColumn = 'code' | 'class' | 'category' | 'amount';
+type SortColumn = 'code' | 'class' | 'category' | 'amount' | 'ceiling';
 type SortDir = 'asc' | 'desc';
 
 interface RateRow {
@@ -23,12 +33,23 @@ interface RateRow {
   businessClass: string;
   category: string;
   amount: number;
+  ceiling: number;
   originalAmount: number;
+  originalCeiling: number;
   selected: boolean;
 }
 
 const TABS: RateTab[] = ['Business', 'Property', 'Fines', 'Fees', 'Rent'];
 const PAGE_SIZE = 25;
+
+// Excel field definitions for Business Rate Import/Export
+const RATE_FIELDS: { key: string; label: string }[] = [
+  { key: 'code', label: 'Code' },
+  { key: 'businessClass', label: 'Business Class' },
+  { key: 'category', label: 'Category' },
+  { key: 'amount', label: 'Amount' },
+  { key: 'ceiling', label: 'Ceiling' },
+];
 
 function buildBusinessRows(): RateRow[] {
   return BUSINESS_CLASS_CODES.map((code) => {
@@ -38,7 +59,9 @@ function buildBusinessRows(): RateRow[] {
       businessClass: entry ? entry.businessClass : '',
       category: entry ? entry.category : '',
       amount: 0,
+      ceiling: 0,
       originalAmount: 0,
+      originalCeiling: 0,
       selected: false,
     };
   });
@@ -57,6 +80,8 @@ export function RateConfigPage() {
   const [newClass, setNewClass] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [newAmount, setNewAmount] = useState('');
+  const [newCeiling, setNewCeiling] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // When a code is selected, auto-fill class and category
   const handleCodeSelect = (code: string) => {
@@ -85,6 +110,7 @@ export function RateConfigPage() {
         case 'class': return a.businessClass.localeCompare(b.businessClass) * dir;
         case 'category': return a.category.localeCompare(b.category) * dir;
         case 'amount': return (a.amount - b.amount) * dir;
+        case 'ceiling': return (a.ceiling - b.ceiling) * dir;
         default: return 0;
       }
     });
@@ -107,8 +133,22 @@ export function RateConfigPage() {
 
   const handleAmountEdit = (code: string, val: string) => {
     const num = parseFloat(val) || 0;
-    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, amount: num } : r)));
-    setRateOverride(code, num);
+    // Apply ceiling: if ceiling > 0 and amount > ceiling, cap at ceiling
+    const row = rows.find((r) => r.code === code);
+    const ceiling = row?.ceiling || 0;
+    const capped = ceiling > 0 ? Math.min(num, ceiling) : num;
+    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, amount: capped } : r)));
+    setRateEntry(code, capped, ceiling);
+  };
+
+  const handleCeilingEdit = (code: string, val: string) => {
+    const num = parseFloat(val) || 0;
+    const row = rows.find((r) => r.code === code);
+    const amount = row?.amount || 0;
+    // Apply ceiling: if ceiling > 0 and amount > ceiling, cap amount
+    const capped = num > 0 ? Math.min(amount, num) : amount;
+    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, ceiling: num, amount: capped } : r)));
+    setRateEntry(code, capped, num);
   };
 
   const handleRadio = (code: string) => setRadioCode(code);
@@ -116,19 +156,67 @@ export function RateConfigPage() {
     setRows((prev) => prev.map((r) => (r.code === code ? { ...r, selected: !r.selected } : r)));
   };
 
-  const isMod = (r: RateRow) => r.amount !== r.originalAmount;
+  const isMod = (r: RateRow) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling;
 
   const handleAddRate = () => {
     const trimmedCode = newCode.trim();
     if (!trimmedCode || !newAmount.trim()) return;
     const amt = parseFloat(newAmount) || 0;
-    setRateOverride(trimmedCode, amt);
-    setRows((prev) => prev.map((r) => (r.code === trimmedCode ? { ...r, amount: amt } : r)));
+    const ceil = parseFloat(newCeiling) || 0;
+    const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
+    setRateEntry(trimmedCode, capped, ceil);
+    setRows((prev) => prev.map((r) => (r.code === trimmedCode ? { ...r, amount: capped, ceiling: ceil } : r)));
     setNewCode('');
     setNewClass('');
     setNewCategory('');
     setNewAmount('');
+    setNewCeiling('');
     setShowAddForm(false);
+  };
+
+  // ── Import / Export ───────────────────────────────────────────────────────
+  const handleExportRates = () => {
+    const exportData = rows.map((r) => ({
+      code: r.code,
+      businessClass: r.businessClass,
+      category: r.category,
+      amount: r.amount,
+      ceiling: r.ceiling,
+    }));
+    exportToExcel(exportData as unknown as Record<string, unknown>[], RATE_FIELDS, 'Business_Rates');
+  };
+
+  const handleImportRates = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const imported = await importFromExcel<Record<string, unknown>>(file, RATE_FIELDS);
+      if (imported.length === 0) { alert('No data found in the file.'); return; }
+      let updated = 0;
+      setRows((prev) => {
+        const newRowMap = new Map(prev.map((r) => [r.code, r]));
+        for (const item of imported) {
+          const code = String(item.code || '').trim();
+          if (!code || !newRowMap.has(code)) continue;
+          const amt = parseFloat(String(item.amount || '0')) || 0;
+          const ceil = parseFloat(String(item.ceiling || '0')) || 0;
+          const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
+          const existing = newRowMap.get(code)!;
+          newRowMap.set(code, {
+            ...existing,
+            amount: capped,
+            ceiling: ceil,
+          });
+          setRateEntry(code, capped, ceil);
+          updated++;
+        }
+        return Array.from(newRowMap.values());
+      });
+      alert(`${updated} rate(s) imported successfully.`);
+    } catch (err) {
+      alert('Failed to import file. Please ensure it is a valid Excel file exported from this system.');
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const SortIcon = ({ col }: { col: SortColumn }) => {
@@ -174,76 +262,116 @@ export function RateConfigPage() {
             placeholder="Search rates..."
           />
           {activeTab === 'Business' && (
-            <div className="relative ml-2">
+            <>
+              {/* Export */}
               <button
-                onClick={() => setShowAddForm(!showAddForm)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm"
+                onClick={handleExportRates}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
+                title="Export to Excel"
               >
-                <Plus className="w-3.5 h-3.5" />
-                Add Rate
+                <Download className="w-3.5 h-3.5" />
+                Export
               </button>
-              {showAddForm && (
-                <div className="absolute right-0 top-full mt-1 z-50 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">New Rate Entry</h3>
-                    <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                      <X className="w-4 h-4" />
-                    </button>
+              {/* Import */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
+                title="Import from Excel"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImportRates}
+                className="hidden"
+              />
+              {/* Add Rate */}
+              <div className="relative ml-2">
+                <button
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Rate
+                </button>
+                {showAddForm && (
+                  <div className="absolute right-0 top-full mt-1 z-50 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">New Rate Entry</h3>
+                      <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="space-y-2.5">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Business Class Code</label>
+                        <Combobox
+                          name="addRateCode"
+                          value={newCode}
+                          onChange={(e) => handleCodeSelect(e.target.value)}
+                          options={BUSINESS_CLASS_CODES.map((c) => ({ value: c, label: c }))}
+                          placeholder="Select or search code..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Business Class</label>
+                        <input
+                          type="text"
+                          value={newClass}
+                          readOnly
+                          className="w-full rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 outline-none"
+                          placeholder="Auto-filled from code"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Category</label>
+                        <input
+                          type="text"
+                          value={newCategory}
+                          readOnly
+                          className="w-full rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 outline-none"
+                          placeholder="Auto-filled from code"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Amount</label>
+                        <input
+                          type="number"
+                          value={newAmount}
+                          onChange={(e) => setNewAmount(e.target.value)}
+                          className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+                          placeholder="0.00"
+                          step="0.01"
+                          min="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Ceiling</label>
+                        <input
+                          type="number"
+                          value={newCeiling}
+                          onChange={(e) => setNewCeiling(e.target.value)}
+                          className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+                          placeholder="0.00 (max limit for amount)"
+                          step="0.01"
+                          min="0"
+                        />
+                      </div>
+                      <button
+                        onClick={handleAddRate}
+                        disabled={!newCode.trim() || !newAmount.trim()}
+                        className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Add Entry
+                      </button>
+                    </div>
                   </div>
-                  <div className="space-y-2.5">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Business Class Code</label>
-                      <Combobox
-                        name="addRateCode"
-                        value={newCode}
-                        onChange={(e) => handleCodeSelect(e.target.value)}
-                        options={BUSINESS_CLASS_CODES.map((c) => ({ value: c, label: c }))}
-                        placeholder="Select or search code..."
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Business Class</label>
-                      <input
-                        type="text"
-                        value={newClass}
-                        readOnly
-                        className="w-full rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 outline-none"
-                        placeholder="Auto-filled from code"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Category</label>
-                      <input
-                        type="text"
-                        value={newCategory}
-                        readOnly
-                        className="w-full rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 outline-none"
-                        placeholder="Auto-filled from code"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Amount</label>
-                      <input
-                        type="number"
-                        value={newAmount}
-                        onChange={(e) => setNewAmount(e.target.value)}
-                        className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
-                        placeholder="0.00"
-                        step="0.01"
-                        min="0"
-                      />
-                    </div>
-                    <button
-                      onClick={handleAddRate}
-                      disabled={!newCode.trim() || !newAmount.trim()}
-                      className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Add Entry
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -267,19 +395,22 @@ export function RateConfigPage() {
                 <th onClick={() => handleSort('amount')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">
                   Amount <SortIcon col="amount" />
                 </th>
+                <th onClick={() => handleSort('ceiling')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">
+                  Ceiling <SortIcon col="ceiling" />
+                </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
               {activeTab !== 'Business' ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-16 text-slate-400 dark:text-slate-500">
+                  <td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500">
                     No rates loaded for {activeTab}.
                   </td>
                 </tr>
               ) : paged.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-16 text-slate-400 dark:text-slate-500">
+                  <td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500">
                     No rates found matching your search.
                   </td>
                 </tr>
@@ -297,6 +428,9 @@ export function RateConfigPage() {
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[300px] truncate">{row.category}</td>
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
                       <input type="number" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" />
+                    </td>
+                    <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
+                      <input type="number" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
                     </td>
                   </tr>
                 ))

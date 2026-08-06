@@ -87,6 +87,8 @@ export const RENT_FIELDS: { key: string; label: string }[] = [
   { key: 'propertyLatitude', label: 'Property Latitude' },
   { key: 'propertyLongitude', label: 'Property Longitude' },
   { key: 'rentObjectName', label: 'Rent Object Name' },
+  { key: 'rentRevenueCode', label: 'Rent Revenue Code' },
+  { key: 'rentRevenueDescription', label: 'Rent Revenue Description' },
   { key: 'rentCode', label: 'Rent Code' },
   { key: 'rentClass', label: 'Rent Class' },
   { key: 'rentCategory', label: 'Rent Category' },

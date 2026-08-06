@@ -28,6 +28,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { exportToExcel, importFromExcel, RENT_FIELDS } from '@/lib/import-export';
+import { REVENUE_CODE_MAP, DESCRIPTION_TO_CODE, CODE_TO_DESCRIPTION } from '@/lib/revenue-code-map';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,8 @@ interface Rent {
   propertyLongitude: string;
   // Rent Object
   rentObjectName: string;
+  rentRevenueCode: string;
+  rentRevenueDescription: string;
   rentCode: string;
   rentClass: string;
   rentCategory: string;
@@ -198,6 +201,8 @@ export function RentPage() {
     propertyLatitude: '',
     propertyLongitude: '',
     rentObjectName: '',
+    rentRevenueCode: '',
+    rentRevenueDescription: '',
     rentCode: '',
     rentClass: '',
     rentCategory: '',
@@ -273,6 +278,20 @@ export function RentPage() {
       // Auto-fill code when category is selected
       const code = RENT_CODE_MAP[`${form.rentClass}|${value}`] || '';
       setForm((prev) => ({ ...prev, rentCategory: value, rentCode: code }));
+    } else if (name === 'rentRevenueDescription') {
+      // Link Rent Revenue Description -> Rent Revenue Code
+      setForm((prev) => ({
+        ...prev,
+        rentRevenueDescription: value,
+        rentRevenueCode: DESCRIPTION_TO_CODE[value] || prev.rentRevenueCode,
+      }));
+    } else if (name === 'rentRevenueCode') {
+      // Link Rent Revenue Code -> Rent Revenue Description
+      setForm((prev) => ({
+        ...prev,
+        rentRevenueCode: value,
+        rentRevenueDescription: CODE_TO_DESCRIPTION[value] || prev.rentRevenueDescription,
+      }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
@@ -321,6 +340,8 @@ export function RentPage() {
       propertyLatitude: rent.propertyLatitude,
       propertyLongitude: rent.propertyLongitude,
       rentObjectName: rent.rentObjectName,
+      rentRevenueCode: rent.rentRevenueCode || '',
+      rentRevenueDescription: rent.rentRevenueDescription || '',
       rentCode: rent.rentCode || '',
       rentClass: rent.rentClass,
       rentCategory: rent.rentCategory || (RENT_CLASS_CATEGORIES[rent.rentClass]?.[0]) || '',
@@ -579,6 +600,14 @@ export function RentPage() {
               <div className="sm:col-span-2 lg:col-span-3">
                 <label className={`${labelClass} block`}>Rent Object Name</label>
                 <input type="text" name="rentObjectName" value={form.rentObjectName} onChange={handleFormChange} placeholder="Enter rent object name" className={inputClass} />
+              </div>
+              <div>
+                <label className={`${labelClass} block`}>Rent Revenue Code</label>
+                <input type="text" name="rentRevenueCode" value={form.rentRevenueCode} onChange={handleFormChange} placeholder="e.g. 1412025" className={inputClass} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={`${labelClass} block`}>Rent Revenue Description</label>
+                <input type="text" name="rentRevenueDescription" value={form.rentRevenueDescription} onChange={handleFormChange} placeholder="Select or enter revenue description" className={inputClass} />
               </div>
               <div>
                 <label className={`${labelClass} block`}>Rent Class</label>

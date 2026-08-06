@@ -669,6 +669,16 @@ export function PropertiesPage() {
                   className={inputClass}
                 />
               </div>
+              {/* Property Revenue Code */}
+              <div>
+                <label className={`${labelClass} block`}>Property Revenue Code</label>
+                <input type="text" name="revenueCode" value={form.revenueCode} onChange={handleFormChange} placeholder="e.g. 1412025" className={inputClass} />
+              </div>
+              {/* Property Revenue Description */}
+              <div className="sm:col-span-2">
+                <label className={`${labelClass} block`}>Property Revenue Description</label>
+                <input type="text" name="revenueDescription" value={form.revenueDescription} onChange={handleFormChange} placeholder="Select or enter revenue description" className={inputClass} />
+              </div>
               {/* Property Use Type */}
               <div>
                 <label className={`${labelClass} block`}>Property Use Type <span className="text-red-500">*</span></label>
