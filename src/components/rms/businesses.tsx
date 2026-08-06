@@ -703,6 +703,7 @@ export function BusinessesPage() {
     .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 18px; padding: 0 10px; }
     .qr-section { text-align: center; }
     .qr-placeholder { width: 75px; height: 75px; border: 1.5px solid #333; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; background: #fafafa; }
+    .qr-unique-id { margin-top: 6px; font-size: 11px; font-weight: 900; color: #000; letter-spacing: 0.5px; }
     .sign-section { text-align: center; }
     .sign-line { width: 220px; border-bottom: 2px dotted #333; margin-bottom: 6px; }
     .sign-title { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #991B1B; }
@@ -741,14 +742,14 @@ export function BusinessesPage() {
 
       <!-- Business Number -->
       <div class="biz-number-section">
-        <div class="biz-number-label">Business Number</div>
+        <div class="biz-number-label">Business Permit</div>
         <div class="biz-number-value">${businessNo}</div>
       </div>
 
       <!-- Legal Authority Text -->
       <div class="legal-text">
         Issued under the Local Governance Act, 2016 (Act 936)<br/>
-        Section 87(1) to operate a business within the<br/>
+        Section 140 and bye-laws to operate business within the<br/>
         <span class="highlight">${dynAssemblyName.toUpperCase()}</span><br/>
         Jurisdiction for the year ${currentYear}.
       </div>
@@ -799,6 +800,7 @@ export function BusinessesPage() {
       <div class="footer-section">
         <div class="qr-section">
           <div class="qr-placeholder">QR CODE<br/>VERIFICATION</div>
+          <div class="qr-unique-id">${cert.certNumber || ''}</div>
         </div>
         <div class="sign-section">
           <div class="sign-line"></div>
