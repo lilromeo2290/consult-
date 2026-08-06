@@ -36,6 +36,7 @@ import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
 import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
 import { getRateOverride } from '@/lib/rate-overrides';
 import { Combobox } from '@/components/ui/combobox';
+import QRCode from 'qrcode';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -583,7 +584,7 @@ export function BusinessesPage() {
     }
   };
 
-  const handlePrintCertificate = (cert: BusinessCert) => {
+  const handlePrintCertificate = async (cert: BusinessCert) => {
     // Read assembly name dynamically from settings at print time
     const _asmSettings = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); } catch { return {}; } })();
     const dynAssemblyName = _asmSettings.name || cert.assemblyName || 'Kpando Municipal Assembly';
@@ -604,6 +605,20 @@ export function BusinessesPage() {
     const expiryDate = cert.expiryDate ? fmtDate(cert.expiryDate) : '..................';
     const businessNo = cert.regNumber || cert.certNumber || '';
     const currentYear = new Date().getFullYear();
+
+    // Generate QR code as data URL
+    let qrDataUrl = '';
+    try {
+      const qrPayload = JSON.stringify({
+        cert: cert.certNumber,
+        reg: cert.regNumber,
+        name: cert.businessName,
+        type: cert.businessType,
+        issued: cert.dateIssued,
+        expiry: cert.expiryDate,
+      });
+      qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 200, margin: 1, color: { dark: '#000000', light: '#ffffff' } });
+    } catch { /* qr generation failure should not block certificate */ }
 
     const win = window.open('', '_blank', 'width=900,height=1200');
     if (!win) { alert('Please allow popups to print the certificate.'); return; }
@@ -799,7 +814,7 @@ export function BusinessesPage() {
       <!-- Footer -->
       <div class="footer-section">
         <div class="qr-section">
-          <div class="qr-placeholder">QR CODE<br/>VERIFICATION</div>
+          ${qrDataUrl ? `<img src="${qrDataUrl}" style="width:80px;height:80px;border:1px solid #333;" />` : `<div class="qr-placeholder">QR CODE<br/>VERIFICATION</div>`}
           <div class="qr-unique-id">${cert.certNumber || ''}</div>
         </div>
         <div class="sign-section">
