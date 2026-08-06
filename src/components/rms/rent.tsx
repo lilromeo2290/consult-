@@ -233,6 +233,19 @@ export function RentPage() {
 
   const [saving, setSaving] = useState(false);
 
+  // Generate Unique ID: KPMA + year + ascending number
+  const generateUniqueId = () => {
+    const year = new Date().getFullYear();
+    const prefix = `KPMA${year}`;
+    const existingIds = rents.filter((r) => r.occupantUniqueId && r.occupantUniqueId.startsWith(prefix));
+    const maxNum = existingIds.reduce((max, r) => {
+      const numStr = r.occupantUniqueId.replace(prefix, '');
+      const num = parseInt(numStr, 10);
+      return num > max ? num : max;
+    }, 0);
+    return `${prefix}${String(maxNum + 1).padStart(3, '0')}`;
+  };
+
   const handleSave = async () => {
     if (!form.occupantName) {
       alert('Please fill in the required field: Occupant\'s Name.');
@@ -336,7 +349,7 @@ export function RentPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setForm(defaultForm); setEditingId(null); setView('form'); }}
+              onClick={() => { setForm({ ...defaultForm, occupantUniqueId: generateUniqueId() }); setEditingId(null); setView('form'); }}
               className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
@@ -544,6 +557,10 @@ export function RentPage() {
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               <div>
+                <label className={`${labelClass} block`}>Unique ID</label>
+                <input type="text" name="occupantUniqueId" value={form.occupantUniqueId} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
+              </div>
+              <div>
                 <label className={`${labelClass} block`}>Rent Property Number</label>
                 <input type="text" name="rentPropertyNumber" value={form.rentPropertyNumber} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
               </div>
@@ -624,11 +641,7 @@ export function RentPage() {
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
-              <div>
-                <label className={`${labelClass} block`}>Unique ID</label>
-                <input type="text" name="occupantUniqueId" value={form.occupantUniqueId} onChange={handleFormChange} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
-              </div>
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 lg:col-span-3">
                 <label className={`${labelClass} block`}>Occupant's Name <span className="text-red-500">*</span></label>
                 <input type="text" name="occupantName" value={form.occupantName} onChange={handleFormChange} placeholder="Enter full name of occupant" className={inputClass} />
               </div>
