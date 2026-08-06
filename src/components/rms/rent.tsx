@@ -45,6 +45,8 @@ interface Rent {
   rentPropertyTypeCode: string;
   rentPropertyType: string;
   rentPropertyTypeCategory: string;
+  rentRevenueCode: string;
+  rentRevenueDescription: string;
   amount: string;
   vacant: string;
   // Contract
@@ -152,6 +154,8 @@ export function RentPage() {
     rentPropertyTypeCode: '',
     rentPropertyType: '',
     rentPropertyTypeCategory: '',
+    rentRevenueCode: '',
+    rentRevenueDescription: '',
     amount: '',
     vacant: 'No',
     startDate: '',
@@ -580,6 +584,14 @@ export function RentPage() {
               <div>
                 <label className={`${labelClass} block`}>Rent Property Type Category</label>
                 <input type="text" name="rentPropertyTypeCategory" value={form.rentPropertyTypeCategory} onChange={handleFormChange} placeholder="Enter category" className={inputClass} />
+              </div>
+              <div>
+                <label className={`${labelClass} block`}>Rent Revenue Code</label>
+                <input type="text" name="rentRevenueCode" value={form.rentRevenueCode} onChange={handleFormChange} placeholder="Enter revenue code" className={inputClass} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={`${labelClass} block`}>Rent Revenue Description</label>
+                <input type="text" name="rentRevenueDescription" value={form.rentRevenueDescription} onChange={handleFormChange} placeholder="Enter revenue description" className={inputClass} />
               </div>
               <div>
                 <label className={`${labelClass} block`}>Amount (GHS)</label>
