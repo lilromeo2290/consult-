@@ -614,11 +614,11 @@ export function BusinessesPage() {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    @page { size: A4 portrait; margin: 12mm; }
+    @page { size: A4 portrait; margin: 15mm; }
     body {
       font-family: 'Inter', Arial, sans-serif;
       color: #000;
-      background: #f0ece0;
+      background: #f5f5f0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -629,88 +629,64 @@ export function BusinessesPage() {
       width: 760px;
       background: #FFFFFF;
       position: relative;
-      border: 14px solid #D97706;
-      border-radius: 8px;
-      padding: 5px;
-    }
-    .permit-outer::after {
-      content: '';
-      position: absolute;
-      inset: 10px;
-      border: 2px solid #1a1a1a;
+      border: 3px solid #000;
       border-radius: 4px;
-      pointer-events: none;
-    }
-    /* Corner decorations */
-    .corner { position: absolute; width: 60px; height: 60px; z-index: 2; }
-    .corner svg { width: 100%; height: 100%; }
-    .corner-tl { top: 18px; left: 18px; }
-    .corner-tr { top: 18px; right: 18px; transform: scaleX(-1); }
-    .corner-bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
-    .corner-br { bottom: 18px; right: 18px; transform: scale(-1, -1); }
-    /* Diamond accents on vertical borders */
-    .diamond-left, .diamond-right { position: absolute; width: 14px; height: 14px; background: #D97706; transform: rotate(45deg); z-index: 2; left: 10px; }
-    .diamond-right { left: auto; right: 10px; }
-    .diamond-left-1 { top: 50%; margin-top: -7px; }
-    .diamond-right-1 { top: 50%; margin-top: -7px; }
-    .permit-inner {
-      margin: 22px;
-      padding: 24px 36px 28px;
-      position: relative;
-      z-index: 1;
+      padding: 40px 50px;
     }
     /* Header */
-    .header-section { text-align: center; margin-bottom: 10px; }
-    .assembly-seal-img { width: 100px; height: 100px; object-fit: contain; margin: 0 auto 6px; display: block; }
-    .assembly-name { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #000; margin-bottom: 1px; }
-    .assembly-motto { font-size: 10px; font-weight: 600; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
-    .permit-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #000; margin-top: 8px; }
+    .header-section { text-align: center; margin-bottom: 6px; }
+    .assembly-name-top { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #000; margin-bottom: 2px; }
+    .assembly-motto-local { font-size: 11px; font-weight: 700; color: #000; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1px; }
+    .assembly-motto-english { font-size: 9px; font-weight: 600; color: #444; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-style: italic; }
+    .assembly-name-repeat { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #000; margin-bottom: 2px; }
+    .permit-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: #000; margin-top: 12px; margin-bottom: 6px; }
     /* Business Number */
-    .biz-number-section { text-align: center; margin: 20px 0 12px; }
-    .biz-number-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #333; margin-bottom: 2px; }
-    .biz-number-value { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: #991B1B; }
+    .biz-number-section { text-align: center; margin: 18px 0 10px; }
+    .biz-number-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #333; margin-bottom: 2px; }
+    .biz-number-value { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 900; color: #000; }
     /* Legal text */
-    .legal-text { text-align: center; font-size: 12px; line-height: 1.8; color: #333; margin: 16px 0; font-style: italic; padding: 0 20px; }
-    .legal-text .highlight { font-weight: 700; text-transform: uppercase; color: #000; font-style: normal; }
+    .legal-text { text-align: center; font-size: 12px; line-height: 1.9; color: #333; margin: 14px 0 18px; padding: 0 30px; }
+    .legal-text .highlight { font-weight: 700; text-transform: uppercase; color: #000; }
     /* Fields */
-    .fields-section { margin: 20px auto; max-width: 580px; }
-    .field-row { display: flex; align-items: baseline; margin-bottom: 10px; gap: 8px; }
-    .field-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #000; min-width: 200px; text-align: right; flex-shrink: 0; }
-    .field-value { font-size: 15px; font-weight: 700; color: #991B1B; border-bottom: 1.5px solid #991B1B; padding-bottom: 1px; flex: 1; }
+    .fields-section { margin: 0 auto; max-width: 600px; }
+    .field-row { margin-bottom: 12px; }
+    .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #000; margin-bottom: 2px; }
+    .field-line { border-bottom: 1.5px solid #000; padding-bottom: 2px; font-size: 14px; font-weight: 700; color: #000; min-height: 22px; }
     /* Separator */
-    .separator { border: none; height: 2px; background: linear-gradient(90deg, transparent, #D97706, #1a1a1a, #D97706, transparent); margin: 24px 0; }
-    /* Footer */
-    .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; padding: 0 10px; }
-    .qr-section { text-align: center; }
-    .qr-placeholder { width: 80px; height: 80px; border: 2px solid #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; background: #f9f9f9; }
-    .sign-section { text-align: center; }
-    .sign-line { width: 220px; border-bottom: 2px dotted #333; margin-bottom: 6px; }
-    .sign-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #000; }
-    .sign-assembly { font-size: 10px; font-weight: 700; color: #991B1B; margin-top: 2px; }
-    /* Date fields in footer */
-    .dates-section { display: flex; justify-content: center; gap: 40px; margin-top: 16px; }
-    .date-block { text-align: center; }
-    .date-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #333; margin-bottom: 3px; }
+    .separator { border: none; height: 1px; background: #000; margin: 20px 0; }
+    /* Dates */
+    .dates-section { display: flex; justify-content: flex-start; gap: 50px; margin: 16px 0; }
+    .date-block { }
+    .date-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #333; margin-bottom: 2px; }
     .date-value { font-size: 12px; font-weight: 700; color: #000; }
+    /* Note */
+    .note-section { margin: 18px 0 24px; padding: 0 10px; }
+    .note-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #000; margin-bottom: 6px; }
+    .note-text { font-size: 11px; line-height: 1.7; color: #333; }
+    /* Footer */
+    .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
+    .qr-section { text-align: center; }
+    .qr-placeholder { width: 80px; height: 80px; border: 1.5px solid #333; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; background: #fafafa; }
+    .sign-section { text-align: center; }
+    .sign-line { width: 200px; border-bottom: 1.5px solid #000; margin-bottom: 6px; }
+    .sign-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #000; }
+    .sign-assembly { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #000; margin-top: 2px; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .permit-outer { border: 3px solid #000; }
+    }
   </style>
 </head>
 <body>
   <div class="permit-outer">
-    <!-- Corner decorations -->
-    <div class="corner corner-tl"><svg viewBox="0 0 60 60"><path d="M5,55 L5,5 L55,5" fill="none" stroke="#D97706" stroke-width="3"/><path d="M10,50 L10,10 L50,10" fill="none" stroke="#1a1a1a" stroke-width="1.5"/><line x1="5" y1="30" x2="30" y2="5" stroke="#D97706" stroke-width="2"/><line x1="30" y1="5" x2="5" y2="30" stroke="#D97706" stroke-width="2"/><circle cx="17" cy="17" r="4" fill="none" stroke="#D97706" stroke-width="1.5"/><line x1="14" y1="17" x2="20" y2="17" stroke="#D97706" stroke-width="1.5"/><line x1="17" y1="14" x2="17" y2="20" stroke="#D97706" stroke-width="1.5"/></svg></div>
-    <div class="corner corner-tr"><svg viewBox="0 0 60 60"><path d="M5,55 L5,5 L55,5" fill="none" stroke="#D97706" stroke-width="3"/><path d="M10,50 L10,10 L50,10" fill="none" stroke="#1a1a1a" stroke-width="1.5"/><line x1="5" y1="30" x2="30" y2="5" stroke="#D97706" stroke-width="2"/><line x1="30" y1="5" x2="5" y2="30" stroke="#D97706" stroke-width="2"/><circle cx="17" cy="17" r="4" fill="none" stroke="#D97706" stroke-width="1.5"/><line x1="14" y1="17" x2="20" y2="17" stroke="#D97706" stroke-width="1.5"/><line x1="17" y1="14" x2="17" y2="20" stroke="#D97706" stroke-width="1.5"/></svg></div>
-    <div class="corner corner-bl"><svg viewBox="0 0 60 60"><path d="M5,55 L5,5 L55,5" fill="none" stroke="#D97706" stroke-width="3"/><path d="M10,50 L10,10 L50,10" fill="none" stroke="#1a1a1a" stroke-width="1.5"/><line x1="5" y1="30" x2="30" y2="5" stroke="#D97706" stroke-width="2"/><line x1="30" y1="5" x2="5" y2="30" stroke="#D97706" stroke-width="2"/><circle cx="17" cy="17" r="4" fill="none" stroke="#D97706" stroke-width="1.5"/><line x1="14" y1="17" x2="20" y2="17" stroke="#D97706" stroke-width="1.5"/><line x1="17" y1="14" x2="17" y2="20" stroke="#D97706" stroke-width="1.5"/></svg></div>
-    <div class="corner corner-br"><svg viewBox="0 0 60 60"><path d="M5,55 L5,5 L55,5" fill="none" stroke="#D97706" stroke-width="3"/><path d="M10,50 L10,10 L50,10" fill="none" stroke="#1a1a1a" stroke-width="1.5"/><line x1="5" y1="30" x2="30" y2="5" stroke="#D97706" stroke-width="2"/><line x1="30" y1="5" x2="5" y2="30" stroke="#D97706" stroke-width="2"/><circle cx="17" cy="17" r="4" fill="none" stroke="#D97706" stroke-width="1.5"/><line x1="14" y1="17" x2="20" y2="17" stroke="#D97706" stroke-width="1.5"/><line x1="17" y1="14" x2="17" y2="20" stroke="#D97706" stroke-width="1.5"/></svg></div>
-    <!-- Diamond accents -->
-    <div class="diamond-left diamond-left-1"></div>
-    <div class="diamond-right diamond-right-1"></div>
-
     <div class="permit-inner">
+
       <!-- Header -->
       <div class="header-section">
-        <img src="/logos/assembly-seal.png" class="assembly-seal-img" />
-        <div class="assembly-name">${dynAssemblyName.toUpperCase()}</div>
-        <div class="assembly-motto">Wisdom and Unity for Development</div>
+        <div class="assembly-name-top">${dynAssemblyName.toUpperCase()}</div>
+        <div class="assembly-motto-local">Kpandi Denanyon Yadzɔ</div>
+        <div class="assembly-motto-english">(Wisdom and Unity for Development)</div>
+        <div class="assembly-name-repeat">${dynAssemblyName.toUpperCase()}</div>
         <div class="permit-title">Business Operating Permit</div>
       </div>
 
@@ -722,9 +698,9 @@ export function BusinessesPage() {
 
       <!-- Legal Authority Text -->
       <div class="legal-text">
-        Issued under the Local Government Act, 2016 (Act 936)<br/>
-        Section 140 and bye-laws to operate business<br/>
-        within the <span class="highlight">${dynAssemblyName.toUpperCase()}</span><br/>
+        Issued under the Local Governance Act, 2016 (Act 936)<br/>
+        Section 87(1) to operate a business within the<br/>
+        <span class="highlight">${dynAssemblyName.toUpperCase()}</span><br/>
         Jurisdiction for the year ${currentYear}.
       </div>
 
@@ -734,15 +710,15 @@ export function BusinessesPage() {
       <div class="fields-section">
         <div class="field-row">
           <div class="field-label">Name of Business</div>
-          <div class="field-value">${cert.businessName.toUpperCase()}</div>
+          <div class="field-line">${cert.businessName.toUpperCase()}</div>
         </div>
         <div class="field-row">
           <div class="field-label">Business Location</div>
-          <div class="field-value">${(cert.businessAddress || '').toUpperCase()}</div>
+          <div class="field-line">${(cert.businessAddress || '').toUpperCase()}</div>
         </div>
         <div class="field-row">
           <div class="field-label">Type of Business</div>
-          <div class="field-value">${(cert.category || cert.businessType || '').toUpperCase()}</div>
+          <div class="field-line">${(cert.category || cert.businessType || '').toUpperCase()}</div>
         </div>
       </div>
 
@@ -760,6 +736,16 @@ export function BusinessesPage() {
         </div>
       </div>
 
+      <!-- Note -->
+      <div class="note-section">
+        <div class="note-label">Note:</div>
+        <div class="note-text">
+          This Permit is not transferable.<br/>
+          Display this Permit at a conspicuous place<br/>
+          at the business premises.
+        </div>
+      </div>
+
       <!-- Footer -->
       <div class="footer-section">
         <div class="qr-section">
@@ -767,10 +753,11 @@ export function BusinessesPage() {
         </div>
         <div class="sign-section">
           <div class="sign-line"></div>
-          <div class="sign-title">Municipal Co-ordinating Director</div>
+          <div class="sign-title">Signature</div>
           <div class="sign-assembly">${dynAssemblyName.toUpperCase()}</div>
         </div>
       </div>
+
     </div>
   </div>
   <script>window.onload = function() { window.print(); }</script>
