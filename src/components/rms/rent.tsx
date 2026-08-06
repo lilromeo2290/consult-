@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   Search,
@@ -28,6 +28,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { exportToExcel, importFromExcel, RENT_FIELDS } from '@/lib/import-export';
+import { REVENUE_CODE_MAP, DESCRIPTION_TO_CODE, CODE_TO_DESCRIPTION } from '@/lib/revenue-code-map';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Rent {
@@ -102,6 +103,15 @@ const PROPERTY_TYPES = Object.keys(PROPERTY_TYPE_CODE_MAP);
 
 const VACANT_OPTIONS = ['Yes', 'No'];
 
+// Rent-relevant revenue codes for search
+const RENT_REVENUE_CODES = REVENUE_CODE_MAP.filter(
+  (item) =>
+    item.code.startsWith('1415') ||
+    item.description.toLowerCase().includes('market and stores') ||
+    item.description.toLowerCase().includes('rent of properties')
+);
+
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function RentPage() {
@@ -113,6 +123,9 @@ export function RentPage() {
   const [rents, setRents] = useSyncedStorage<Rent[]>('rms-rents', mockRents);
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const revenueDropdownRef = useRef<HTMLDivElement>(null);
+  const [revenueSearch, setRevenueSearch] = useState('');
+  const [showRevenueDropdown, setShowRevenueDropdown] = useState(false);
   const itemsPerPage = 10;
 
   // ── Import / Export ───────────────────────────────────────────────────────
@@ -230,10 +243,46 @@ export function RentPage() {
         rentPropertyNumber: propertyNumber,
         rentPropertyTypeCategory: '',
       }));
+    } else if (name === 'rentRevenueCode') {
+      const desc = CODE_TO_DESCRIPTION[value] || '';
+      setForm((prev) => ({ ...prev, rentRevenueCode: value, rentRevenueDescription: desc }));
+      setRevenueSearch(desc || value);
+      setShowRevenueDropdown(false);
+    } else if (name === 'rentRevenueDescription') {
+      const code = DESCRIPTION_TO_CODE[value] || '';
+      setForm((prev) => ({ ...prev, rentRevenueDescription: value, rentRevenueCode: code }));
+      setRevenueSearch(value || code);
+      setShowRevenueDropdown(false);
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
+
+  const filteredRevenueCodes = revenueSearch
+    ? RENT_REVENUE_CODES.filter(
+        (item) =>
+          item.description.toLowerCase().includes(revenueSearch.toLowerCase()) ||
+          item.code.includes(revenueSearch)
+      )
+    : RENT_REVENUE_CODES;
+
+  const selectRevenue = (item: { code: string; description: string }) => {
+    setForm((prev) => ({ ...prev, rentRevenueCode: item.code, rentRevenueDescription: item.description }));
+    setRevenueSearch(item.description);
+    setShowRevenueDropdown(false);
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (revenueDropdownRef.current && !revenueDropdownRef.current.contains(e.target as Node)) {
+        setShowRevenueDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
 
   const [saving, setSaving] = useState(false);
 
@@ -353,7 +402,7 @@ export function RentPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setForm({ ...defaultForm, occupantUniqueId: generateUniqueId() }); setEditingId(null); setView('form'); }}
+              onClick={() => { setForm({ ...defaultForm, occupantUniqueId: generateUniqueId() }); setEditingId(null); setView('form'); setRevenueSearch(''); setShowRevenueDropdown(false); }}
               className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
@@ -587,11 +636,39 @@ export function RentPage() {
               </div>
               <div>
                 <label className={`${labelClass} block`}>Rent Revenue Code</label>
-                <input type="text" name="rentRevenueCode" value={form.rentRevenueCode} onChange={handleFormChange} placeholder="Enter revenue code" className={inputClass} />
+                <input type="text" name="rentRevenueCode" value={form.rentRevenueCode} onChange={handleFormChange} onFocus={() => { setRevenueSearch(form.rentRevenueDescription || form.rentRevenueCode); setShowRevenueDropdown(true); }} placeholder="Search to select" className={inputClass} />
               </div>
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 relative" ref={revenueDropdownRef}>
                 <label className={`${labelClass} block`}>Rent Revenue Description</label>
-                <input type="text" name="rentRevenueDescription" value={form.rentRevenueDescription} onChange={handleFormChange} placeholder="Enter revenue description" className={inputClass} />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={showRevenueDropdown ? revenueSearch : form.rentRevenueDescription}
+                    onChange={(e) => { setRevenueSearch(e.target.value); setShowRevenueDropdown(true); }}
+                    onFocus={() => { setRevenueSearch(form.rentRevenueDescription || ''); setShowRevenueDropdown(true); }}
+                    placeholder="Type to search revenue description"
+                    className={inputClass}
+                  />
+                  {showRevenueDropdown && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                      {filteredRevenueCodes.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-slate-400">No matches found</div>
+                      ) : (
+                        filteredRevenueCodes.map((item) => (
+                          <button
+                            key={item.code}
+                            type="button"
+                            onClick={() => selectRevenue(item)}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0"
+                          >
+                            <span className="font-medium text-slate-800 dark:text-white">{item.description}</span>
+                            <span className="ml-2 text-xs text-slate-400 font-mono">{item.code}</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className={`${labelClass} block`}>Amount (GHS)</label>
