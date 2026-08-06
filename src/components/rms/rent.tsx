@@ -574,19 +574,13 @@ export function RentPage() {
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
-              <div>
-                <label className={`${labelClass} block`}>UPN <span className="text-red-500">*</span></label>
-                <input type="text" name="upn" value={form.upn} onChange={handleFormChange} placeholder="e.g. 865-0775-0553" className={inputClass} />
-              </div>
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 lg:col-span-3">
                 <label className={`${labelClass} block`}>Rent Property Location</label>
-                <input type="text" name="rentPropertyLocation" value={form.rentPropertyLocation} onChange={handleFormChange} placeholder="Enter rent property location" className={inputClass} />
+                <input type="text" name="rentPropertyLocation" value={form.rentPropertyLocation} onChange={handleFormChange} placeholder="Search to select property location" className={inputClass} />
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4 mt-1">
               <div>
                 <label className={`${labelClass} block`}>Location Code</label>
-                <input type="text" name="locationCode" value={form.locationCode} onChange={handleFormChange} placeholder="Enter location code" className={inputClass} />
+                <input type="text" name="locationCode" value={form.locationCode} onChange={handleFormChange} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
               </div>
               <div className="sm:col-span-2">
                 <label className={`${labelClass} block`}>Exact Location</label>
@@ -596,20 +590,16 @@ export function RentPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4 mt-1">
               <div>
                 <label className={`${labelClass} block`}>Ghana Post GPS / Digital Address</label>
-                <input type="text" name="propertyGhanaPostGPS" value={form.propertyGhanaPostGPS} onChange={handleFormChange} placeholder="XX-XXX-XXXX" className={inputClass} />
+                <input type="text" name="propertyGhanaPostGPS" value={form.propertyGhanaPostGPS} onChange={handleFormChange} placeholder="e.g. GA-123-4567" className={inputClass} />
               </div>
-              <div>
-                <label className={`${labelClass} block`}>GPS Coordinates (Lat)</label>
+              <div className="sm:col-span-2">
+                <label className={`${labelClass} block`}>GPS Coordinates (Lat/Long)</label>
                 <div className="flex gap-1.5">
-                  <input type="text" name="propertyLatitude" value={form.propertyLatitude} onChange={handleFormChange} placeholder="e.g. 5.603717" className={inputClass} />
+                  <input type="text" value={form.propertyLatitude && form.propertyLongitude ? `${form.propertyLatitude}, ${form.propertyLongitude}` : ''} placeholder="e.g. 5.603717, -0.187028 (Auto-generated)" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
                   <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-medium transition-colors" title="Detect GPS">
                     {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
                   </button>
                 </div>
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>GPS Coordinates (Long)</label>
-                <input type="text" name="propertyLongitude" value={form.propertyLongitude} onChange={handleFormChange} placeholder="e.g. -0.187028" className={inputClass} />
               </div>
             </div>
           </div>
