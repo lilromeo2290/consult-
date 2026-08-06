@@ -732,9 +732,10 @@ export function BusinessesPage() {
     .seal-img { width: 90px; height: 90px; object-fit: contain; margin: 0 auto 6px; display: block; }
     .assembly-name { font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #000; margin-bottom: 2px; }
     .assembly-motto { font-size: 10px; font-weight: 700; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
-    .permit-title-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 10px; margin-bottom: 4px; }
-    .title-line { flex: 1; max-width: 120px; height: 2px; background: linear-gradient(90deg, transparent, #B8860B, transparent); }
-    .permit-title { font-family: 'Cinzel', 'Playfair Display', serif; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: #000; white-space: nowrap; }
+    .permit-title-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; margin-bottom: 2px; }
+    .title-ornament { width: 60px; height: 12px; display: flex; align-items: center; justify-content: center; }
+    .title-ornament svg { width: 100%; height: 100%; }
+    .permit-title { font-family: 'Cinzel', 'Playfair Display', serif; font-size: 18px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; color: #000; white-space: nowrap; }
     /* Business Number */
     .biz-number-section { text-align: center; margin: 16px 0 10px; }
     .biz-number-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #333; margin-bottom: 2px; }
@@ -761,9 +762,9 @@ export function BusinessesPage() {
     .note-text { font-size: 11px; line-height: 1.7; color: #333; }
     /* Footer */
     .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 18px; padding: 0 10px; }
-    .qr-section { text-align: center; }
-    .qr-placeholder { width: 90px; height: 90px; border: 1.5px solid #333; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; background: #fafafa; }
-    .qr-unique-id { margin-top: 8px; font-size: 13px; font-weight: 900; color: #000; letter-spacing: 1px; text-align: center; word-break: break-all; }
+    .qr-section { text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .qr-placeholder { width: 110px; height: 110px; border: 2px solid #000; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; background: #fafafa; }
+    .qr-unique-id { margin-top: 10px; font-size: 15px; font-weight: 900; color: #000; letter-spacing: 1.5px; text-align: center; word-break: break-all; line-height: 1.3; }
     .sign-section { text-align: center; }
     .sign-line { width: 220px; border-bottom: 2px dotted #333; margin-bottom: 6px; }
     .sign-title { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #991B1B; }
@@ -793,16 +794,15 @@ export function BusinessesPage() {
         <div class="assembly-motto">(Wisdom and Unity for Development)</div>
 
         <div class="permit-title-row">
-          <div class="title-line"></div>
-          <div class="permit-title">${dynAssemblyName.toUpperCase()}</div>
-          <div class="title-line"></div>
+          <div class="title-ornament"><svg viewBox="0 0 60 12"><line x1="0" y1="6" x2="22" y2="6" stroke="#B8860B" stroke-width="1.5"/><line x1="38" y1="6" x2="60" y2="6" stroke="#B8860B" stroke-width="1.5"/><polygon points="30,1 33,6 30,11 27,6" fill="#B8860B"/></svg></div>
+          <div class="permit-title">Business Operating Permit</div>
+          <div class="title-ornament"><svg viewBox="0 0 60 12"><line x1="0" y1="6" x2="22" y2="6" stroke="#B8860B" stroke-width="1.5"/><line x1="38" y1="6" x2="60" y2="6" stroke="#B8860B" stroke-width="1.5"/><polygon points="30,1 33,6 30,11 27,6" fill="#B8860B"/></svg></div>
         </div>
-        <div class="permit-title" style="font-size:18px; letter-spacing:4px; margin-top:2px;">Business Operating Permit</div>
       </div>
 
       <!-- Business Number -->
       <div class="biz-number-section">
-        <div class="biz-number-label">Business Permit</div>
+        <div class="biz-number-label">Business Number</div>
         <div class="biz-number-value">${businessNo}</div>
       </div>
 
@@ -859,8 +859,8 @@ export function BusinessesPage() {
       <!-- Footer -->
       <div class="footer-section">
         <div class="qr-section">
-          ${qrDataUrl ? `<img src="${qrDataUrl}" style="width:100px;height:100px;display:block;" />` : `<div class="qr-placeholder">QR CODE<br/>VERIFICATION</div>`}
-          <div class="qr-unique-id">${cert.certNumber || ''}</div>
+          ${qrDataUrl ? `<img src="${qrDataUrl}" style="width:110px;height:110px;display:block;" />` : `<div class="qr-placeholder">QR CODE<br/>VERIFICATION</div>`}
+          <div class="qr-unique-id">${cert.businessUniqueNumber || cert.certNumber || ''}</div>
         </div>
         <div class="sign-section">
           <div class="sign-line"></div>
@@ -1268,7 +1268,7 @@ export function BusinessesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               {/* Row 1: DA Assignment No., Business Unique Number, Business Cert No. */}
               <div>
-                <label className={`${labelClass} block`}>DA Assignment No. / Business Permit</label>
+                <label className={`${labelClass} block`}>DA Assignment No.</label>
                 <input type="text" name="daAssignmentNo" value={form.daAssignmentNo} readOnly placeholder="Select Locality to auto-generate" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
               </div>
               {/* Business Unique Number */}
