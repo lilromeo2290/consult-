@@ -201,10 +201,37 @@ export function BusinessesPage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const generateBusinessUniqueNumber = (areaCode?: string) => {
-    const nextNum = businesses.length + 1;
-    const prefix = areaCode || 'KpMA/KZC/ABX';
-    return `${prefix}/BP/${String(nextNum).padStart(4, '0')}`;
+  const getLocalityPrefix = (locality: string): string => {
+    if (locality.startsWith('Kpando')) return 'KZC';
+    if (locality.startsWith('Sovie')) return 'SZC';
+    if (locality.startsWith('Gbefi')) return 'GZC';
+    return '';
+  };
+
+  const getNextBUNForPrefix = (prefix: string, monthYear: string) => {
+    if (!prefix || !monthYear) return '';
+    const bunPrefix = `${prefix}${monthYear}`;
+    let maxNum = 0;
+    for (const b of businesses) {
+      const bun = b.businessUniqueNumber || '';
+      if (bun.startsWith(bunPrefix)) {
+        const numStr = bun.slice(bunPrefix.length);
+        const num = parseInt(numStr, 10);
+        if (!isNaN(num) && num > maxNum) maxNum = num;
+      }
+    }
+    return `${bunPrefix}${String(maxNum + 1).padStart(5, '0')}`;
+  };
+
+  const generateBusinessUniqueNumber = (locality?: string, dateRegistered?: string) => {
+    const loc = locality || form.locality;
+    const prefix = getLocalityPrefix(loc);
+    if (!prefix) return '';
+    const d = dateRegistered || form.dateRegistered || new Date().toISOString().split('T')[0];
+    const dt = new Date(d);
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    const yy = String(dt.getFullYear()).slice(-2);
+    return getNextBUNForPrefix(prefix, mm + yy);
   };
 
   const generateBusinessCertNo = () => {
@@ -302,10 +329,8 @@ export function BusinessesPage() {
       if (name === 'locality' && LOCALITY_AREA_CODE_MAP[updated.locality]) {
         updated.areaCode = LOCALITY_AREA_CODE_MAP[updated.locality];
       }
-      // Update DA Assignment No. and business unique number whenever area code changes
+      // Update DA Assignment No. whenever area code changes
       if ((name === 'locality' || name === 'areaCode') && updated.areaCode) {
-        const nextNum = businesses.length + 1;
-        updated.businessUniqueNumber = `${updated.areaCode}/BP/${String(nextNum).padStart(4, '0')}`;
         // DA Assignment No.: count per area code (ascending)
         const daPrefix = `${updated.areaCode}/BP/`;
         let maxDANum = 0;
@@ -317,6 +342,30 @@ export function BusinessesPage() {
           }
         }
         updated.daAssignmentNo = `${updated.areaCode}/BP/${String(maxDANum + 1).padStart(5, '0')}`;
+      }
+      // Update Business Unique Number when locality or date registered changes
+      if (name === 'locality' || name === 'dateRegistered') {
+        const loc = name === 'locality' ? updated.locality : prev.locality;
+        const dt = name === 'dateRegistered' ? updated.dateRegistered : prev.dateRegistered;
+        if (loc) {
+          const prefix = loc.startsWith('Kpando') ? 'KZC' : loc.startsWith('Sovie') ? 'SZC' : loc.startsWith('Gbefi') ? 'GZC' : '';
+          if (prefix) {
+            const d = dt || new Date().toISOString().split('T')[0];
+            const date = new Date(d);
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const yy = String(date.getFullYear()).slice(-2);
+            const bunPfx = `${prefix}${mm}${yy}`;
+            let maxBUN = 0;
+            for (const b of businesses) {
+              const bun = b.businessUniqueNumber || '';
+              if (bun.startsWith(bunPfx)) {
+                const num = parseInt(bun.slice(bunPfx.length), 10);
+                if (!isNaN(num) && num > maxBUN) maxBUN = num;
+              }
+            }
+            updated.businessUniqueNumber = `${bunPfx}${String(maxBUN + 1).padStart(5, '0')}`;
+          }
+        }
       }
       // Link Revenue Description ↔ Code
       if (name === 'revenueDescription' && DESCRIPTION_TO_CODE[updated.revenueDescription]) {
@@ -1086,7 +1135,7 @@ export function BusinessesPage() {
               {/* Business Unique Number */}
               <div>
                 <label className={`${labelClass} block`}>Business Unique Number</label>
-                <input type="text" name="businessUniqueNumber" value={form.businessUniqueNumber} readOnly placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
+                <input type="text" name="businessUniqueNumber" value={form.businessUniqueNumber} readOnly placeholder="Select Locality & Date to auto-generate" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
               </div>
               {/* Business Certificate Number */}
               <div>
