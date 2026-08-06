@@ -65,25 +65,27 @@ export function useSyncedStorage<T>(
 
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
+      // Compute the new value first (pure)
       setStoredValue((prev) => {
         const valueToStore = value instanceof Function ? value(prev) : value;
+        // Schedule side effects outside the updater using microtask
         const localStorageKey = `local-${key}`;
-
-        // Save to localStorage (both prefixed for hook use and original key for backward compat)
-        try {
-          window.localStorage.setItem(localStorageKey, JSON.stringify(valueToStore));
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
-        } catch {}
-
-        // Save to server (fire-and-forget)
-        fetch('/api/rms-data', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, data: valueToStore }),
-        }).catch((err) => {
-          console.warn(`Failed to sync "${key}" to server:`, err);
+        queueMicrotask(() => {
+          try {
+            window.localStorage.setItem(localStorageKey, JSON.stringify(valueToStore));
+            window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          } catch (e) {
+            console.warn(`Failed to save "${key}" to localStorage:`, e);
+          }
+          // Save to server (fire-and-forget)
+          fetch('/api/rms-data', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, data: valueToStore }),
+          }).catch((err) => {
+            console.warn(`Failed to sync "${key}" to server:`, err);
+          });
         });
-
         return valueToStore;
       });
     },

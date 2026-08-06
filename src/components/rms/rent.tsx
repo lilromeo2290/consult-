@@ -278,22 +278,37 @@ export function RentPage() {
     }
   };
 
-  const handleSave = () => {
-    if (!form.upn || !form.renterName) return;
-    if (editingId) {
-      setRents((prev) =>
-        prev.map((r) => (r.id === editingId ? { ...r, ...form } : r))
-      );
-      setEditingId(null);
-    } else {
-      const newRent: Rent = {
-        id: `RNT-${Date.now()}`,
-        ...form,
-      };
-      setRents((prev) => [...prev, newRent]);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!form.upn || !form.renterName) {
+      alert('Please fill in the required fields: UPN and Renter Name.');
+      return;
     }
-    setForm(defaultForm);
-    setView('list');
+    setSaving(true);
+    try {
+      if (editingId) {
+        setRents((prev) =>
+          prev.map((r) => (r.id === editingId ? { ...r, ...form } : r))
+        );
+        setEditingId(null);
+      } else {
+        const newRent: Rent = {
+          id: `RNT-${Date.now()}`,
+          ...form,
+        };
+        setRents((prev) => [...prev, newRent]);
+      }
+      setForm(defaultForm);
+      setView('list');
+      setCurrentPage(1);
+      setSearchQuery('');
+    } catch (err) {
+      console.error('Failed to save rent record:', err);
+      alert('Failed to save rent record. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleEdit = (rent: Rent) => {
@@ -496,8 +511,8 @@ export function RentPage() {
             <button onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
               <X className="w-4 h-4" /> Cancel
             </button>
-            <button onClick={handleSave} disabled={!form.upn || !form.renterName} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-              <Save className="w-4 h-4" /> Save
+            <button type="button" onClick={handleSave} disabled={!form.upn || !form.renterName || saving} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
@@ -713,9 +728,9 @@ export function RentPage() {
             <X className="w-4 h-4" />
             Cancel
           </button>
-          <button onClick={handleSave} disabled={!form.upn || !form.renterName} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            <Save className="w-4 h-4" />
-            {editingId ? 'Update' : 'Save'}
+          <button type="button" onClick={handleSave} disabled={!form.upn || !form.renterName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>
         </div>
       </div>
