@@ -77,7 +77,7 @@ def main():
     print(f'  Uploaded to VPS')
 
     # Step 4: Extract on VPS
-    print(f'\n[4/5] Extracting on VPS...')
+    print(f'\n[4/6] Extracting on VPS...')
     vps_run(c, f'cd {VPS_APP_DIR} && rm -rf server.js .next public node_modules prisma && tar xzf rms-update.tar.gz && rm rms-update.tar.gz')
 
     # Upload prisma RHEL engine
@@ -89,8 +89,14 @@ def main():
         sftp.put(rhel_engine, f'{VPS_APP_DIR}/node_modules/.prisma/client/libquery_engine-rhel-openssl-1.1.x.so.node')
         sftp.close()
 
-    # Step 5: Restart PM2
-    print(f'\n[5/5] Restarting application...')
+    # Step 5: Ensure database tables exist
+    print(f'\n[5/6] Ensuring database tables exist...')
+    vps_run(c, f'mkdir -p {VPS_APP_DIR}/data')
+    vps_run(c, f"""sqlite3 {VPS_APP_DIR}/data/rms.db "CREATE TABLE IF NOT EXISTS User (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT, createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP); CREATE TABLE IF NOT EXISTS RmsData (id TEXT PRIMARY KEY, key TEXT NOT NULL UNIQUE, data TEXT NOT NULL, updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);" 2>/dev/null; echo 'DB tables OK'
+""")
+
+    # Step 6: Restart PM2
+    print(f'\n[6/6] Restarting application...')
     vps_run(c, f'pm2 restart consult-rms')
     time.sleep(3)
     vps_run(c, f'curl -s -o /dev/null -w "HTTP %{{http_code}}\n" -H "Host: clipe233eng.net" https://127.0.0.1:443/')

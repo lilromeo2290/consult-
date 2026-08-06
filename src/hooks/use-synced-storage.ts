@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 /**
- * useSyncedStorage - Replaces useLocalStorage.
+ * useSyncedStorage - Server-first storage with localStorage cache.
  * Reads from server DB first, falls back to localStorage, then syncs both.
  * Every write saves to both localStorage AND the server API.
+ * Server writes now use async/await with retry for reliability.
  */
 export function useSyncedStorage<T>(
   key: string,
@@ -14,6 +15,25 @@ export function useSyncedStorage<T>(
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
   const initialized = useRef(false);
+
+  // Helper: save to server with retry
+  const saveToServer = useCallback(async (k: string, data: unknown, retries = 2) => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const res = await fetch('/api/rms-data', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: k, data }),
+        });
+        if (res.ok) return true;
+        console.warn(`Server sync attempt ${attempt + 1} failed for "${k}": ${res.status}`);
+      } catch (err) {
+        console.warn(`Server sync attempt ${attempt + 1} error for "${k}":`, err);
+      }
+      if (attempt < retries) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+    }
+    return false;
+  }, []);
 
   // On mount: fetch from server, merge with localStorage
   useEffect(() => {
@@ -47,12 +67,8 @@ export function useSyncedStorage<T>(
         if (item) {
           const localData = JSON.parse(item);
           setStoredValue(localData);
-          // Push local data to server so it's synced
-          fetch('/api/rms-data', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, data: localData }),
-          }).catch(() => {});
+          // Push local data to server so it's synced (with retry)
+          saveToServer(key, localData);
         }
       } catch (error) {
         console.warn(`Error reading localStorage key "${localStorageKey}":`, error);
@@ -61,35 +77,26 @@ export function useSyncedStorage<T>(
     };
 
     init();
-  }, [key]);
+  }, [key, saveToServer]);
 
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
-      // Compute the new value first (pure)
       setStoredValue((prev) => {
         const valueToStore = value instanceof Function ? value(prev) : value;
-        // Schedule side effects outside the updater using microtask
         const localStorageKey = `local-${key}`;
-        queueMicrotask(() => {
-          try {
-            window.localStorage.setItem(localStorageKey, JSON.stringify(valueToStore));
-            window.localStorage.setItem(key, JSON.stringify(valueToStore));
-          } catch (e) {
-            console.warn(`Failed to save "${key}" to localStorage:`, e);
-          }
-          // Save to server (fire-and-forget)
-          fetch('/api/rms-data', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, data: valueToStore }),
-          }).catch((err) => {
-            console.warn(`Failed to sync "${key}" to server:`, err);
-          });
-        });
+        // Save to localStorage immediately (sync)
+        try {
+          window.localStorage.setItem(localStorageKey, JSON.stringify(valueToStore));
+          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        } catch (e) {
+          console.warn(`Failed to save "${key}" to localStorage:`, e);
+        }
+        // Save to server with retry (async, non-blocking)
+        saveToServer(key, valueToStore);
         return valueToStore;
       });
     },
-    [key],
+    [key, saveToServer],
   );
 
   return [storedValue, setValue, loading];

@@ -714,23 +714,8 @@ export function BusinessesPage() {
       position: relative;
       z-index: 1;
     }
-    /* Watermark */
-    .watermark {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 300px;
-      height: 300px;
-      opacity: 0.04;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .watermark img { width: 100%; height: 100%; object-fit: contain; }
     /* Header */
     .header-section { text-align: center; margin-bottom: 4px; position: relative; z-index: 1; }
-    .header-logo { width: 280px; height: auto; object-fit: contain; margin: 0 auto 8px; display: block; }
-    .assembly-motto { font-size: 10px; font-weight: 700; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
     .permit-title-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; margin-bottom: 2px; }
     .title-ornament { width: 60px; height: 12px; display: flex; align-items: center; justify-content: center; }
     .title-ornament svg { width: 100%; height: 100%; }
@@ -783,13 +768,8 @@ export function BusinessesPage() {
     <div class="corner corner-br"><svg viewBox="0 0 70 70"><path d="M5,60 Q5,5 60,5" fill="none" stroke="#B8860B" stroke-width="3"/><path d="M10,55 Q10,10 55,10" fill="none" stroke="#B8860B" stroke-width="1.5"/><path d="M15,50 Q15,15 50,15" fill="none" stroke="#B8860B" stroke-width="1" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="none" stroke="#B8860B" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#B8860B"/><path d="M8,30 Q20,20 30,8" fill="none" stroke="#B8860B" stroke-width="1.5" opacity="0.6"/></svg></div>
 
     <div class="permit-inner">
-      <!-- Watermark -->
-      <div class="watermark"><img src="/logos/assembly-seal.png" /></div>
-
       <!-- Header -->
       <div class="header-section">
-        <img class="header-logo" src="/logos/kpando-header-logo.jpeg" />
-
         <div class="permit-title-row">
           <div class="title-ornament"><svg viewBox="0 0 60 12"><line x1="0" y1="6" x2="22" y2="6" stroke="#B8860B" stroke-width="1.5"/><line x1="38" y1="6" x2="60" y2="6" stroke="#B8860B" stroke-width="1.5"/><polygon points="30,1 33,6 30,11 27,6" fill="#B8860B"/></svg></div>
           <div class="permit-title">Business Operating Permit</div>
@@ -1078,13 +1058,6 @@ export function BusinessesPage() {
                     <div className="relative py-6 px-8">
                       {/* Header */}
                       <div className="text-center mb-2">
-                        <img src="/logos/assembly-seal.png" className="w-20 h-20 object-contain mx-auto mb-2" />
-                        <div className="font-black uppercase tracking-[1.5px]" style={{ fontFamily: 'Inter, sans-serif', fontSize: '20px', color: '#000' }}>
-                          {dynAssemblyName.toUpperCase()}
-                        </div>
-                        <div className="uppercase tracking-[3px] mt-0.5" style={{ fontFamily: 'Inter, sans-serif', fontSize: '8px', color: '#555' }}>
-                          Wisdom and Unity for Development
-                        </div>
                         <div className="mt-2" style={{ fontFamily: 'Playfair Display, serif', fontSize: '24px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', color: '#000' }}>
                           Business Operating Permit
                         </div>
