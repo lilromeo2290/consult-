@@ -717,8 +717,8 @@ export function BusinessesPage() {
     /* Footer */
     .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 18px; padding: 0 10px; }
     .qr-section { text-align: center; }
-    .qr-placeholder { width: 75px; height: 75px; border: 1.5px solid #333; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; background: #fafafa; }
-    .qr-unique-id { margin-top: 6px; font-size: 11px; font-weight: 900; color: #000; letter-spacing: 0.5px; }
+    .qr-placeholder { width: 90px; height: 90px; border: 1.5px solid #333; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; background: #fafafa; }
+    .qr-unique-id { margin-top: 8px; font-size: 13px; font-weight: 900; color: #000; letter-spacing: 1px; text-align: center; word-break: break-all; }
     .sign-section { text-align: center; }
     .sign-line { width: 220px; border-bottom: 2px dotted #333; margin-bottom: 6px; }
     .sign-title { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #991B1B; }
@@ -814,7 +814,7 @@ export function BusinessesPage() {
       <!-- Footer -->
       <div class="footer-section">
         <div class="qr-section">
-          ${qrDataUrl ? `<img src="${qrDataUrl}" style="width:80px;height:80px;border:1px solid #333;" />` : `<div class="qr-placeholder">QR CODE<br/>VERIFICATION</div>`}
+          ${qrDataUrl ? `<img src="${qrDataUrl}" style="width:100px;height:100px;display:block;" />` : `<div class="qr-placeholder">QR CODE<br/>VERIFICATION</div>`}
           <div class="qr-unique-id">${cert.certNumber || ''}</div>
         </div>
         <div class="sign-section">
