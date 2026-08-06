@@ -42,15 +42,12 @@ interface Rent {
   propertyGhanaPostGPS: string;
   propertyLatitude: string;
   propertyLongitude: string;
-  // Rent Object
-  rentObjectName: string;
-  rentRevenueCode: string;
-  rentRevenueDescription: string;
-  rentCode: string;
-  rentClass: string;
-  rentCategory: string;
-  rentUnit: string;
-  rentValue: string;
+  // Rent Property Information
+  rentPropertyNumber: string;
+  rentPropertyTypeCode: string;
+  rentPropertyType: string;
+  rentPropertyTypeCategory: string;
+  amount: string;
   vacant: string;
   // Contract
   startDate: string;
@@ -58,16 +55,13 @@ interface Rent {
   contractId: string;
   contractValue: string;
   area: string;
-  // Renter Information
-  renterName: string;
-  renterAddress: string;
-  renterGhanaPostGPS: string;
-  renterLatitude: string;
-  renterLongitude: string;
-  phone: string;
-  email: string;
-  tin: string;
-  nationalId: string;
+  // Occupant's Information
+  occupantUniqueId: string;
+  occupantName: string;
+  occupantNationalId: string;
+  occupantAddress: string;
+  occupantPhone: string;
+  occupantEmail: string;
   // Other
   excludedFromRenting: boolean;
   comments: string;
@@ -202,29 +196,23 @@ export function RentPage() {
     propertyGhanaPostGPS: '',
     propertyLatitude: '',
     propertyLongitude: '',
-    rentObjectName: '',
-    rentRevenueCode: '',
-    rentRevenueDescription: '',
-    rentCode: '',
-    rentClass: '',
-    rentCategory: '',
-    rentUnit: '',
-    rentValue: '',
+    rentPropertyNumber: '',
+    rentPropertyTypeCode: '',
+    rentPropertyType: '',
+    rentPropertyTypeCategory: '',
+    amount: '',
     vacant: 'No',
     startDate: '',
     endDate: '',
     contractId: '',
     contractValue: '',
     area: '',
-    renterName: '',
-    renterAddress: '',
-    renterGhanaPostGPS: '',
-    renterLatitude: '',
-    renterLongitude: '',
-    phone: '',
-    email: '',
-    tin: '',
-    nationalId: '',
+    occupantUniqueId: '',
+    occupantName: '',
+    occupantNationalId: '',
+    occupantAddress: '',
+    occupantPhone: '',
+    occupantEmail: '',
     excludedFromRenting: false,
     comments: '',
   };
@@ -247,13 +235,12 @@ export function RentPage() {
     const q = searchQuery.toLowerCase();
     const matchSearch =
       !searchQuery ||
-      r.renterName.toLowerCase().includes(q) ||
+      r.occupantName.toLowerCase().includes(q) ||
       r.upn.toLowerCase().includes(q) ||
       r.rentPropertyLocation.toLowerCase().includes(q) ||
-      r.rentObjectName.toLowerCase().includes(q) ||
-      r.rentClass.toLowerCase().includes(q) ||
+      r.rentPropertyType.toLowerCase().includes(q) ||
       r.contractId.toLowerCase().includes(q);
-    const matchClass = classFilter === 'All' || r.rentClass === classFilter;
+    const matchClass = classFilter === 'All' || r.rentPropertyType === classFilter;
     const matchVacant = vacantFilter === 'All' || r.vacant === vacantFilter;
     return matchSearch && matchClass && matchVacant;
   });
@@ -273,29 +260,17 @@ export function RentPage() {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       setForm((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
-    } else if (name === 'rentClass') {
-      // Auto-fill category: if only one option, select it; otherwise reset
+    } else if (name === 'rentPropertyType') {
+      // Auto-fill type code and category when property type is selected
+      const code = RENT_CODE_MAP[value] || '';
+      const category = RENT_CLASSES.includes(value) ? value : '';
       const cats = RENT_CLASS_CATEGORIES[value] || [];
       const autoCat = cats.length === 1 ? cats[0] : '';
-      const autoCode = autoCat ? (RENT_CODE_MAP[`${value}|${autoCat}`] || '') : '';
-      setForm((prev) => ({ ...prev, rentClass: value, rentCategory: autoCat, rentCode: autoCode }));
-    } else if (name === 'rentCategory') {
-      // Auto-fill code when category is selected
-      const code = RENT_CODE_MAP[`${form.rentClass}|${value}`] || '';
-      setForm((prev) => ({ ...prev, rentCategory: value, rentCode: code }));
-    } else if (name === 'rentRevenueDescription') {
-      // Link Rent Revenue Description -> Rent Revenue Code
       setForm((prev) => ({
         ...prev,
-        rentRevenueDescription: value,
-        rentRevenueCode: DESCRIPTION_TO_CODE[value] || prev.rentRevenueCode,
-      }));
-    } else if (name === 'rentRevenueCode') {
-      // Link Rent Revenue Code -> Rent Revenue Description
-      setForm((prev) => ({
-        ...prev,
-        rentRevenueCode: value,
-        rentRevenueDescription: CODE_TO_DESCRIPTION[value] || prev.rentRevenueDescription,
+        rentPropertyType: value,
+        rentPropertyTypeCode: code,
+        rentPropertyTypeCategory: autoCat || category,
       }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
@@ -305,8 +280,8 @@ export function RentPage() {
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!form.renterName) {
-      alert('Please fill in the required field: Renter Name.');
+    if (!form.occupantName) {
+      alert('Please fill in the required field: Occupant\'s Name.');
       return;
     }
     setSaving(true);
@@ -344,29 +319,24 @@ export function RentPage() {
       propertyGhanaPostGPS: rent.propertyGhanaPostGPS,
       propertyLatitude: rent.propertyLatitude,
       propertyLongitude: rent.propertyLongitude,
-      rentObjectName: rent.rentObjectName,
-      rentRevenueCode: rent.rentRevenueCode || '',
-      rentRevenueDescription: rent.rentRevenueDescription || '',
-      rentCode: rent.rentCode || '',
-      rentClass: rent.rentClass,
-      rentCategory: rent.rentCategory || (RENT_CLASS_CATEGORIES[rent.rentClass]?.[0]) || '',
-      rentUnit: rent.rentUnit,
-      rentValue: rent.rentValue,
+      rentPropertyNumber: rent.rentPropertyNumber,
+      rentPropertyTypeCode: rent.rentPropertyTypeCode || '',
+      rentPropertyType: rent.rentPropertyType,
+      rentPropertyTypeCategory: rent.rentPropertyTypeCategory || '',
+      amount: rent.amount,
       vacant: rent.vacant,
       startDate: rent.startDate,
       endDate: rent.endDate,
       contractId: rent.contractId,
       contractValue: rent.contractValue,
       area: rent.area,
-      renterName: rent.renterName,
-      renterAddress: rent.renterAddress,
-      renterGhanaPostGPS: rent.renterGhanaPostGPS,
-      renterLatitude: rent.renterLatitude,
-      renterLongitude: rent.renterLongitude,
-      phone: rent.phone,
-      email: rent.email,
-      tin: rent.tin,
-      nationalId: rent.nationalId,
+      renterName: rent.occupantName,
+      occupantUniqueId: rent.occupantUniqueId || '',
+      occupantName: rent.occupantName,
+      occupantNationalId: rent.occupantNationalId,
+      occupantAddress: rent.occupantAddress,
+      occupantPhone: rent.occupantPhone,
+      occupantEmail: rent.occupantEmail,
       excludedFromRenting: rent.excludedFromRenting,
       comments: rent.comments,
     });
@@ -491,10 +461,10 @@ export function RentPage() {
                   paged.map((rent) => (
                     <tr key={rent.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer">
                       <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{rent.upn}</td>
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{rent.renterName}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap max-w-[200px] truncate">{rent.rentObjectName || '--'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{rent.rentClass || '--'}</td>
-                      <td className="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">{rent.rentValue ? `GHS ${Number(rent.rentValue).toLocaleString()}` : '-'}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{rent.occupantName}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap max-w-[200px] truncate">{rent.rentPropertyType || '--'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{rent.rentPropertyTypeCategory || '--'}</td>
+                      <td className="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">{rent.amount ? `GHS ${Number(rent.amount).toLocaleString()}` : '-'}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${
                           rent.vacant === 'Yes'
@@ -557,7 +527,7 @@ export function RentPage() {
           <button type="button" onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors cursor-pointer">
             <X className="w-4 h-4" /> Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!form.renterName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>
         </div>
@@ -610,44 +580,44 @@ export function RentPage() {
         </div>
 
         {/* ════════════════════════════════════════════════════════════════════
-            CARD 2: RENT OBJECT
+            CARD 2: RENT PROPERTY INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
             <Building2 className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Rent Object</h2>
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Rent Property Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
+              <div>
+                <label className={`${labelClass} block`}>Rent Property Number</label>
+                <input type="text" name="rentPropertyNumber" value={form.rentPropertyNumber} onChange={handleFormChange} placeholder="Enter property number" className={inputClass} />
+              </div>
+              <div>
+                <label className={`${labelClass} block`}>Rent Property Type Code</label>
+                <input type="text" name="rentPropertyTypeCode" value={form.rentPropertyTypeCode} onChange={handleFormChange} placeholder="Auto-filled" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
+              </div>
               <div className="sm:col-span-2 lg:col-span-3">
-                <label className={`${labelClass} block`}>Rent Object Name</label>
-                <input type="text" name="rentObjectName" value={form.rentObjectName} onChange={handleFormChange} placeholder="Enter rent object name" className={inputClass} />
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>Rent Revenue Code</label>
-                <input type="text" name="rentRevenueCode" value={form.rentRevenueCode} onChange={handleFormChange} placeholder="e.g. 1412025" className={inputClass} />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={`${labelClass} block`}>Rent Revenue Description</label>
-                <input type="text" name="rentRevenueDescription" value={form.rentRevenueDescription} onChange={handleFormChange} placeholder="Select or enter revenue description" className={inputClass} />
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>Rent Class</label>
-                <select name="rentClass" value={form.rentClass} onChange={handleFormChange} className={inputClass}>
-                  <option value="">Select rent class</option>
+                <label className={`${labelClass} block`}>Rent Property Type</label>
+                <select name="rentPropertyType" value={form.rentPropertyType} onChange={handleFormChange} className={inputClass}>
+                  <option value="">Search to select property type</option>
                   {RENT_CLASSES.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className={`${labelClass} block`}>Rent Unit</label>
-                <select name="rentUnit" value={form.rentUnit} onChange={handleFormChange} className={inputClass}>
-                  <option value="">Select unit</option>
-                  {RENT_UNITS.map((u) => (
-                    <option key={u} value={u}>{u}</option>
+                <label className={`${labelClass} block`}>Rent Property Type Category</label>
+                <select name="rentPropertyTypeCategory" value={form.rentPropertyTypeCategory} onChange={handleFormChange} className={inputClass}>
+                  <option value="">Select category</option>
+                  {(RENT_CLASS_CATEGORIES[form.rentPropertyType] || []).map((c) => (
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className={`${labelClass} block`}>Amount (GHS)</label>
+                <input type="number" name="amount" value={form.amount} onChange={handleFormChange} placeholder="0.00" min="0" className={inputClass} />
               </div>
               <div>
                 <label className={`${labelClass} block`}>Vacant</label>
@@ -656,23 +626,6 @@ export function RentPage() {
                     <option key={v} value={v}>{v}</option>
                   ))}
                 </select>
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>Rent Value (GHS)</label>
-                <input type="number" name="rentValue" value={form.rentValue} onChange={handleFormChange} placeholder="0.00" min="0" className={inputClass} />
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>Category</label>
-                <select name="rentCategory" value={form.rentCategory} onChange={handleFormChange} disabled={!form.rentClass} className={inputClass}>
-                  <option value="">{form.rentClass ? 'Select category' : 'Select class first'}</option>
-                  {(RENT_CLASS_CATEGORIES[form.rentClass] || []).map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>Code</label>
-                <input type="text" name="rentCode" value={form.rentCode} readOnly className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 cursor-not-allowed`} placeholder="Auto-filled" />
               </div>
             </div>
           </div>
@@ -713,46 +666,38 @@ export function RentPage() {
         </div>
 
         {/* ════════════════════════════════════════════════════════════════════
-            CARD 4: RENTER INFORMATION
+            CARD 4: OCCUPANT'S INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
             <User className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Renter Information</h2>
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Occupant's Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
-              {/* Renter Name — full width */}
-              <div className="sm:col-span-2 lg:col-span-3">
-                <label className={`${labelClass} block`}>Renter Name <span className="text-red-500">*</span></label>
-                <input type="text" name="renterName" value={form.renterName} onChange={handleFormChange} placeholder="Enter full name of renter" className={inputClass} />
+              <div>
+                <label className={`${labelClass} block`}>Unique ID</label>
+                <input type="text" name="occupantUniqueId" value={form.occupantUniqueId} onChange={handleFormChange} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
               </div>
-              {/* Renter Address | Renter GhanaPost GPS */}
               <div className="sm:col-span-2">
-                <label className={`${labelClass} block`}>Renter Address</label>
-                <input type="text" name="renterAddress" value={form.renterAddress} onChange={handleFormChange} placeholder="Enter renter address" className={inputClass} />
+                <label className={`${labelClass} block`}>Occupant's Name <span className="text-red-500">*</span></label>
+                <input type="text" name="occupantName" value={form.occupantName} onChange={handleFormChange} placeholder="Enter full name of occupant" className={inputClass} />
               </div>
               <div>
-                <label className={`${labelClass} block`}>Renter GhanaPost GPS</label>
-                <input type="text" name="renterGhanaPostGPS" value={form.renterGhanaPostGPS} onChange={handleFormChange} placeholder="XX-XXX-XXXX" className={inputClass} />
+                <label className={`${labelClass} block`}>National ID Number</label>
+                <input type="text" name="occupantNationalId" value={form.occupantNationalId} onChange={handleFormChange} placeholder="e.g. GHA-XXXXXXXXX" className={inputClass} />
               </div>
-              {/* Phone | Email | TIN */}
-              <div>
-                <label className={`${labelClass} block`}>Phone</label>
-                <input type="text" name="phone" value={form.phone} onChange={handleFormChange} placeholder="e.g. 024 XXX XXXX" className={inputClass} />
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>Email</label>
-                <input type="email" name="email" value={form.email} onChange={handleFormChange} placeholder="email@example.com" className={inputClass} />
+              <div className="sm:col-span-2">
+                <label className={`${labelClass} block`}>Address</label>
+                <input type="text" name="occupantAddress" value={form.occupantAddress} onChange={handleFormChange} placeholder="Enter occupant address" className={inputClass} />
               </div>
               <div>
-                <label className={`${labelClass} block`}>TIN</label>
-                <input type="text" name="tin" value={form.tin} onChange={handleFormChange} placeholder="Tax Identification Number" className={inputClass} />
+                <label className={`${labelClass} block`}>Phone Number</label>
+                <input type="text" name="occupantPhone" value={form.occupantPhone} onChange={handleFormChange} placeholder="e.g. 024 XXX XXXX" className={inputClass} />
               </div>
-              {/* National ID — full width */}
-              <div className="sm:col-span-2 lg:col-span-3">
-                <label className={`${labelClass} block`}>National ID</label>
-                <input type="text" name="nationalId" value={form.nationalId} onChange={handleFormChange} placeholder="e.g. GHA-XXXXXXXXX" className={inputClass} />
+              <div>
+                <label className={`${labelClass} block`}>Email Address</label>
+                <input type="email" name="occupantEmail" value={form.occupantEmail} onChange={handleFormChange} placeholder="email@example.com" className={inputClass} />
               </div>
             </div>
           </div>
@@ -785,7 +730,7 @@ export function RentPage() {
             <X className="w-4 h-4" />
             Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!form.renterName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>
