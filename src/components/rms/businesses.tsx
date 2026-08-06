@@ -212,10 +212,23 @@ export function BusinessesPage() {
     return `GCR-${String(nextNum).padStart(4, '0')}`;
   };
 
-  const generateDaAssignmentNo = () => {
-    const yearSuffix = String(new Date().getFullYear()).slice(-2);
-    const nextNum = businesses.length + 1;
-    return `KpMA-${yearSuffix}-${String(nextNum).padStart(4, '0')}/BP`;
+  const getNextDaNumberForAreaCode = (areaCode: string) => {
+    if (!areaCode) return '';
+    const prefix = `${areaCode}/BP/`;
+    let maxNum = 0;
+    for (const b of businesses) {
+      const da = b.daAssignmentNo || '';
+      if (da.startsWith(prefix)) {
+        const numStr = da.slice(prefix.length);
+        const num = parseInt(numStr, 10);
+        if (!isNaN(num) && num > maxNum) maxNum = num;
+      }
+    }
+    return `${areaCode}/BP/${String(maxNum + 1).padStart(5, '0')}`;
+  };
+
+  const generateDaAssignmentNo = (areaCode?: string) => {
+    return getNextDaNumberForAreaCode(areaCode || form.areaCode);
   };
 
   // ── Form State ───────────────────────────────────────────────────────────
@@ -289,10 +302,21 @@ export function BusinessesPage() {
       if (name === 'locality' && LOCALITY_AREA_CODE_MAP[updated.locality]) {
         updated.areaCode = LOCALITY_AREA_CODE_MAP[updated.locality];
       }
-      // Update business unique number whenever area code changes
+      // Update DA Assignment No. and business unique number whenever area code changes
       if ((name === 'locality' || name === 'areaCode') && updated.areaCode) {
         const nextNum = businesses.length + 1;
         updated.businessUniqueNumber = `${updated.areaCode}/BP/${String(nextNum).padStart(4, '0')}`;
+        // DA Assignment No.: count per area code (ascending)
+        const daPrefix = `${updated.areaCode}/BP/`;
+        let maxDANum = 0;
+        for (const b of businesses) {
+          const da = b.daAssignmentNo || '';
+          if (da.startsWith(daPrefix)) {
+            const num = parseInt(da.slice(daPrefix.length), 10);
+            if (!isNaN(num) && num > maxDANum) maxDANum = num;
+          }
+        }
+        updated.daAssignmentNo = `${updated.areaCode}/BP/${String(maxDANum + 1).padStart(5, '0')}`;
       }
       // Link Revenue Description ↔ Code
       if (name === 'revenueDescription' && DESCRIPTION_TO_CODE[updated.revenueDescription]) {
@@ -328,6 +352,10 @@ export function BusinessesPage() {
   const handleSave = () => {
     if (!form.name || !form.type) return;
     const regNum = form.regNumber || `BIZ-${String(businesses.length + 1).padStart(4, '0')}`;
+    // Generate final DA Assignment No. at save time (for new entries only)
+    const finalDANo = editingRegNumber
+      ? form.daAssignmentNo
+      : (form.areaCode ? getNextDaNumberForAreaCode(form.areaCode) : form.daAssignmentNo);
     const newBusiness: Business = {
       regNumber: regNum,
       name: form.name,
@@ -360,7 +388,7 @@ export function BusinessesPage() {
       locality: form.locality,
       areaCode: form.areaCode,
       code: form.code,
-      daAssignmentNo: form.daAssignmentNo,
+      daAssignmentNo: finalDANo,
       businessCertNo: form.businessCertNo,
       businessUniqueNumber: form.businessUniqueNumber,
       revenueDescription: form.revenueDescription,
@@ -1053,7 +1081,7 @@ export function BusinessesPage() {
               {/* Row 1: DA Assignment No., Business Unique Number, Business Cert No. */}
               <div>
                 <label className={`${labelClass} block`}>DA Assignment No. / Business Permit</label>
-                <input type="text" name="daAssignmentNo" value={form.daAssignmentNo} readOnly placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
+                <input type="text" name="daAssignmentNo" value={form.daAssignmentNo} readOnly placeholder="Select Locality to auto-generate" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
               </div>
               {/* Business Unique Number */}
               <div>
