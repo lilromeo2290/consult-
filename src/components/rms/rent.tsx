@@ -592,11 +592,15 @@ export function RentPage() {
                 <label className={`${labelClass} block`}>Ghana Post GPS / Digital Address</label>
                 <input type="text" name="propertyGhanaPostGPS" value={form.propertyGhanaPostGPS} onChange={handleFormChange} placeholder="e.g. GA-123-4567" className={inputClass} />
               </div>
-              <div className="sm:col-span-2">
-                <label className={`${labelClass} block`}>GPS Coordinates (Lat/Long)</label>
+              <div>
+                <label className={`${labelClass} block`}>GPS Coordinates (Lat)</label>
+                <input type="text" name="propertyLatitude" value={form.propertyLatitude} onChange={handleFormChange} placeholder="e.g. 5.603717" className={inputClass} />
+              </div>
+              <div>
+                <label className={`${labelClass} block`}>GPS Coordinates (Long)</label>
                 <div className="flex gap-1.5">
-                  <input type="text" value={form.propertyLatitude && form.propertyLongitude ? `${form.propertyLatitude}, ${form.propertyLongitude}` : ''} placeholder="e.g. 5.603717, -0.187028 (Auto-generated)" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
-                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-medium transition-colors" title="Detect GPS">
+                  <input type="text" name="propertyLongitude" value={form.propertyLongitude} onChange={handleFormChange} placeholder="e.g. -0.187028" className={inputClass} />
+                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-medium transition-colors" title="Auto-detect GPS">
                     {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
                   </button>
                 </div>
