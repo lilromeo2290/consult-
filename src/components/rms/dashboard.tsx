@@ -266,6 +266,9 @@ export function DashboardPage() {
   const [properties] = useSyncedStorage<LSProperty[]>('rms-properties', []);
   const [bills] = useSyncedStorage<LSBill[]>('rms-bills', []);
   const [payments] = useSyncedStorage<LSPayment[]>('rms-payments', []);
+  const [financialSettings] = useSyncedStorage<{ currentFinancialYear: string }>('rms-settings-financial', { currentFinancialYear: '' });
+
+  const fiscalYear = financialSettings.currentFinancialYear || new Date().getFullYear().toString();
 
   // ── Computed Stats ────────────────────────────────────────────────────
 
@@ -431,7 +434,7 @@ export function DashboardPage() {
               </p>
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Fiscal Year 2024
+              Fiscal Year {fiscalYear}
             </p>
           </div>
         </div>
