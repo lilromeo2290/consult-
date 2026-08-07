@@ -22,9 +22,27 @@ import { SettingsPage } from '@/components/rms/settings';
 import { SearchPage } from '@/components/rms/search';
 import { AuditTrailPage } from '@/components/rms/audit-trail';
 import { useAppStore, type RMSPage } from '@/stores/app-store';
+import { loadOverrides } from '@/lib/rate-overrides';
+import type { RateEntry } from '@/lib/rate-overrides';
 
 function RMSView() {
   const rmsPage = useAppStore((s) => s.rmsPage);
+
+  // Load persisted rate overrides into memory once when RMS loads
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/rms-data?key=rms-rate-overrides');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.data && typeof json.data === 'object') {
+          loadOverrides(json.data as Record<string, RateEntry>);
+        }
+      } catch (err) {
+        console.error('Failed to preload rate overrides:', err);
+      }
+    })();
+  }, []);
 
   const renderPage = () => {
     switch (rmsPage) {

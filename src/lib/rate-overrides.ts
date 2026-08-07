@@ -1,12 +1,22 @@
 // Shared mutable rate override store (client-side only)
 // Rate Configuration writes here; Business Information reads from here.
+// Persistence is handled by rate-config.tsx via /api/rms-data.
 
-interface RateEntry {
+export interface RateEntry {
   amount: number;
   ceiling: number;
 }
 
 const overrides: Record<string, RateEntry> = {};
+
+/** Bulk-load overrides from a saved JSON object (called on app mount). */
+export function loadOverrides(data: Record<string, RateEntry>): void {
+  for (const [code, entry] of Object.entries(data)) {
+    if (entry && typeof entry.amount === 'number' && typeof entry.ceiling === 'number') {
+      overrides[code] = entry;
+    }
+  }
+}
 
 export function getRateOverride(code: string): number | undefined {
   return overrides[code]?.amount;

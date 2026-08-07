@@ -20,6 +20,8 @@ import {
   setRateCeiling,
   setRateEntry,
   getAllOverrides,
+  loadOverrides,
+  RateEntry,
 } from '@/lib/rate-overrides';
 import { Combobox } from '@/components/ui/combobox';
 import { exportToExcel, importFromExcel } from '@/lib/import-export';
@@ -41,6 +43,8 @@ interface RateRow {
 
 const TABS: RateTab[] = ['Business', 'Property', 'Fines', 'Fees', 'Rent'];
 const PAGE_SIZE = 25;
+const RATE_OVERRIDES_KEY = 'rms-rate-overrides';
+const SAVE_DEBOUNCE_MS = 600;
 
 // Excel field definitions for Business Rate Import/Export
 const RATE_FIELDS: { key: string; label: string }[] = [
@@ -82,6 +86,52 @@ export function RateConfigPage() {
   const [newAmount, setNewAmount] = useState('');
   const [newCeiling, setNewCeiling] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(false);
+
+  // ── Persistence: load overrides from DB on mount ────────────────────────
+  useEffect(() => {
+    mountedRef.current = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/rms-data?key=${RATE_OVERRIDES_KEY}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.data && typeof json.data === 'object') {
+          loadOverrides(json.data as Record<string, RateEntry>);
+          setRows((prev) =>
+            prev.map((r) => {
+              const amt = getRateOverride(r.code);
+              const ceil = getRateCeiling(r.code);
+              return amt !== undefined || ceil !== undefined
+                ? { ...r, amount: amt ?? r.amount, ceiling: ceil ?? r.ceiling, originalAmount: amt ?? r.originalAmount, originalCeiling: ceil ?? r.originalCeiling }
+                : r;
+            }),
+          );
+        }
+      } catch (err) {
+        console.error('Failed to load rate overrides:', err);
+      }
+    })();
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  // ── Persistence: debounce-save overrides to DB ────────────────────────────
+  const persistOverrides = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        const overrides = getAllOverrides();
+        await fetch('/api/rms-data', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides }),
+        });
+      } catch (err) {
+        console.error('Failed to save rate overrides:', err);
+      }
+    }, SAVE_DEBOUNCE_MS);
+  }, []);
 
   // When a code is selected, auto-fill class and category
   const handleCodeSelect = (code: string) => {
@@ -139,6 +189,7 @@ export function RateConfigPage() {
     const capped = ceiling > 0 ? Math.min(num, ceiling) : num;
     setRows((prev) => prev.map((r) => (r.code === code ? { ...r, amount: capped } : r)));
     setRateEntry(code, capped, ceiling);
+    persistOverrides();
   };
 
   const handleCeilingEdit = (code: string, val: string) => {
@@ -149,6 +200,7 @@ export function RateConfigPage() {
     const capped = num > 0 ? Math.min(amount, num) : amount;
     setRows((prev) => prev.map((r) => (r.code === code ? { ...r, ceiling: num, amount: capped } : r)));
     setRateEntry(code, capped, num);
+    persistOverrides();
   };
 
   const handleRadio = (code: string) => setRadioCode(code);
@@ -166,6 +218,7 @@ export function RateConfigPage() {
     const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
     setRateEntry(trimmedCode, capped, ceil);
     setRows((prev) => prev.map((r) => (r.code === trimmedCode ? { ...r, amount: capped, ceiling: ceil } : r)));
+    persistOverrides();
     setNewCode('');
     setNewClass('');
     setNewCategory('');
@@ -208,6 +261,7 @@ export function RateConfigPage() {
             ceiling: ceil,
           });
           setRateEntry(code, capped, ceil);
+          persistOverrides();
           updated++;
         }
         return Array.from(newRowMap.values());

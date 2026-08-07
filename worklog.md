@@ -128,6 +128,29 @@ Stage Summary:
 - No more duplicate key warnings across the entire RMS
 - Logo files unchanged: `/public/logos/ghana-coat-of-arms.webp`, `/public/logos/assembly-seal.png`
 - localStorage key for assembly settings: `rms-settings-assembly`
+
+---
+Task ID: 5
+Agent: Main
+Task: Fix Rate Configuration persistence + deploy error diagnostics
+
+Work Log:
+- Found root cause: rate overrides in `rate-overrides.ts` were stored in a plain in-memory JS object with zero persistence
+- Added `loadOverrides(data)` function to bulk-load overrides from a JSON object
+- Exported `RateEntry` interface from rate-overrides.ts
+- Updated `rate-config.tsx` to:
+  - Load overrides from DB on mount via `/api/rms-data?key=rms-rate-overrides`
+  - Debounce-save (600ms) overrides to DB on every amount/ceiling edit
+  - Save on Add Rate and Import operations
+- Updated `page.tsx` (RMSView) to preload rate overrides into memory when RMS loads, so Businesses page also has access
+- Added `global-error.tsx` error boundary that displays actual error message + stack trace in the browser and logs it to DB
+- Built and deployed to VPS (BUILD_ID: oxSKb9HD1SMxiwQrwew-q)
+- PM2 status: online, no errors in log
+
+Stage Summary:
+- Rate Configuration amounts and ceilings now persist to database and survive page refresh/navigation
+- Global error boundary deployed to capture the actual client-side exception message
+- User should visit the site and report the error message shown by the new error boundary
 ---
 Task ID: 1-4
 Agent: main
