@@ -44,7 +44,6 @@ interface RateRow {
 const TABS: RateTab[] = ['Business', 'Property', 'Fines', 'Fees', 'Rent'];
 const PAGE_SIZE = 25;
 const RATE_OVERRIDES_KEY = 'rms-rate-overrides';
-const SAVE_DEBOUNCE_MS = 600;
 
 // Excel field definitions for Business Rate Import/Export
 const RATE_FIELDS: { key: string; label: string }[] = [
@@ -86,18 +85,20 @@ export function RateConfigPage() {
   const [newAmount, setNewAmount] = useState('');
   const [newCeiling, setNewCeiling] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(false);
 
   // ── Persistence: load overrides from DB on mount ────────────────────────
+  const [overridesLoaded, setOverridesLoaded] = useState(false);
+
   useEffect(() => {
     mountedRef.current = true;
+    let cancelled = false;
     (async () => {
       try {
         const res = await fetch(`/api/rms-data?key=${RATE_OVERRIDES_KEY}`);
-        if (!res.ok) return;
+        if (!res.ok || cancelled) return;
         const json = await res.json();
-        if (json.data && typeof json.data === 'object') {
+        if (json.data && typeof json.data === 'object' && !cancelled) {
           loadOverrides(json.data as Record<string, RateEntry>);
           setRows((prev) =>
             prev.map((r) => {
@@ -112,25 +113,37 @@ export function RateConfigPage() {
       } catch (err) {
         console.error('Failed to load rate overrides:', err);
       }
+      if (!cancelled) setOverridesLoaded(true);
     })();
-    return () => { mountedRef.current = false; };
+    return () => { cancelled = true; mountedRef.current = false; };
   }, []);
 
-  // ── Persistence: debounce-save overrides to DB ────────────────────────────
+  // ── Persistence: save overrides to DB immediately ────────────────────────
   const persistOverrides = useCallback(() => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(async () => {
-      try {
-        const overrides = getAllOverrides();
-        await fetch('/api/rms-data', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides }),
-        });
-      } catch (err) {
-        console.error('Failed to save rate overrides:', err);
+    if (!mountedRef.current) return;
+    const overrides = getAllOverrides();
+    fetch('/api/rms-data', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides }),
+    }).catch((err) => {
+      console.error('Failed to save rate overrides:', err);
+    });
+  }, []);
+
+  // ── Save on unmount so nothing is lost on navigation ───────────────────
+  useEffect(() => {
+    return () => {
+      const overrides = getAllOverrides();
+      if (Object.keys(overrides).length > 0) {
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', '/api/rms-data', false); // synchronous
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides }));
+        } catch {}
       }
-    }, SAVE_DEBOUNCE_MS);
+    };
   }, []);
 
   // When a code is selected, auto-fill class and category
@@ -246,6 +259,7 @@ export function RateConfigPage() {
       const imported = await importFromExcel<Record<string, unknown>>(file, RATE_FIELDS);
       if (imported.length === 0) { alert('No data found in the file.'); return; }
       let updated = 0;
+      const importedOverrides: string[] = [];
       setRows((prev) => {
         const newRowMap = new Map(prev.map((r) => [r.code, r]));
         for (const item of imported) {
@@ -261,11 +275,12 @@ export function RateConfigPage() {
             ceiling: ceil,
           });
           setRateEntry(code, capped, ceil);
-          persistOverrides();
+          importedOverrides.push(code);
           updated++;
         }
         return Array.from(newRowMap.values());
       });
+      if (importedOverrides.length > 0) persistOverrides();
       alert(`${updated} rate(s) imported successfully.`);
     } catch (err) {
       alert('Failed to import file. Please ensure it is a valid Excel file exported from this system.');
