@@ -173,6 +173,31 @@ export function BusinessesPage() {
   const [viewingCert, setViewingCert] = useState<BusinessCert | null>(null);
   const [businesses, setBusinesses, dataLoading] = useSyncedStorage<Business[]>('rms-businesses', mockBusinesses);
   const [bizCerts, setBizCerts] = useSyncedStorage<BusinessCert[]>('rms-business-certs', []);
+
+  // ── Auto-migrate BIZ- prefix to BUN- (Business Unique Number) ─────────
+  useEffect(() => {
+    if (dataLoading) return;
+    let bizChanged = false;
+    const migratedBiz = businesses.map((b) => {
+      if (b.regNumber.startsWith('BIZ-')) {
+        bizChanged = true;
+        return { ...b, regNumber: 'BUN-' + b.regNumber.slice(4) };
+      }
+      return b;
+    });
+    if (bizChanged) setBusinesses(migratedBiz);
+
+    let certChanged = false;
+    const migratedCerts = bizCerts.map((c) => {
+      if (c.regNumber?.startsWith('BIZ-')) {
+        certChanged = true;
+        return { ...c, regNumber: 'BUN-' + c.regNumber.slice(4) };
+      }
+      return c;
+    });
+    if (certChanged) setBizCerts(migratedCerts);
+  }, [dataLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bizRevenueCodeRef = useRef<HTMLDivElement>(null);
   const bizRevenueDescRef = useRef<HTMLDivElement>(null);
@@ -447,7 +472,7 @@ export function BusinessesPage() {
 
   const handleSave = () => {
     if (!form.name || !form.type) return;
-    const regNum = form.regNumber || `BIZ-${String(businesses.length + 1).padStart(4, '0')}`;
+    const regNum = form.regNumber || `BUN-${String(businesses.length + 1).padStart(4, '0')}`;
     // Generate final DA Assignment No. at save time (for new entries only)
     const finalDANo = editingRegNumber
       ? form.daAssignmentNo

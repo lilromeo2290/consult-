@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the screenshot, here is the information from the table:\n\n**Table Headers (Column Names):**\n1.  **Business Unique Number**\n2.  **Business Name**\n3.  **Owner**\n4.  **Business Class**\n5.  **Category**\n\n**Values in the First Row:**\n*   **Under \"Business Unique Number\":** `BIZ-0001`\n*   **Under \"Business Name\":** `Clipe233 Engineers`\n*   **Under \"Owner\":** `jjugbohnon`\n*   **Under \"Business Class\":** `(Architectural, Auditing, Accounting, Engineering, Legal Firms etc.)`\n*   **Under \"Category\":** *(This column is empty for the first row)*",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1786083922,
+  "id": "20260807142518a890f9f758624f60",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260807142518a890f9f758624f60",
+  "usage": {
+    "completion_tokens": 157,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1393,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 1550
+  }
+}
