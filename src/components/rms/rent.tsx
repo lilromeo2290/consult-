@@ -566,7 +566,19 @@ export function RentPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               <div className="sm:col-span-2 lg:col-span-3">
                 <label className={`${labelClass} block`}>Rent Property Location</label>
-                <input type="text" name="rentPropertyLocation" value={form.rentPropertyLocation} onChange={handleFormChange} placeholder="Search to select property location" className={inputClass} />
+                <select name="rentPropertyLocation" value={form.rentPropertyLocation} onChange={handleFormChange} className={inputClass}>
+                  <option value="">-- Select Property Location --</option>
+                  <option value="Kpando Central Market">Kpando Central Market</option>
+                  <option value="Kpando 24-Hour Market">Kpando 24-Hour Market</option>
+                  <option value="Kpando Torkor Market">Kpando Torkor Market</option>
+                  <option value="Kpando Lorry Park">Kpando Lorry Park</option>
+                  <option value="Kpando Aloyi (Low-Cost)">Kpando Aloyi (Low-Cost)</option>
+                  <option value="Kpando Tsadome (Agric)">Kpando Tsadome (Agric)</option>
+                  <option value="Kpando Todzi">Kpando Todzi</option>
+                  <option value="Kpando Fesi">Kpando Fesi</option>
+                  <option value="Assembly Office (Fesi)">Assembly Office (Fesi)</option>
+                  <option value="Assembly Office (Old)">Assembly Office (Old)</option>
+                </select>
               </div>
               <div>
                 <label className={`${labelClass} block`}>Location Code</label>
