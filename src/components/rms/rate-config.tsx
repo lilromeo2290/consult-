@@ -99,16 +99,20 @@ export function RateConfigPage() {
         if (!res.ok || cancelled) return;
         const json = await res.json();
         if (json.data && typeof json.data === 'object' && !cancelled) {
-          loadOverrides(json.data as Record<string, RateEntry>);
+          const savedData = json.data as Record<string, RateEntry>;
+          // Apply saved data directly to rows — do NOT go through in-memory store
+          // to avoid race conditions with the page.tsx preload.
           setRows((prev) =>
             prev.map((r) => {
-              const amt = getRateOverride(r.code);
-              const ceil = getRateCeiling(r.code);
-              return amt !== undefined || ceil !== undefined
-                ? { ...r, amount: amt ?? r.amount, ceiling: ceil ?? r.ceiling, originalAmount: amt ?? r.originalAmount, originalCeiling: ceil ?? r.originalCeiling }
-                : r;
+              const entry = savedData[r.code];
+              if (!entry) return r;
+              const amt = typeof entry.amount === 'number' ? entry.amount : r.amount;
+              const ceil = typeof entry.ceiling === 'number' ? entry.ceiling : r.ceiling;
+              return { ...r, amount: amt, ceiling: ceil, originalAmount: amt, originalCeiling: ceil };
             }),
           );
+          // Also populate the in-memory store for other components (e.g. businesses.tsx)
+          loadOverrides(savedData);
         }
       } catch (err) {
         console.error('Failed to load rate overrides:', err);
@@ -118,10 +122,12 @@ export function RateConfigPage() {
     return () => { cancelled = true; mountedRef.current = false; };
   }, []);
 
-  // ── Persistence: save overrides to DB immediately ────────────────────────
+  // ── Persistence: save overrides to DB immediately (no debounce) ──────────
+  // Uses the in-memory store (via getAllOverrides) because setRateEntry() updates
+  // it synchronously before persistOverrides is called, so it's always current.
   const persistOverrides = useCallback(() => {
-    if (!mountedRef.current) return;
     const overrides = getAllOverrides();
+    if (Object.keys(overrides).length === 0) return;
     fetch('/api/rms-data', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -131,18 +137,19 @@ export function RateConfigPage() {
     });
   }, []);
 
-  // ── Save on unmount so nothing is lost on navigation ───────────────────
+  // ── Save on unmount via fetch+keepalive (survives page teardown) ────────
   useEffect(() => {
     return () => {
       const overrides = getAllOverrides();
-      if (Object.keys(overrides).length > 0) {
-        try {
-          const xhr = new XMLHttpRequest();
-          xhr.open('PUT', '/api/rms-data', false); // synchronous
-          xhr.setRequestHeader('Content-Type', 'application/json');
-          xhr.send(JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides }));
-        } catch {}
-      }
+      if (Object.keys(overrides).length === 0) return;
+      const payload = JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides });
+      // keepalive ensures the request completes even after the component unmounts
+      fetch('/api/rms-data', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true,
+      }).catch(() => {});
     };
   }, []);
 
