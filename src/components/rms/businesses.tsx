@@ -654,46 +654,36 @@ export function BusinessesPage() {
   };
 
   const handlePrintCertificate = async (cert: BusinessCert) => {
-    // Read assembly name dynamically from settings at print time
     const _asmSettings = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); } catch { return {}; } })();
     const dynAssemblyName = _asmSettings.name || cert.assemblyName || 'Kpando Municipal Assembly';
     const dynAssemblyAddress = _asmSettings.address || cert.assemblyAddress || '';
+    const dynLogo = _asmSettings.logo || '';
     const dynSignature = _asmSettings.signature || '';
     const dynSignatoryName = _asmSettings.signatureName || '';
     const dynSignatoryTitle = _asmSettings.signatureTitle || '';
-    const fmtDate = (d: string) => {
+    const fmtDateOrdinal = (d: string) => {
       if (!d) return '..................';
       try {
         const dt = new Date(d);
-        return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const day = dt.getDate();
+        const s = ['th','st','nd','rd'];
+        const v = day % 100;
+        const suffix = s[(v-20)%10] || s[v] || s[0];
+        return day + suffix + ' ' + dt.toLocaleDateString('en-US', { month: 'long' }).toUpperCase() + ', ' + dt.getFullYear();
       } catch { return d; }
     };
-    const getOrdinal = (day: number) => {
-      const s = ['th','st','nd','rd'];
-      const v = day % 100;
-      return day + (s[(v-20)%10] || s[v] || s[0]);
-    };
-    const issueDate = cert.dateIssued ? fmtDate(cert.dateIssued) : '..................';
-    const expiryDate = cert.expiryDate ? fmtDate(cert.expiryDate) : '..................';
+    const issueDate = fmtDateOrdinal(cert.dateIssued);
+    const expiryDate = fmtDateOrdinal(cert.expiryDate);
     const businessNo = cert.businessUniqueNumber || cert.regNumber || cert.certNumber || '';
     const businessLocation = (cert as any).businessLocation || cert.businessAddress || '';
-    // Get fiscal year for the legal text
     const _finSet = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-financial') || '{}'); } catch { return {}; } })();
     const currentYear = parseInt(_finSet.currentFinancialYear) || new Date().getFullYear();
 
-    // Generate QR code as data URL
     let qrDataUrl = '';
     try {
-      const qrPayload = JSON.stringify({
-        cert: cert.certNumber,
-        reg: cert.regNumber,
-        name: cert.businessName,
-        type: cert.businessType,
-        issued: cert.dateIssued,
-        expiry: cert.expiryDate,
-      });
+      const qrPayload = JSON.stringify({ cert: cert.certNumber, reg: cert.regNumber, name: cert.businessName, type: cert.businessType, issued: cert.dateIssued, expiry: cert.expiryDate });
       qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 200, margin: 1, color: { dark: '#000000', light: '#ffffff' } });
-    } catch { /* qr generation failure should not block certificate */ }
+    } catch {}
 
     const win = window.open('', '_blank', 'width=900,height=1200');
     if (!win) { alert('Please allow popups to print the certificate.'); return; }
@@ -701,122 +691,372 @@ export function BusinessesPage() {
 <html>
 <head>
   <title>Business Operating Permit - ${cert.certNumber}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:wght@700;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    @page { size: A4 portrait; margin: 12mm; }
+    @page { size: A4 portrait; margin: 10mm; }
     body {
-      font-family: 'Inter', Arial, sans-serif;
+      font-family: 'Times New Roman', Times, Georgia, serif;
       color: #000;
-      background: #f0ece0;
+      background: #f5f0e1;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 20px;
+      padding: 10px;
     }
     .permit-outer {
-      width: 760px;
+      width: 780px;
       background: #FFFFFF;
       position: relative;
-      border: 4px solid #B8860B;
-      border-radius: 6px;
-      padding: 6px;
+      padding: 0;
     }
-    .permit-outer::before {
-      content: '';
+    /* Double border */
+    .border-outer {
       position: absolute;
-      inset: 10px;
-      border: 2px solid #B8860B;
-      border-radius: 4px;
+      inset: 0;
+      border: 3px solid #8B6914;
       pointer-events: none;
+      z-index: 3;
+    }
+    .border-inner {
+      position: absolute;
+      inset: 8px;
+      border: 1.5px solid #8B6914;
+      pointer-events: none;
+      z-index: 3;
     }
     /* Corner scrollwork */
-    .corner { position: absolute; width: 70px; height: 70px; z-index: 2; }
+    .corner { position: absolute; width: 80px; height: 80px; z-index: 4; }
     .corner svg { width: 100%; height: 100%; }
-    .corner-tl { top: 16px; left: 16px; }
-    .corner-tr { top: 16px; right: 16px; transform: scaleX(-1); }
-    .corner-bl { bottom: 16px; left: 16px; transform: scaleY(-1); }
-    .corner-br { bottom: 16px; right: 16px; transform: scale(-1, -1); }
+    .corner-tl { top: 2px; left: 2px; }
+    .corner-tr { top: 2px; right: 2px; transform: scaleX(-1); }
+    .corner-bl { bottom: 2px; left: 2px; transform: scaleY(-1); }
+    .corner-br { bottom: 2px; right: 2px; transform: scale(-1, -1); }
+    /* Inner content */
     .permit-inner {
-      margin: 20px;
-      padding: 20px 40px 28px;
+      margin: 28px 36px 24px;
       position: relative;
       z-index: 1;
     }
-    /* Header */
-    .header-section { text-align: center; margin-bottom: 4px; position: relative; z-index: 1; }
-    .permit-title-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; margin-bottom: 2px; }
-    .title-ornament { width: 60px; height: 12px; display: flex; align-items: center; justify-content: center; }
-    .title-ornament svg { width: 100%; height: 100%; }
-    .permit-title { font-family: 'Cinzel', 'Playfair Display', serif; font-size: 18px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; color: #000; white-space: nowrap; }
-    /* Business Number */
-    .biz-number-section { text-align: center; margin: 16px 0 10px; }
-    .biz-number-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #333; margin-bottom: 2px; }
-    .biz-number-value { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: #991B1B; }
+    /* Header row: logo + title */
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 6px;
+    }
+    .header-logo {
+      width: 90px;
+      height: 90px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .header-logo img {
+      width: 85px;
+      height: 85px;
+      object-fit: contain;
+    }
+    .header-logo-placeholder {
+      width: 80px;
+      height: 80px;
+      border: 2px solid #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: #666;
+      text-align: center;
+      line-height: 1.2;
+      background: #fafafa;
+    }
+    .header-divider {
+      width: 2px;
+      height: 90px;
+      background: #000;
+      margin: 0 16px;
+      flex-shrink: 0;
+    }
+    .header-title-block {
+      text-align: left;
+    }
+    .header-title {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 26px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #000;
+      line-height: 1.2;
+    }
+    /* Subtitle */
+    .subtitle-section {
+      text-align: center;
+      margin: 10px 0 8px;
+    }
+    .subtitle-text {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 18px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #000;
+    }
+    .subtitle-ornament {
+      margin: 6px auto 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+    .subtitle-ornament .line { width: 120px; height: 1.5px; background: #8B6914; }
+    .subtitle-ornament .diamond {
+      width: 10px;
+      height: 10px;
+      background: #8B6914;
+      transform: rotate(45deg);
+      margin: 0 8px;
+    }
+    .subtitle-ornament .dot { width: 4px; height: 4px; background: #8B6914; border-radius: 50%; margin: 0 4px; }
+    /* Business Number Section */
+    .biz-number-section {
+      text-align: center;
+      margin: 18px 0 12px;
+      position: relative;
+    }
+    .biz-number-label {
+      font-size: 13px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #000;
+      margin-bottom: 2px;
+    }
+    .biz-number-value {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 38px;
+      font-weight: bold;
+      color: #B22222;
+      letter-spacing: 2px;
+    }
+    /* Watermark */
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 280px;
+      border: 3px solid #ccc;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.07;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .watermark-text {
+      font-size: 14px;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-align: center;
+      color: #000;
+      letter-spacing: 2px;
+      line-height: 1.4;
+    }
     /* Legal text */
-    .legal-text { text-align: center; font-size: 11.5px; line-height: 1.8; color: #333; margin: 14px 0; font-style: italic; padding: 0 20px; }
-    .legal-text .highlight { font-weight: 700; text-transform: uppercase; color: #000; font-style: normal; }
+    .legal-text {
+      text-align: center;
+      font-size: 12.5px;
+      line-height: 1.8;
+      color: #333;
+      margin: 14px 0 16px;
+      font-style: italic;
+      padding: 0 20px;
+    }
+    .legal-text .highlight {
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #000;
+      font-style: normal;
+    }
     /* Separator */
-    .separator { border: none; height: 1.5px; background: linear-gradient(90deg, transparent, #B8860B, #333, #B8860B, transparent); margin: 18px 0; }
+    .separator {
+      border: none;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, #8B6914, #333, #8B6914, transparent);
+      margin: 16px 0;
+    }
     /* Fields */
-    .fields-section { margin: 0 auto; max-width: 620px; }
-    .field-row { display: flex; align-items: baseline; margin-bottom: 14px; gap: 10px; }
-    .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #000; min-width: 180px; text-align: left; flex-shrink: 0; }
-    .field-dots { flex: 1; border-bottom: 1.5px dotted #555; padding-bottom: 2px; font-size: 14px; font-weight: 700; color: #000; min-height: 20px; }
+    .fields-section {
+      margin: 0 auto;
+      max-width: 600px;
+    }
+    .field-row {
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 14px;
+      gap: 8px;
+    }
+    .field-label {
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #000;
+      min-width: 200px;
+      text-align: left;
+      flex-shrink: 0;
+    }
+    .field-dots {
+      flex: 1;
+      border-bottom: 1.5px dotted #333;
+      padding-bottom: 2px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #000;
+      min-height: 20px;
+    }
     /* Dates */
-    .dates-section { max-width: 620px; margin: 0 auto; }
-    .date-row { display: flex; align-items: baseline; margin-bottom: 10px; gap: 10px; }
-    .date-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #000; min-width: 180px; text-align: left; flex-shrink: 0; }
-    .date-value { font-size: 13px; font-weight: 700; color: #000; }
-    .date-value sup { font-size: 8px; }
-    /* Note */
-    .note-section { margin: 18px 0 10px; padding: 0 10px; }
-    .note-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #991B1B; margin-bottom: 6px; }
-    .note-text { font-size: 11px; line-height: 1.7; color: #333; }
+    .dates-section {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .date-row {
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .date-label {
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #000;
+      min-width: 200px;
+      text-align: left;
+      flex-shrink: 0;
+    }
+    .date-value {
+      font-size: 13px;
+      font-weight: bold;
+      color: #000;
+    }
     /* Footer */
-    .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 18px; padding: 0 10px; }
-    .qr-section { text-align: center; display: flex; flex-direction: column; align-items: center; }
-    .qr-placeholder { width: 110px; height: 110px; border: 2px solid #000; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; background: #fafafa; }
-    .qr-unique-id { margin-top: 10px; font-size: 15px; font-weight: 900; color: #000; letter-spacing: 1.5px; text-align: center; word-break: break-all; line-height: 1.3; }
-    .sign-section { text-align: center; }
-    .sign-line { width: 220px; border-bottom: 2px dotted #333; margin-bottom: 6px; }
-    .sign-title { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #991B1B; }
-    .sign-assembly { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #991B1B; margin-top: 2px; }
+    .footer-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 22px;
+      padding: 0 10px;
+    }
+    .note-section {
+      flex: 1;
+    }
+    .note-label {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #B22222;
+      margin-bottom: 6px;
+    }
+    .note-text {
+      font-size: 11px;
+      line-height: 1.7;
+      color: #333;
+    }
+    .sign-section {
+      text-align: center;
+      min-width: 240px;
+    }
+    .sign-line {
+      width: 200px;
+      border-bottom: 1.5px dotted #333;
+      margin-bottom: 6px;
+    }
+    .sign-image {
+      margin-bottom: 4px;
+    }
+    .sign-image img {
+      width: 180px;
+      height: 60px;
+      object-fit: contain;
+    }
+    .sign-label {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #000;
+    }
+    .sign-title {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #B22222;
+      margin-top: 1px;
+    }
     @media print {
       body { background: #fff; padding: 0; }
-      .permit-outer { border: 4px solid #B8860B; }
+      .permit-outer { border: none; }
     }
   </style>
 </head>
 <body>
   <div class="permit-outer">
-    <!-- Corner scrollwork decorations -->
-    <div class="corner corner-tl"><svg viewBox="0 0 70 70"><path d="M5,60 Q5,5 60,5" fill="none" stroke="#B8860B" stroke-width="3"/><path d="M10,55 Q10,10 55,10" fill="none" stroke="#B8860B" stroke-width="1.5"/><path d="M15,50 Q15,15 50,15" fill="none" stroke="#B8860B" stroke-width="1" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="none" stroke="#B8860B" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#B8860B"/><path d="M8,30 Q20,20 30,8" fill="none" stroke="#B8860B" stroke-width="1.5" opacity="0.6"/></svg></div>
-    <div class="corner corner-tr"><svg viewBox="0 0 70 70"><path d="M5,60 Q5,5 60,5" fill="none" stroke="#B8860B" stroke-width="3"/><path d="M10,55 Q10,10 55,10" fill="none" stroke="#B8860B" stroke-width="1.5"/><path d="M15,50 Q15,15 50,15" fill="none" stroke="#B8860B" stroke-width="1" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="none" stroke="#B8860B" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#B8860B"/><path d="M8,30 Q20,20 30,8" fill="none" stroke="#B8860B" stroke-width="1.5" opacity="0.6"/></svg></div>
-    <div class="corner corner-bl"><svg viewBox="0 0 70 70"><path d="M5,60 Q5,5 60,5" fill="none" stroke="#B8860B" stroke-width="3"/><path d="M10,55 Q10,10 55,10" fill="none" stroke="#B8860B" stroke-width="1.5"/><path d="M15,50 Q15,15 50,15" fill="none" stroke="#B8860B" stroke-width="1" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="none" stroke="#B8860B" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#B8860B"/><path d="M8,30 Q20,20 30,8" fill="none" stroke="#B8860B" stroke-width="1.5" opacity="0.6"/></svg></div>
-    <div class="corner corner-br"><svg viewBox="0 0 70 70"><path d="M5,60 Q5,5 60,5" fill="none" stroke="#B8860B" stroke-width="3"/><path d="M10,55 Q10,10 55,10" fill="none" stroke="#B8860B" stroke-width="1.5"/><path d="M15,50 Q15,15 50,15" fill="none" stroke="#B8860B" stroke-width="1" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="none" stroke="#B8860B" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#B8860B"/><path d="M8,30 Q20,20 30,8" fill="none" stroke="#B8860B" stroke-width="1.5" opacity="0.6"/></svg></div>
+    <div class="border-outer"></div>
+    <div class="border-inner"></div>
+    <!-- Corner scrollwork -->
+    <div class="corner corner-tl"><svg viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" stroke-width="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" stroke-width="1.5"/><path d="M18,56 Q18,18 56,18" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/><path d="M8,35 Q22,22 35,8" fill="none" stroke="#8B6914" stroke-width="1.5" opacity="0.6"/><path d="M5,50 Q15,35 25,20" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/></svg></div>
+    <div class="corner corner-tr"><svg viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" stroke-width="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" stroke-width="1.5"/><path d="M18,56 Q18,18 56,18" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/><path d="M8,35 Q22,22 35,8" fill="none" stroke="#8B6914" stroke-width="1.5" opacity="0.6"/><path d="M5,50 Q15,35 25,20" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/></svg></div>
+    <div class="corner corner-bl"><svg viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" stroke-width="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" stroke-width="1.5"/><path d="M18,56 Q18,18 56,18" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/><path d="M8,35 Q22,22 35,8" fill="none" stroke="#8B6914" stroke-width="1.5" opacity="0.6"/><path d="M5,50 Q15,35 25,20" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/></svg></div>
+    <div class="corner corner-br"><svg viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" stroke-width="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" stroke-width="1.5"/><path d="M18,56 Q18,18 56,18" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/><path d="M8,35 Q22,22 35,8" fill="none" stroke="#8B6914" stroke-width="1.5" opacity="0.6"/><path d="M5,50 Q15,35 25,20" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/></svg></div>
 
     <div class="permit-inner">
-      <!-- Header -->
-      <div class="header-section">
-        <div class="permit-title-row">
-          <div class="title-ornament"><svg viewBox="0 0 60 12"><line x1="0" y1="6" x2="22" y2="6" stroke="#B8860B" stroke-width="1.5"/><line x1="38" y1="6" x2="60" y2="6" stroke="#B8860B" stroke-width="1.5"/><polygon points="30,1 33,6 30,11 27,6" fill="#B8860B"/></svg></div>
-          <div class="permit-title">Business Operating Permit</div>
-          <div class="title-ornament"><svg viewBox="0 0 60 12"><line x1="0" y1="6" x2="22" y2="6" stroke="#B8860B" stroke-width="1.5"/><line x1="38" y1="6" x2="60" y2="6" stroke="#B8860B" stroke-width="1.5"/><polygon points="30,1 33,6 30,11 27,6" fill="#B8860B"/></svg></div>
+      <!-- Header: Logo + Assembly Name -->
+      <div class="header-row">
+        <div class="header-logo">
+          ${dynLogo ? `<img src="${dynLogo}" alt="Logo" />` : '<div class="header-logo-placeholder">ASSEMBLY<br/>LOGO</div>'}
+        </div>
+        <div class="header-divider"></div>
+        <div class="header-title-block">
+          <div class="header-title">${dynAssemblyName.toUpperCase()}</div>
         </div>
       </div>
 
-      <!-- Business Number -->
+      <!-- Subtitle: Business Operating Permit -->
+      <div class="subtitle-section">
+        <div class="subtitle-text">Business Operating Permit</div>
+        <div class="subtitle-ornament">
+          <div class="line"></div>
+          <div class="dot"></div>
+          <div class="diamond"></div>
+          <div class="dot"></div>
+          <div class="line"></div>
+        </div>
+      </div>
+
+      <!-- Business Number with Watermark -->
       <div class="biz-number-section">
-        <div class="biz-number-label">Business Number</div>
+        <div class="watermark">
+          <div class="watermark-text">${dynAssemblyName.toUpperCase()}</div>
+        </div>
+        <div class="biz-number-label">Business Name</div>
         <div class="biz-number-value">${businessNo}</div>
       </div>
 
       <!-- Legal Authority Text -->
       <div class="legal-text">
         Issued under the Local Governance Act, 2016 (Act 936)<br/>
-        Section 140 and bye-laws to operate business within the<br/>
+        Section 87(1) to operate a business within the<br/>
         <span class="highlight">${dynAssemblyName.toUpperCase()}</span><br/>
         Jurisdiction for the year ${currentYear}.
       </div>
@@ -826,19 +1066,19 @@ export function BusinessesPage() {
       <!-- Fields -->
       <div class="fields-section">
         <div class="field-row">
-          <div class="field-label">Business Number:</div>
+          <div class="field-label">1. Business Number:</div>
           <div class="field-dots">${businessNo}</div>
         </div>
         <div class="field-row">
-          <div class="field-label">Business Location:</div>
+          <div class="field-label">2. Business Location:</div>
           <div class="field-dots">${businessLocation.toUpperCase()}</div>
         </div>
         <div class="field-row">
-          <div class="field-label">Business Class:</div>
+          <div class="field-label">3. Business Class:</div>
           <div class="field-dots">${(cert.businessType || '').toUpperCase()}</div>
         </div>
         <div class="field-row">
-          <div class="field-label">Business Category:</div>
+          <div class="field-label">4. Business Category:</div>
           <div class="field-dots">${(cert.category || '').toUpperCase()}</div>
         </div>
       </div>
@@ -857,27 +1097,20 @@ export function BusinessesPage() {
         </div>
       </div>
 
-      <!-- Note -->
-      <div class="note-section">
-        <div class="note-label">NOTE:</div>
-        <div class="note-text">
-          This Permit is not transferable.<br/>
-          Display this Permit at a conspicuous place<br/>
-          at the business premises.
-        </div>
-      </div>
-
       <!-- Footer -->
       <div class="footer-section">
-        <div class="qr-section">
-          ${qrDataUrl ? `<img src="${qrDataUrl}" style="width:110px;height:110px;display:block;" />` : `<div class="qr-placeholder">QR CODE<br/>VERIFICATION</div>`}
-          <div class="qr-unique-id">${cert.businessUniqueNumber || cert.certNumber || ''}</div>
+        <div class="note-section">
+          <div class="note-label">Note:</div>
+          <div class="note-text">
+            This Permit is not transferable.<br/>
+            Display this Permit at a conspicuous place<br/>
+            at the business premises.
+          </div>
         </div>
         <div class="sign-section">
-          ${dynSignature ? `<img src="${dynSignature}" style="width:180px;height:60px;object-fit:contain;margin-bottom:4px;" />` : '<div class="sign-line"></div>'}
-          <div class="sign-title">${dynSignatoryName ? dynSignatoryName.toUpperCase() : 'Signature'}</div>
-          ${dynSignatoryTitle ? `<div class="sign-title" style="margin-top:1px;font-size:8px;letter-spacing:1px;">${dynSignatoryTitle.toUpperCase()}</div>` : ''}
-          <div class="sign-assembly">${dynAssemblyName.toUpperCase()}</div>
+          ${dynSignature ? `<div class="sign-image"><img src="${dynSignature}" alt="Signature" /></div>` : '<div class="sign-line"></div>'}
+          <div class="sign-label">${dynSignatoryName ? dynSignatoryName.toUpperCase() : 'Signature'}</div>
+          ${dynSignatoryTitle ? `<div class="sign-title">${dynSignatoryTitle.toUpperCase()}</div>` : ''}
         </div>
       </div>
 
@@ -1042,30 +1275,24 @@ export function BusinessesPage() {
 
         {/* ── Certificate Modal ──────────────────────────────────────────── */}
         {viewingCert && (() => {
-          const getOrdinal = (day: number) => {
-            const s = ['th','st','nd','rd'];
-            const v = day % 100;
-            return day + (s[(v-20)%10] || s[v] || s[0]);
-          };
-          // Read assembly name dynamically from settings at view time
           const _asm = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); } catch { return {}; } })();
           const dynAssemblyName = _asm.name || viewingCert.assemblyName || 'Kpando Municipal Assembly';
+          const _dynLogo = _asm.logo || '';
           const _dynSig = _asm.signature || '';
           const _dynSigName = _asm.signatureName || '';
           const _dynSigTitle = _asm.signatureTitle || '';
-          let dayOrd = '..................';
-          let monthName = '..................';
-          let yearShort = '........';
-          if (viewingCert.dateIssued) {
+          const fmtDateOrdinalPreview = (d: string) => {
+            if (!d) return '..................';
             try {
-              const d = new Date(viewingCert.dateIssued);
-              dayOrd = getOrdinal(d.getDate());
-              monthName = d.toLocaleDateString('en-US', { month: 'long' });
-              yearShort = String(d.getFullYear()).slice(-2);
-            } catch {}
-          }
-          const expiryYear = viewingCert.expiryDate ? new Date(viewingCert.expiryDate).getFullYear() : new Date().getFullYear() + 1;
-          const assemblyShort = dynAssemblyName.replace(/\b(Metropolitan|Municipal|District|Assembly)\b/gi, '').trim().split(' ')[0];
+              const dt = new Date(d);
+              const day = dt.getDate();
+              const s = ['th','st','nd','rd'];
+              const v = day % 100;
+              const suffix = s[(v-20)%10] || s[v] || s[0];
+              return day + suffix + ' ' + dt.toLocaleDateString('en-US', { month: 'long' }).toUpperCase() + ', ' + dt.getFullYear();
+            } catch { return d; }
+          };
+          const _finYear = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-financial') || '{}').currentFinancialYear || String(new Date().getFullYear()); } catch { return String(new Date().getFullYear()); } })();
 
           return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setViewingCert(null)}>
@@ -1086,83 +1313,114 @@ export function BusinessesPage() {
                 </button>
               </div>
 
-              {/* Permit Preview - matches the print design */}
+              {/* Permit Preview - matching the new print design */}
               <div className="p-4">
-                <div className="rounded-lg p-6" style={{ background: '#f0ece0' }}>
-                  <div className="relative rounded-xl" style={{ background: '#FFFFFF', border: '10px solid #D97706', padding: '3px' }}>
-                    {/* Inner border */}
-                    <div className="absolute rounded-lg" style={{ inset: '7px', border: '1.5px solid #1a1a1a', pointerEvents: 'none' }} />
+                <div className="rounded-lg p-4" style={{ background: '#f5f0e1' }}>
+                  <div className="relative" style={{ background: '#FFFFFF', padding: '0' }}>
+                    {/* Double border */}
+                    <div className="absolute" style={{ inset: '0', border: '3px solid #8B6914', pointerEvents: 'none', zIndex: 3 }} />
+                    <div className="absolute" style={{ inset: '8px', border: '1.5px solid #8B6914', pointerEvents: 'none', zIndex: 3 }} />
+                    {/* Corner SVGs */}
+                    <svg className="absolute" style={{ top: '2px', left: '2px', width: '60px', height: '60px', zIndex: 4 }} viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" strokeWidth="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/></svg>
+                    <svg className="absolute" style={{ top: '2px', right: '2px', width: '60px', height: '60px', zIndex: 4, transform: 'scaleX(-1)' }} viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" strokeWidth="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/></svg>
+                    <svg className="absolute" style={{ bottom: '2px', left: '2px', width: '60px', height: '60px', zIndex: 4, transform: 'scaleY(-1)' }} viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" strokeWidth="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/></svg>
+                    <svg className="absolute" style={{ bottom: '2px', right: '2px', width: '60px', height: '60px', zIndex: 4, transform: 'scale(-1,-1)' }} viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" strokeWidth="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/></svg>
 
-                    <div className="relative py-6 px-8">
-                      {/* Header */}
-                      <div className="text-center mb-2">
-                        <div className="mt-2" style={{ fontFamily: 'Playfair Display, serif', fontSize: '24px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px', color: '#000' }}>
-                          Business Operating Permit
+                    <div className="relative" style={{ padding: '24px 28px 20px', zIndex: 1 }}>
+                      {/* Header: Logo + Assembly Name */}
+                      <div className="flex items-center justify-center gap-0 mb-1">
+                        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '70px', height: '70px' }}>
+                          {_dynLogo ? <img src={_dynLogo} alt="Logo" style={{ width: '65px', height: '65px', objectFit: 'contain' }} /> : <div className="flex items-center justify-center text-center" style={{ width: '60px', height: '60px', border: '2px solid #333', borderRadius: '50%', fontSize: '7px', color: '#666', lineHeight: 1.2, background: '#fafafa' }}>LOGO</div>}
+                        </div>
+                        <div style={{ width: '2px', height: '70px', background: '#000', margin: '0 12px', flexShrink: 0 }} />
+                        <div>
+                          <div style={{ fontFamily: 'Times New Roman, Times, serif', fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', color: '#000' }}>{dynAssemblyName.toUpperCase()}</div>
                         </div>
                       </div>
 
-                      {/* Business Number */}
-                      <div className="text-center my-3">
-                        <div className="uppercase tracking-[2px]" style={{ fontSize: '9px', fontWeight: 700, color: '#333' }}>Business Number</div>
-                        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '28px', fontWeight: 900, color: '#991B1B' }}>
+                      {/* Subtitle */}
+                      <div className="text-center my-2">
+                        <div style={{ fontFamily: 'Times New Roman, Times, serif', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', color: '#000' }}>Business Operating Permit</div>
+                        <div className="flex items-center justify-center mt-1">
+                          <div style={{ width: '80px', height: '1.5px', background: '#8B6914' }} />
+                          <div style={{ width: '3px', height: '3px', background: '#8B6914', borderRadius: '50%', margin: '0 3px' }} />
+                          <div style={{ width: '7px', height: '7px', background: '#8B6914', transform: 'rotate(45deg)', margin: '0 5px' }} />
+                          <div style={{ width: '3px', height: '3px', background: '#8B6914', borderRadius: '50%', margin: '0 3px' }} />
+                          <div style={{ width: '80px', height: '1.5px', background: '#8B6914' }} />
+                        </div>
+                      </div>
+
+                      {/* Business Number with Watermark */}
+                      <div className="text-center my-3 relative">
+                        <div className="absolute" style={{ top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '180px', height: '180px', border: '2px solid #ccc', borderRadius: '50%', opacity: 0.07, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 0 }}>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '1px' }}>{dynAssemblyName.toUpperCase()}</div>
+                        </div>
+                        <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', color: '#000', position: 'relative', zIndex: 1 }}>Business Name</div>
+                        <div style={{ fontFamily: 'Times New Roman, Times, serif', fontSize: '26px', fontWeight: 'bold', color: '#B22222', letterSpacing: '1px', position: 'relative', zIndex: 1 }}>
                           {viewingCert.businessUniqueNumber || viewingCert.regNumber || viewingCert.certNumber}
                         </div>
                       </div>
 
                       {/* Legal Text */}
-                      <div className="text-center my-3" style={{ fontSize: '10px', lineHeight: '1.8', color: '#333', fontStyle: 'italic' }}>
-                        Issued under the Local Government Act, 2016 (Act 936)<br/>
-                        Section 140 and bye-laws to operate business<br/>
-                        within the <span style={{ fontWeight: 700, textTransform: 'uppercase', color: '#000', fontStyle: 'normal' }}>{dynAssemblyName.toUpperCase()}</span><br/>
-                        Jurisdiction for the year {(() => { try { return JSON.parse(localStorage.getItem('rms-settings-financial') || '{}').currentFinancialYear || String(new Date().getFullYear()); } catch { return String(new Date().getFullYear()); } })()}.
+                      <div className="text-center my-2" style={{ fontSize: '9.5px', lineHeight: '1.8', color: '#333', fontStyle: 'italic', padding: '0 10px' }}>
+                        Issued under the Local Governance Act, 2016 (Act 936)<br/>
+                        Section 87(1) to operate a business within the<br/>
+                        <span style={{ fontWeight: 'bold', textTransform: 'uppercase', color: '#000', fontStyle: 'normal' }}>{dynAssemblyName.toUpperCase()}</span><br/>
+                        Jurisdiction for the year {_finYear}.
                       </div>
 
                       {/* Separator */}
-                      <div className="h-[2px] my-3" style={{ background: 'linear-gradient(90deg, transparent, #D97706, #1a1a1a, #D97706, transparent)' }} />
+                      <div className="my-2" style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent, #8B6914, #333, #8B6914, transparent)' }} />
 
                       {/* Fields */}
-                      <div className="my-3 mx-auto" style={{ maxWidth: '440px' }}>
+                      <div className="my-2 mx-auto" style={{ maxWidth: '420px' }}>
                         <div className="flex items-baseline mb-2 gap-2">
-                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Business Number</div>
-                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{(viewingCert.businessUniqueNumber || viewingCert.regNumber || '').toUpperCase()}</div>
+                          <div className="uppercase tracking-wide flex-shrink-0" style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#000', minWidth: '160px' }}>1. Business Number:</div>
+                          <div className="font-bold" style={{ fontSize: '11px', color: '#000', borderBottom: '1.5px dotted #333', flex: 1, paddingBottom: '1px' }}>{(viewingCert.businessUniqueNumber || viewingCert.regNumber || '').toUpperCase()}</div>
                         </div>
                         <div className="flex items-baseline mb-2 gap-2">
-                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Business Location</div>
-                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{((viewingCert as any).businessLocation || '').toUpperCase()}</div>
+                          <div className="uppercase tracking-wide flex-shrink-0" style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#000', minWidth: '160px' }}>2. Business Location:</div>
+                          <div className="font-bold" style={{ fontSize: '11px', color: '#000', borderBottom: '1.5px dotted #333', flex: 1, paddingBottom: '1px' }}>{((viewingCert as any).businessLocation || '').toUpperCase()}</div>
                         </div>
                         <div className="flex items-baseline mb-2 gap-2">
-                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Business Class</div>
-                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{(viewingCert.businessType || '').toUpperCase()}</div>
+                          <div className="uppercase tracking-wide flex-shrink-0" style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#000', minWidth: '160px' }}>3. Business Class:</div>
+                          <div className="font-bold" style={{ fontSize: '11px', color: '#000', borderBottom: '1.5px dotted #333', flex: 1, paddingBottom: '1px' }}>{(viewingCert.businessType || '').toUpperCase()}</div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Business Category</div>
-                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{(viewingCert.category || '').toUpperCase()}</div>
+                          <div className="uppercase tracking-wide flex-shrink-0" style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#000', minWidth: '160px' }}>4. Business Category:</div>
+                          <div className="font-bold" style={{ fontSize: '11px', color: '#000', borderBottom: '1.5px dotted #333', flex: 1, paddingBottom: '1px' }}>{(viewingCert.category || '').toUpperCase()}</div>
                         </div>
                       </div>
 
                       {/* Separator */}
-                      <div className="h-[2px] my-3" style={{ background: 'linear-gradient(90deg, transparent, #D97706, #1a1a1a, #D97706, transparent)' }} />
+                      <div className="my-2" style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent, #8B6914, #333, #8B6914, transparent)' }} />
 
                       {/* Dates */}
-                      <div className="flex justify-center gap-8 my-3">
-                        <div className="text-center">
-                          <div className="uppercase tracking-[1px]" style={{ fontSize: '8px', fontWeight: 700, color: '#333' }}>Date of Issue</div>
-                          <div className="font-bold" style={{ fontSize: '11px', color: '#000' }}>{viewingCert.dateIssued ? new Date(viewingCert.dateIssued).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() : '..................'}</div>
+                      <div className="my-2 mx-auto" style={{ maxWidth: '420px' }}>
+                        <div className="flex items-baseline mb-2 gap-2">
+                          <div className="uppercase tracking-wide flex-shrink-0" style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#000', minWidth: '160px' }}>Date of Issue:</div>
+                          <div className="font-bold" style={{ fontSize: '10px', color: '#000' }}>{fmtDateOrdinalPreview(viewingCert.dateIssued)}</div>
                         </div>
-                        <div className="text-center">
-                          <div className="uppercase tracking-[1px]" style={{ fontSize: '8px', fontWeight: 700, color: '#333' }}>Expiry Date</div>
-                          <div className="font-bold" style={{ fontSize: '11px', color: '#000' }}>{viewingCert.expiryDate ? new Date(viewingCert.expiryDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() : '..................'}</div>
+                        <div className="flex items-baseline gap-2">
+                          <div className="uppercase tracking-wide flex-shrink-0" style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#000', minWidth: '160px' }}>Expiry Date:</div>
+                          <div className="font-bold" style={{ fontSize: '10px', color: '#000' }}>{fmtDateOrdinalPreview(viewingCert.expiryDate)}</div>
                         </div>
                       </div>
 
-                      {/* Footer */}
-                      <div className="flex justify-between items-end mt-4 px-4">
-                        <div className="w-16 h-16 border-2 border-slate-600 rounded flex items-center justify-center" style={{ fontSize: '7px', color: '#999', textAlign: 'center' }}>QR CODE</div>
-                        <div className="text-center">
-                          {_dynSig ? <img src={_dynSig} alt="Signature" style={{ width: '140px', height: '50px', objectFit: 'contain', margin: '0 auto 4px' }} /> : <div className="w-36 border-b-2 border-dotted border-slate-500 mx-auto mb-1" />}
-                          <div className="font-bold uppercase tracking-[2px]" style={{ fontSize: '8px', color: '#000' }}>{_dynSigName ? _dynSigName.toUpperCase() : 'Municipal Co-ordinating Director'}</div>
-                          {_dynSigTitle && <div className="font-bold uppercase tracking-[1px]" style={{ fontSize: '7px', color: '#333', marginTop: '1px' }}>{_dynSigTitle.toUpperCase()}</div>}
-                          <div className="font-bold" style={{ fontSize: '9px', color: '#991B1B', marginTop: '2px' }}>{dynAssemblyName.toUpperCase()}</div>
+                      {/* Footer: Note + Signature */}
+                      <div className="flex justify-between items-end mt-4 px-2">
+                        <div>
+                          <div style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#B22222', marginBottom: '4px' }}>Note:</div>
+                          <div style={{ fontSize: '8.5px', lineHeight: '1.7', color: '#333' }}>
+                            This Permit is not transferable.<br/>
+                            Display this Permit at a conspicuous place<br/>
+                            at the business premises.
+                          </div>
+                        </div>
+                        <div className="text-center" style={{ minWidth: '180px' }}>
+                          {_dynSig ? <img src={_dynSig} alt="Signature" style={{ width: '120px', height: '40px', objectFit: 'contain', margin: '0 auto 3px' }} /> : <div style={{ width: '140px', borderBottom: '1.5px dotted #333', margin: '0 auto 3px' }} />}
+                          <div className="font-bold uppercase" style={{ fontSize: '8px', letterSpacing: '1.5px', color: '#000' }}>{_dynSigName ? _dynSigName.toUpperCase() : 'Signature'}</div>
+                          {_dynSigTitle && <div className="font-bold uppercase" style={{ fontSize: '7px', letterSpacing: '1px', color: '#B22222', marginTop: '1px' }}>{_dynSigTitle.toUpperCase()}</div>}
                         </div>
                       </div>
                     </div>
