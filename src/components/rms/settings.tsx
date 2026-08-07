@@ -10,6 +10,7 @@ import {
   DollarSign,
   FileText,
   Shield,
+  Pen,
   Database,
   Bell,
   Save,
@@ -37,6 +38,9 @@ interface AssemblyInfo {
   address: string;
   description: string;
   logo: string;
+  signature: string;
+  signatureName: string;
+  signatureTitle: string;
 }
 
 interface FinancialInfo {
@@ -86,6 +90,9 @@ const defaultAssembly: AssemblyInfo = {
   address: '',
   description: '',
   logo: '',
+  signature: '',
+  signatureName: '',
+  signatureTitle: '',
 };
 
 const defaultFinancial: FinancialInfo = {
@@ -237,6 +244,7 @@ const selectCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-6
 // ── Assembly Tab ──
 function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (field: keyof AssemblyInfo, value: string) => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sigInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -254,6 +262,24 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
   const handleRemoveLogo = () => {
     onChange('logo', '');
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSignatureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target?.result) {
+        onChange('signature', ev.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveSignature = () => {
+    onChange('signature', '');
+    if (sigInputRef.current) sigInputRef.current.value = '';
   };
 
   return (
@@ -312,6 +338,43 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
         <div className="lg:col-span-2 space-y-2">
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Assembly Description</label>
           <textarea rows={3} value={data.description} onChange={(e) => onChange('description', e.target.value)} placeholder="Enter assembly description" className={inputCls + ' resize-none'} />
+        </div>
+        <div className="lg:col-span-2 space-y-2">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><Pen className="w-3.5 h-3.5" /> Authorized Signature</label>
+          <div className="flex items-start gap-5">
+            <div className={`w-48 h-24 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900/40 ${data.signature ? 'border-emerald-400 dark:border-emerald-600' : 'border-slate-300 dark:border-slate-600'}`}>
+              {data.signature ? (
+                <img src={data.signature} alt="Assembly Signature" className="w-full h-full object-contain" />
+              ) : (
+                <div className="text-center text-slate-400 dark:text-slate-500">
+                  <Pen className="w-6 h-6 mx-auto mb-1 opacity-40" />
+                  <span className="text-xs">No signature</span>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <input ref={sigInputRef} type="file" accept="image/*" onChange={handleSignatureUpload} className="hidden" />
+                <button type="button" onClick={() => sigInputRef.current?.click()} className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 cursor-pointer">
+                  <Upload className="w-4 h-4" /> Upload Signature
+                </button>
+                {data.signature && (
+                  <button onClick={handleRemoveSignature} className="px-3 py-2 border border-red-300 dark:border-red-700 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
+                    Remove
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs">Upload the authorized signer's signature image. This will appear on business certificates and official documents.</p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Signatory Name</label>
+          <input type="text" value={data.signatureName} onChange={(e) => onChange('signatureName', e.target.value)} placeholder="e.g. Hon. John Doe" className={inputCls} />
+        </div>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Signatory Title</label>
+          <input type="text" value={data.signatureTitle} onChange={(e) => onChange('signatureTitle', e.target.value)} placeholder="e.g. Municipal Chief Executive" className={inputCls} />
         </div>
       </div>
     </div>

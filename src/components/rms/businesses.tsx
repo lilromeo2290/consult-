@@ -653,6 +653,9 @@ export function BusinessesPage() {
     const _asmSettings = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); } catch { return {}; } })();
     const dynAssemblyName = _asmSettings.name || cert.assemblyName || 'Kpando Municipal Assembly';
     const dynAssemblyAddress = _asmSettings.address || cert.assemblyAddress || '';
+    const dynSignature = _asmSettings.signature || '';
+    const dynSignatoryName = _asmSettings.signatureName || '';
+    const dynSignatoryTitle = _asmSettings.signatureTitle || '';
     const fmtDate = (d: string) => {
       if (!d) return '..................';
       try {
@@ -859,8 +862,9 @@ export function BusinessesPage() {
           <div class="qr-unique-id">${cert.businessUniqueNumber || cert.certNumber || ''}</div>
         </div>
         <div class="sign-section">
-          <div class="sign-line"></div>
-          <div class="sign-title">Signature</div>
+          ${dynSignature ? `<img src="${dynSignature}" style="width:180px;height:60px;object-fit:contain;margin-bottom:4px;" />` : '<div class="sign-line"></div>'}
+          <div class="sign-title">${dynSignatoryName ? dynSignatoryName.toUpperCase() : 'Signature'}</div>
+          ${dynSignatoryTitle ? `<div class="sign-title" style="margin-top:1px;font-size:8px;letter-spacing:1px;">${dynSignatoryTitle.toUpperCase()}</div>` : ''}
           <div class="sign-assembly">${dynAssemblyName.toUpperCase()}</div>
         </div>
       </div>
@@ -1034,6 +1038,9 @@ export function BusinessesPage() {
           // Read assembly name dynamically from settings at view time
           const _asm = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); } catch { return {}; } })();
           const dynAssemblyName = _asm.name || viewingCert.assemblyName || 'Kpando Municipal Assembly';
+          const _dynSig = _asm.signature || '';
+          const _dynSigName = _asm.signatureName || '';
+          const _dynSigTitle = _asm.signatureTitle || '';
           let dayOrd = '..................';
           let monthName = '..................';
           let yearShort = '........';
@@ -1136,8 +1143,9 @@ export function BusinessesPage() {
                       <div className="flex justify-between items-end mt-4 px-4">
                         <div className="w-16 h-16 border-2 border-slate-600 rounded flex items-center justify-center" style={{ fontSize: '7px', color: '#999', textAlign: 'center' }}>QR CODE</div>
                         <div className="text-center">
-                          <div className="w-36 border-b-2 border-dotted border-slate-500 mx-auto mb-1" />
-                          <div className="font-bold uppercase tracking-[2px]" style={{ fontSize: '8px', color: '#000' }}>Municipal Co-ordinating Director</div>
+                          {_dynSig ? <img src={_dynSig} alt="Signature" style={{ width: '140px', height: '50px', objectFit: 'contain', margin: '0 auto 4px' }} /> : <div className="w-36 border-b-2 border-dotted border-slate-500 mx-auto mb-1" />}
+                          <div className="font-bold uppercase tracking-[2px]" style={{ fontSize: '8px', color: '#000' }}>{_dynSigName ? _dynSigName.toUpperCase() : 'Municipal Co-ordinating Director'}</div>
+                          {_dynSigTitle && <div className="font-bold uppercase tracking-[1px]" style={{ fontSize: '7px', color: '#333', marginTop: '1px' }}>{_dynSigTitle.toUpperCase()}</div>}
                           <div className="font-bold" style={{ fontSize: '9px', color: '#991B1B', marginTop: '2px' }}>{dynAssemblyName.toUpperCase()}</div>
                         </div>
                       </div>
