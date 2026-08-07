@@ -172,6 +172,7 @@ export function BusinessesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingCert, setViewingCert] = useState<BusinessCert | null>(null);
   const [businesses, setBusinesses, dataLoading] = useSyncedStorage<Business[]>('rms-businesses', mockBusinesses);
+  const [bizCerts, setBizCerts] = useSyncedStorage<BusinessCert[]>('rms-business-certs', []);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bizRevenueCodeRef = useRef<HTMLDivElement>(null);
   const bizRevenueDescRef = useRef<HTMLDivElement>(null);
@@ -513,8 +514,7 @@ export function BusinessesPage() {
 
     // Auto-generate business certificate
     try {
-      const existingCerts = JSON.parse(localStorage.getItem('rms-business-certs') || '[]');
-      const certSeq = existingCerts.length + 1;
+      const certSeq = bizCerts.length + 1;
       const today = new Date().toISOString().split('T')[0];
       const expiryDate = new Date();
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
@@ -525,7 +525,7 @@ export function BusinessesPage() {
       const assemblyAddress = (() => {
         try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.address || ''; } catch { return ''; }
       })();
-      const newCert = {
+      const newCert: BusinessCert = {
         id: `CRT-${Date.now()}`,
         certNumber: `CRT-${String(certSeq).padStart(4, '0')}`,
         regNumber: regNum,
@@ -543,8 +543,7 @@ export function BusinessesPage() {
         tradingName: newBusiness.name,
         receiptNumber: `RCT-${String(certSeq).padStart(4, '0')}`,
       };
-      existingCerts.push(newCert);
-      localStorage.setItem('rms-business-certs', JSON.stringify(existingCerts));
+      setBizCerts((prev) => [...prev, newCert]);
     } catch { /* cert generation failure should not block registration */ }
 
     setEditingRegNumber(null);
@@ -616,16 +615,11 @@ export function BusinessesPage() {
 
   // ── Certificate View & Print ─────────────────────────────────────────────
   const handleViewCertificate = (regNumber: string) => {
-    try {
-      const certs: BusinessCert[] = JSON.parse(localStorage.getItem('rms-business-certs') || '[]');
-      const cert = certs.find((c) => c.regNumber === regNumber);
-      if (cert) {
-        setViewingCert(cert);
-      } else {
-        alert('No certificate found for this business. Certificates are generated automatically when a business is saved.');
-      }
-    } catch {
-      alert('Error reading certificate data.');
+    const cert = bizCerts.find((c) => c.regNumber === regNumber);
+    if (cert) {
+      setViewingCert(cert);
+    } else {
+      alert('No certificate found for this business. Certificates are generated automatically when a business is saved.');
     }
   };
 

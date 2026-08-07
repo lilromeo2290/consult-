@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   BarChart3,
   Download,
@@ -63,32 +64,24 @@ const zoneReports: ZoneReport[] = [];
 
 const monthlyComparison: MonthlyComparison[] = [];
 
-function getStorageCount(key: string): number {
-  try { return (JSON.parse(localStorage.getItem(key) || '[]') as unknown[]).length; } catch { return 0; }
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 type ReportView = 'overview' | 'revenue' | 'zones' | 'monthly';
 
 export function ReportsPage() {
+  // Synced data for counts
+  const [bizData] = useSyncedStorage<unknown[]>('rms-businesses', []);
+  const [propData] = useSyncedStorage<unknown[]>('rms-properties', []);
+  const [rentData] = useSyncedStorage<unknown[]>('rms-rents', []);
+  const [payData] = useSyncedStorage<unknown[]>('rms-payments', []);
+
   const [view, setView] = useState<ReportView>('overview');
   const [period, setPeriod] = useState<'Monthly' | 'Quarterly' | 'Annually'>('Monthly');
   const [zoneFilter, setZoneFilter] = useState<string>('All');
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
 
-  const [entityCount, setEntityCount] = useState(0);
-  const [receiptCount, setReceiptCount] = useState(0);
-
-  useEffect(() => {
-    const update = () => {
-      setEntityCount(getStorageCount('rms-businesses') + getStorageCount('rms-properties') + getStorageCount('rms-rents'));
-      setReceiptCount(getStorageCount('rms-payments'));
-    };
-    update();
-    window.addEventListener('storage', update);
-    return () => window.removeEventListener('storage', update);
-  }, []);
+  const entityCount = bizData.length + propData.length + rentData.length;
+  const receiptCount = payData.length;
 
   const filteredZones = useMemo(() => {
     if (zoneFilter === 'All') return zoneReports;

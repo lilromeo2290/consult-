@@ -84,12 +84,8 @@ const RATE_AMOUNTS: Record<string, number> = {
   'Fire Safety Cert': 350,
 };
 
-function loadEntities(): { id: string; name: string; type: string; category?: string }[] {
+function loadEntities(businesses: any[], properties: any[], rents: any[]): { id: string; name: string; type: string; category?: string }[] {
   try {
-    const businesses = JSON.parse(localStorage.getItem('rms-businesses') || '[]') as { regNumber: string; name: string; type: string; category: string }[];
-    const properties = JSON.parse(localStorage.getItem('rms-properties') || '[]') as { propNumber: string; ownerName: string; propertyUseType: string; category: string }[];
-    const rents = JSON.parse(localStorage.getItem('rms-rents') || '[]') as { id: string; rentObjectName: string; rentClass: string; rentCategory: string }[];
-
     const list: { id: string; name: string; type: string; category?: string }[] = [];
 
     for (const b of businesses) {
@@ -120,6 +116,11 @@ function formatCurrency(amount: number): string {
 
 export function BillingPage() {
   const [bills, setBills] = useSyncedStorage<Bill[]>('rms-bills', initialBills);
+  // Synced entity data for dropdown lookups
+  const [bizData] = useSyncedStorage<any[]>('rms-businesses', []);
+  const [propData] = useSyncedStorage<any[]>('rms-properties', []);
+  const [rentData] = useSyncedStorage<any[]>('rms-rents', []);
+  const entities = useMemo(() => loadEntities(bizData, propData, rentData), [bizData, propData, rentData]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
@@ -129,7 +130,6 @@ export function BillingPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
-  const [entities, setEntities] = useState(loadEntities());
   const [bulkForm, setBulkForm] = useState({
     entityType: 'All' as 'All' | 'Business' | 'Property' | 'Rent',
     category: 'All',
@@ -544,7 +544,7 @@ export function BillingPage() {
             <Plus className="w-4 h-4" />
             Generate Bill
           </button>
-          <button onClick={() => { setEntities(loadEntities()); setShowBulkModal(true); setBulkProgress('idle'); setBulkGeneratedCount(0); }} className={btnSecondary}>
+          <button onClick={() => { setShowBulkModal(true); setBulkProgress('idle'); setBulkGeneratedCount(0); }} className={btnSecondary}>
             <Zap className="w-4 h-4" />
             Bulk Generate
           </button>

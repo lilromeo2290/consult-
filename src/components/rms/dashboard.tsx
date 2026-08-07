@@ -102,15 +102,6 @@ const fmt = (n: number) =>
 
 const fmtCurrency = (n: number) => `GH\u20a8 ${fmt(n)}`;
 
-function readLS<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (raw) return JSON.parse(raw) as T;
-  } catch { /* ignore */ }
-  return fallback;
-}
-
 // ---------------------------------------------------------------------------
 // Color palette
 // ---------------------------------------------------------------------------
@@ -270,34 +261,11 @@ export function DashboardPage() {
   const [assemblyInfo] = useSyncedStorage<{ name: string; code: string; address: string }>('rms-settings-assembly', { name: '', code: '', address: '' });
   const assemblyName = assemblyInfo.name || 'Kpando Municipal Assembly';
 
-  // Read all data from localStorage on mount + listen for changes
-  const [businesses, setBusinesses] = useState<LSBusiness[]>([]);
-  const [properties, setProperties] = useState<LSProperty[]>([]);
-  const [bills, setBills] = useState<LSBill[]>([]);
-  const [payments, setPayments] = useState<LSPayment[]>([]);
-
-  useEffect(() => {
-    // Initial load
-    setBusinesses(readLS<LSBusiness[]>('rms-businesses', []));
-    setProperties(readLS<LSProperty[]>('rms-properties', []));
-    setBills(readLS<LSBill[]>('rms-bills', []));
-    setPayments(readLS<LSPayment[]>('rms-payments', []));
-
-    // Listen for storage changes (cross-tab sync)
-    const handler = () => {
-      setBusinesses(readLS<LSBusiness[]>('rms-businesses', []));
-      setProperties(readLS<LSProperty[]>('rms-properties', []));
-      setBills(readLS<LSBill[]>('rms-bills', []));
-      setPayments(readLS<LSPayment[]>('rms-payments', []));
-    };
-    window.addEventListener('storage', handler);
-    // Also poll every 3 seconds so same-tab updates reflect
-    const interval = setInterval(handler, 3000);
-    return () => {
-      window.removeEventListener('storage', handler);
-      clearInterval(interval);
-    };
-  }, []);
+  // All data from server-synced storage
+  const [businesses] = useSyncedStorage<LSBusiness[]>('rms-businesses', []);
+  const [properties] = useSyncedStorage<LSProperty[]>('rms-properties', []);
+  const [bills] = useSyncedStorage<LSBill[]>('rms-bills', []);
+  const [payments] = useSyncedStorage<LSPayment[]>('rms-payments', []);
 
   // ── Computed Stats ────────────────────────────────────────────────────
 
