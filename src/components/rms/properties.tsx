@@ -261,6 +261,7 @@ export function PropertiesPage() {
       searchQuery === '' ||
       p.ownerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.propNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ((p as any).propertyUniqueNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.streetName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchType = typeFilter === 'All' || p.propertyUseType.toLowerCase().includes(typeFilter.toLowerCase());
     return matchSearch && matchType;
@@ -512,7 +513,7 @@ export function PropertiesPage() {
                 ) : (
                   paged.map((prop) => (
                     <tr key={prop.propNumber} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{prop.propNumber}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap font-medium">{(prop as any).propertyUniqueNumber || prop.propNumber}</td>
                       <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{prop.ownerName}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap max-w-[200px] truncate">{(prop.propertyUseType || '').split(':')[1] ? (prop.propertyUseType || '').split(':')[1].trim() : (prop.propertyUseType || '')}</td>
                       <td className="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">{formatVal(prop.value)}</td>
