@@ -80,7 +80,30 @@ def main():
     # Copy server.js to root (for compatibility with current ecosystem.config)
     run_cmd(ssh, f'cp {REMOTE_STANDALONE}/server.js {REMOTE_BASE}/server.js')
 
-    # Also update top-level .next for static serving
+    # CRITICAL: Next.js standalone does NOT include static files.
+    # We must copy .next/static and public into the standalone directory.
+    # First upload them via SFTP.
+    print('  Uploading static files...')
+    sftp2 = ssh.open_sftp()
+    local_static = '/tmp/rms-static.tar.gz'
+    os.system(f'tar czf {local_static} -C .next static')
+    remote_static = f'{REMOTE_BASE}/rms-static.tar.gz'
+    sftp2.put(local_static, remote_static)
+    sftp2.close()
+    run_cmd(ssh, f'mkdir -p {REMOTE_STANDALONE}/.next')
+    run_cmd(ssh, f'tar xzf {remote_static} -C {REMOTE_STANDALONE}/.next')
+    run_cmd(ssh, f'rm -f {remote_static}')
+    # Also copy public folder
+    if os.path.exists('public'):
+        local_public = '/tmp/rms-public.tar.gz'
+        os.system(f'tar czf {local_public} -C . public')
+        sftp3 = ssh.open_sftp()
+        remote_public = f'{REMOTE_BASE}/rms-public.tar.gz'
+        sftp3.put(local_public, remote_public)
+        sftp3.close()
+        run_cmd(ssh, f'tar xzf {remote_public} -C {REMOTE_STANDALONE}')
+        run_cmd(ssh, f'rm -f {remote_public}')
+    # Also update top-level .next for static serving (legacy fallback)
     run_cmd(ssh, f'cp -r {REMOTE_STANDALONE}/.next/static {REMOTE_BASE}/.next/static 2>/dev/null || true')
     run_cmd(ssh, f'cp {REMOTE_STANDALONE}/.next/BUILD_ID {REMOTE_BASE}/.next/BUILD_ID 2>/dev/null || true')
 
