@@ -45,10 +45,12 @@ interface BusinessCert {
   id: string;
   certNumber: string;
   regNumber: string;
+  businessUniqueNumber: string;
   businessName: string;
   ownerName: string;
   businessType: string;
   category: string;
+  businessLocation: string;
   businessAddress: string;
   dateRegistered: string;
   dateIssued: string;
@@ -541,9 +543,10 @@ export function BusinessesPage() {
     try {
       const certSeq = bizCerts.length + 1;
       const today = new Date().toISOString().split('T')[0];
-      const expiryDate = new Date();
-      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-      const expiryStr = expiryDate.toISOString().split('T')[0];
+      // Expiry = Dec 31 of the current financial year
+      const _finSettings = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-financial') || '{}'); } catch { return {}; } })();
+      const fiscalYear = parseInt(_finSettings.currentFinancialYear) || new Date().getFullYear();
+      const expiryStr = `${fiscalYear}-12-31`;
       const assemblyName = (() => {
         try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; }
       })();
@@ -554,10 +557,12 @@ export function BusinessesPage() {
         id: `CRT-${Date.now()}`,
         certNumber: `CRT-${String(certSeq).padStart(4, '0')}`,
         regNumber: regNum,
+        businessUniqueNumber: newBusiness.businessUniqueNumber || '',
         businessName: newBusiness.name,
         ownerName: newBusiness.owner,
         businessType: newBusiness.type,
         category: newBusiness.category,
+        businessLocation: newBusiness.locality || '',
         businessAddress: newBusiness.businessAddress,
         dateRegistered: newBusiness.dateRegistered,
         dateIssued: today,
@@ -670,8 +675,11 @@ export function BusinessesPage() {
     };
     const issueDate = cert.dateIssued ? fmtDate(cert.dateIssued) : '..................';
     const expiryDate = cert.expiryDate ? fmtDate(cert.expiryDate) : '..................';
-    const businessNo = cert.regNumber || cert.certNumber || '';
-    const currentYear = new Date().getFullYear();
+    const businessNo = cert.businessUniqueNumber || cert.regNumber || cert.certNumber || '';
+    const businessLocation = (cert as any).businessLocation || cert.businessAddress || '';
+    // Get fiscal year for the legal text
+    const _finSet = (() => { try { return JSON.parse(localStorage.getItem('rms-settings-financial') || '{}'); } catch { return {}; } })();
+    const currentYear = parseInt(_finSet.currentFinancialYear) || new Date().getFullYear();
 
     // Generate QR code as data URL
     let qrDataUrl = '';
@@ -818,16 +826,20 @@ export function BusinessesPage() {
       <!-- Fields -->
       <div class="fields-section">
         <div class="field-row">
-          <div class="field-label">Name of Business:</div>
-          <div class="field-dots">${cert.businessName.toUpperCase()}</div>
+          <div class="field-label">Business Number:</div>
+          <div class="field-dots">${businessNo}</div>
         </div>
         <div class="field-row">
           <div class="field-label">Business Location:</div>
-          <div class="field-dots">${(cert.businessAddress || '').toUpperCase()}</div>
+          <div class="field-dots">${businessLocation.toUpperCase()}</div>
         </div>
         <div class="field-row">
-          <div class="field-label">Type of Business:</div>
-          <div class="field-dots">${(cert.category || cert.businessType || '').toUpperCase()}</div>
+          <div class="field-label">Business Class:</div>
+          <div class="field-dots">${(cert.businessType || '').toUpperCase()}</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Business Category:</div>
+          <div class="field-dots">${(cert.category || '').toUpperCase()}</div>
         </div>
       </div>
 
@@ -1093,7 +1105,7 @@ export function BusinessesPage() {
                       <div className="text-center my-3">
                         <div className="uppercase tracking-[2px]" style={{ fontSize: '9px', fontWeight: 700, color: '#333' }}>Business Number</div>
                         <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '28px', fontWeight: 900, color: '#991B1B' }}>
-                          {viewingCert.regNumber || viewingCert.certNumber}
+                          {viewingCert.businessUniqueNumber || viewingCert.regNumber || viewingCert.certNumber}
                         </div>
                       </div>
 
@@ -1102,7 +1114,7 @@ export function BusinessesPage() {
                         Issued under the Local Government Act, 2016 (Act 936)<br/>
                         Section 140 and bye-laws to operate business<br/>
                         within the <span style={{ fontWeight: 700, textTransform: 'uppercase', color: '#000', fontStyle: 'normal' }}>{dynAssemblyName.toUpperCase()}</span><br/>
-                        Jurisdiction for the year {new Date().getFullYear()}.
+                        Jurisdiction for the year {(() => { try { return JSON.parse(localStorage.getItem('rms-settings-financial') || '{}').currentFinancialYear || String(new Date().getFullYear()); } catch { return String(new Date().getFullYear()); } })()}.
                       </div>
 
                       {/* Separator */}
@@ -1111,16 +1123,20 @@ export function BusinessesPage() {
                       {/* Fields */}
                       <div className="my-3 mx-auto" style={{ maxWidth: '440px' }}>
                         <div className="flex items-baseline mb-2 gap-2">
-                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Name of Business</div>
-                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{viewingCert.businessName.toUpperCase()}</div>
+                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Business Number</div>
+                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{(viewingCert.businessUniqueNumber || viewingCert.regNumber || '').toUpperCase()}</div>
                         </div>
                         <div className="flex items-baseline mb-2 gap-2">
                           <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Business Location</div>
-                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{(viewingCert.businessAddress || '').toUpperCase()}</div>
+                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{((viewingCert as any).businessLocation || '').toUpperCase()}</div>
+                        </div>
+                        <div className="flex items-baseline mb-2 gap-2">
+                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Business Class</div>
+                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{(viewingCert.businessType || '').toUpperCase()}</div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Type of Business</div>
-                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{(viewingCert.category || viewingCert.businessType || '').toUpperCase()}</div>
+                          <div className="uppercase tracking-[1px] text-right flex-shrink-0" style={{ fontSize: '10px', fontWeight: 700, color: '#000', minWidth: '160px' }}>Business Category</div>
+                          <div className="font-bold border-b border-red-800 pb-0.5" style={{ fontSize: '13px', color: '#991B1B' }}>{(viewingCert.category || '').toUpperCase()}</div>
                         </div>
                       </div>
 
