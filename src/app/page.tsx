@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SplashScreen } from '@/components/landing/splash-screen';
 import { LandingPage } from '@/components/landing/landing-page';
@@ -53,6 +53,15 @@ function RMSView() {
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const view = useAppStore((s) => s.view);
+  const currentUser = useAppStore((s) => s.currentUser);
+  const hydrated = useAppStore((s) => s.hydrated);
+
+  // Skip splash screen if user is already logged in (persisted session)
+  useEffect(() => {
+    if (hydrated && currentUser && showSplash) {
+      setShowSplash(false);
+    }
+  }, [hydrated, currentUser, showSplash]);
 
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);

@@ -6,7 +6,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  * useSyncedStorage - Server-first storage with localStorage cache.
  * Reads from server DB first, falls back to localStorage, then syncs both.
  * Every write saves to both localStorage AND the server API.
- * Server writes now use async/await with retry for reliability.
+ * Auto-refreshes from server every 30 seconds so changes made on
+ * another computer appear automatically without re-logging in.
  */
 export function useSyncedStorage<T>(
   key: string,
@@ -15,6 +16,7 @@ export function useSyncedStorage<T>(
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
   const initialized = useRef(false);
+  const lastServerData = useRef<string | null>(null);
 
   // Helper: save to server with retry
   const saveToServer = useCallback(async (k: string, data: unknown, retries = 2) => {
@@ -35,7 +37,32 @@ export function useSyncedStorage<T>(
     return false;
   }, []);
 
-  // On mount: fetch from server, merge with localStorage
+  // Fetch data from server and update state if changed
+  const fetchFromServer = useCallback(async (k: string, isInit: boolean) => {
+    try {
+      const res = await fetch(`/api/rms-data?key=${encodeURIComponent(k)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data !== null && json.data !== undefined) {
+          const serialized = JSON.stringify(json.data);
+          // Only update state if data actually changed (avoids unnecessary re-renders)
+          if (lastServerData.current !== serialized) {
+            lastServerData.current = serialized;
+            const localStorageKey = `local-${k}`;
+            window.localStorage.setItem(localStorageKey, serialized);
+            window.localStorage.setItem(k, serialized);
+            setStoredValue(json.data);
+          }
+          return true;
+        }
+      }
+    } catch (err) {
+      if (isInit) console.warn(`Server fetch failed for "${k}", using localStorage:`, err);
+    }
+    return false;
+  }, []);
+
+  // On mount: fetch from server, fall back to localStorage
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -43,51 +70,49 @@ export function useSyncedStorage<T>(
     const localStorageKey = `local-${key}`;
 
     const init = async () => {
-      try {
-        // Try server first
-        const res = await fetch(`/api/rms-data?key=${encodeURIComponent(key)}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data !== null && json.data !== undefined) {
-            // Also save to both localStorage keys as cache
-            window.localStorage.setItem(localStorageKey, JSON.stringify(json.data));
-            window.localStorage.setItem(key, JSON.stringify(json.data));
-            setStoredValue(json.data);
-            setLoading(false);
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn(`Server fetch failed for "${key}", using localStorage:`, err);
-      }
+      const found = await fetchFromServer(key, true);
 
-      // Fallback: read from localStorage
-      try {
-        const item = window.localStorage.getItem(localStorageKey);
-        if (item) {
-          const localData = JSON.parse(item);
-          setStoredValue(localData);
-          // Push local data to server so it's synced (with retry)
-          saveToServer(key, localData);
+      if (!found) {
+        // Fallback: read from localStorage
+        try {
+          const item = window.localStorage.getItem(localStorageKey);
+          if (item) {
+            const localData = JSON.parse(item);
+            lastServerData.current = item;
+            setStoredValue(localData);
+            // Push local data to server so it's synced
+            saveToServer(key, localData);
+          }
+        } catch (error) {
+          console.warn(`Error reading localStorage key "${localStorageKey}":`, error);
         }
-      } catch (error) {
-        console.warn(`Error reading localStorage key "${localStorageKey}":`, error);
       }
       setLoading(false);
     };
 
     init();
-  }, [key, saveToServer]);
+  }, [key, saveToServer, fetchFromServer]);
+
+  // Auto-refresh from server every 30 seconds
+  useEffect(() => {
+    if (!initialized.current) return;
+    const interval = setInterval(() => {
+      fetchFromServer(key, false);
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [key, fetchFromServer]);
 
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
       setStoredValue((prev) => {
         const valueToStore = value instanceof Function ? value(prev) : value;
+        const serialized = JSON.stringify(valueToStore);
+        lastServerData.current = serialized;
         const localStorageKey = `local-${key}`;
         // Save to localStorage immediately (sync)
         try {
-          window.localStorage.setItem(localStorageKey, JSON.stringify(valueToStore));
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          window.localStorage.setItem(localStorageKey, serialized);
+          window.localStorage.setItem(key, serialized);
         } catch (e) {
           console.warn(`Failed to save "${key}" to localStorage:`, e);
         }

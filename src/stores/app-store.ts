@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 type AppView = 'landing' | 'login' | 'rms';
 type RMSPage =
@@ -48,6 +49,7 @@ interface AppState {
   view: AppView;
   rmsPage: RMSPage;
   currentUser: AppUser | null;
+  hydrated: boolean;
   setView: (view: AppView) => void;
   setRMSPage: (page: RMSPage) => void;
   openRMS: () => void;
@@ -60,38 +62,54 @@ interface AppState {
   canAccess: (page: RMSPage) => boolean;
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
-  view: 'landing',
-  rmsPage: 'dashboard',
-  currentUser: null,
-  setView: (view) => set({ view }),
-  setRMSPage: (page) => set({ rmsPage: page }),
-  openRMS: () => set({ view: 'login' }),
-  showLogin: () => set({ view: 'login' }),
-  loginSuccess: (user) => {
-    const defaultAdmin: AppUser = user ?? {
-      id: 'USR-001',
-      staffId: 'STF-001',
-      firstName: 'System',
-      lastName: 'Administrator',
-      role: 'Administrator',
-      accessiblePages: ALL_RMS_PAGES.map((p) => p.page),
-    };
-    set({ view: 'rms', rmsPage: 'dashboard', currentUser: defaultAdmin });
-  },
-  logout: () => set({ view: 'landing', rmsPage: 'dashboard', currentUser: null }),
-  backToLanding: () => set({ view: 'landing' }),
-  setCurrentUser: (user) => set({ currentUser: user }),
-  canAccess: (page) => {
-    const { currentUser } = get();
-    if (!currentUser) return false;
-    // Administrator always has full access to everything
-    if (currentUser.role === 'Administrator') return true;
-    // If accessiblePages is empty, grant all access (safety fallback)
-    if (currentUser.accessiblePages.length === 0) return true;
-    return currentUser.accessiblePages.includes(page);
-  },
-}));
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      view: 'landing' as AppView,
+      rmsPage: 'dashboard' as RMSPage,
+      currentUser: null,
+      hydrated: false,
+      setView: (view) => set({ view }),
+      setRMSPage: (page) => set({ rmsPage: page }),
+      openRMS: () => set({ view: 'login' }),
+      showLogin: () => set({ view: 'login' }),
+      loginSuccess: (user) => {
+        const defaultAdmin: AppUser = user ?? {
+          id: 'USR-001',
+          staffId: 'STF-001',
+          firstName: 'System',
+          lastName: 'Administrator',
+          role: 'Administrator',
+          accessiblePages: ALL_RMS_PAGES.map((p) => p.page),
+        };
+        set({ view: 'rms', rmsPage: 'dashboard', currentUser: defaultAdmin });
+      },
+      logout: () => set({ view: 'landing', rmsPage: 'dashboard', currentUser: null }),
+      backToLanding: () => set({ view: 'landing' }),
+      setCurrentUser: (user) => set({ currentUser: user }),
+      canAccess: (page) => {
+        const { currentUser } = get();
+        if (!currentUser) return false;
+        if (currentUser.role === 'Administrator') return true;
+        if (currentUser.accessiblePages.length === 0) return true;
+        return currentUser.accessiblePages.includes(page);
+      },
+    }),
+    {
+      name: 'rms-app-state',
+      // Only persist these fields
+      partialize: (state) => ({
+        view: state.view,
+        rmsPage: state.rmsPage,
+        currentUser: state.currentUser,
+      }),
+      // Mark as hydrated after rehydration completes
+      onRehydrateStorage: () => (state) => {
+        if (state) state.hydrated = true;
+      },
+    },
+  ),
+);
 
 export type { AppView, RMSPage, AppUser };
 export { ALL_RMS_PAGES };
