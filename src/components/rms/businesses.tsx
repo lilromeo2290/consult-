@@ -366,9 +366,9 @@ export function BusinessesPage() {
   const selectedCategoryFee = availableCategories.find(
     (c) => c.name === form.category
   );
-  // Check rate overrides first (set via Rate Configuration), otherwise show nothing
+  // Show amount from rate overrides (Rate Configuration) with fallback to default fee
   const displayAmount = form.businessClassCode
-    ? getRateOverride(form.businessClassCode) ?? null
+    ? (getRateOverride(form.businessClassCode) ?? FEE_CODE_LOOKUP[form.businessClassCode]?.amount ?? null)
     : null;
 
   // ── Filtering & Pagination ───────────────────────────────────────────────
@@ -461,6 +461,16 @@ export function BusinessesPage() {
         // Auto-fill category and amount from fee code lookup
         if (FEE_CODE_LOOKUP[code]) {
           updated.category = FEE_CODE_LOOKUP[code].category;
+        }
+      }
+      // When category changes, find the matching business class code within the current class
+      if (name === 'category' && updated.category && updated.type) {
+        const codesForClass = CLASS_TO_CODES[updated.type] || [];
+        const match = codesForClass.find(
+          (c) => FEE_CODE_LOOKUP[c]?.category === updated.category
+        );
+        if (match) {
+          updated.businessClassCode = match;
         }
       }
       // Reset category and sub-category when type changes (but not when triggered by code change)
