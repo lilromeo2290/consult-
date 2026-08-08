@@ -128,10 +128,15 @@ export function RateConfigPage() {
   }, []);
 
   // ── Persistence: save overrides to DB immediately (no debounce) ──────────
-  // Uses the in-memory store (via getAllOverrides) because setRateEntry() updates
-  // it synchronously before persistOverrides is called, so it's always current.
-  const persistOverrides = useCallback(() => {
-    const overrides = getAllOverrides();
+  // Builds payload from React rows state to stay in sync with UI.
+  const persistOverrides = useCallback((rowsSnapshot?: RateRow[]) => {
+    const source = rowsSnapshot || rows;
+    const overrides: Record<string, RateEntry> = {};
+    for (const r of source) {
+      if (r.amount > 0 || r.ceiling > 0) {
+        overrides[r.code] = { amount: r.amount, ceiling: r.ceiling };
+      }
+    }
     if (Object.keys(overrides).length === 0) return;
     fetch('/api/rms-data', {
       method: 'PUT',
@@ -140,12 +145,21 @@ export function RateConfigPage() {
     }).catch((err) => {
       console.error('Failed to save rate overrides:', err);
     });
-  }, []);
+  }, [rows]);
+
+  // Keep a ref to rows so unmount save can access latest state
+  const rowsRef = useRef(rows);
+  rowsRef.current = rows;
 
   // ── Save on unmount via fetch+keepalive (survives page teardown) ────────
   useEffect(() => {
     return () => {
-      const overrides = getAllOverrides();
+      const overrides: Record<string, RateEntry> = {};
+      for (const r of rowsRef.current) {
+        if (r.amount > 0 || r.ceiling > 0) {
+          overrides[r.code] = { amount: r.amount, ceiling: r.ceiling };
+        }
+      }
       if (Object.keys(overrides).length === 0) return;
       const payload = JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides });
       // keepalive ensures the request completes even after the component unmounts
@@ -206,11 +220,16 @@ export function RateConfigPage() {
     [sortCol],
   );
 
+  const [capWarning, setCapWarning] = useState<string | null>(null);
+
   const handleAmountEdit = (code: string, val: string) => {
     const num = parseFloat(val) || 0;
-    // Apply ceiling: if ceiling > 0 and amount > ceiling, cap at ceiling
     const row = rows.find((r) => r.code === code);
     const ceiling = row?.ceiling || 0;
+    if (ceiling > 0 && num > ceiling) {
+      setCapWarning(code);
+      setTimeout(() => setCapWarning(null), 2000);
+    }
     const capped = ceiling > 0 ? Math.min(num, ceiling) : num;
     setRows((prev) => prev.map((r) => (r.code === code ? { ...r, amount: capped } : r)));
     setRateEntry(code, capped, ceiling);
@@ -507,8 +526,28 @@ export function RateConfigPage() {
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 font-mono whitespace-nowrap">{row.code}</td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[260px] truncate">{row.businessClass}</td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[300px] truncate">{row.category}</td>
-                    <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
-                      <input type="number" inputMode="decimal" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} onBlur={(e) => { const v = e.target.value; if (v && isNaN(Number(v))) { e.target.value = String(row.amount || ''); handleAmountEdit(row.code, String(row.amount || '')); } }} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" />
+                    <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''} ${capWarning === row.code ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          value={row.amount || ''}
+                          onChange={(e) => handleAmountEdit(row.code, e.target.value)}
+                          onBlur={(e) => { const v = e.target.value; if (v && isNaN(Number(v))) { e.target.value = String(row.amount || ''); handleAmountEdit(row.code, String(row.amount || '')); } }}
+                          max={row.ceiling > 0 ? row.ceiling : undefined}
+                          className={`w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs rounded ${row.ceiling > 0 && row.amount >= row.ceiling ? 'text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-400 dark:ring-amber-500' : 'text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500'}`}
+                          step="0.01"
+                          min="0"
+                        />
+                        {row.ceiling > 0 && row.amount >= row.ceiling && (
+                          <span className="absolute right-1 -top-0.5 text-[9px] leading-none text-amber-600 dark:text-amber-400" title="At ceiling limit">
+                            MAX
+                          </span>
+                        )}
+                        {capWarning === row.code && (
+                          <span className="absolute left-1 -top-4 text-[9px] text-amber-700 dark:text-amber-300 whitespace-nowrap bg-white dark:bg-slate-800 px-1 rounded shadow">Capped at ceiling ({row.ceiling})</span>
+                        )}
+                      </div>
                     </td>
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
                       <input type="number" inputMode="decimal" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} onBlur={(e) => { const v = e.target.value; if (v && isNaN(Number(v))) { e.target.value = String(row.ceiling || ''); handleCeilingEdit(row.code, String(row.ceiling || '')); } }} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />

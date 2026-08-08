@@ -46,11 +46,12 @@ ssh_cmd(ssh, f'mkdir -p {BASE}/.next')
 ssh_cmd(ssh, f'cp {SA}/.next/BUILD_ID {BASE}/.next/BUILD_ID 2>/dev/null || true')
 ssh_cmd(ssh, f'cp -r {SA}/.next/static {BASE}/.next/static 2>/dev/null || true')
 
-# Write .env
+# Write .env to BOTH standalone dir AND base dir (PM2 reads from cwd = BASE)
 with open('/tmp/rms-env-line.txt', 'w') as f:
     f.write('DATABASE_URL=file:/home/consult-rms/data/rms.db\n')
 sftp3 = ssh.open_sftp()
 sftp3.put('/tmp/rms-env-line.txt', f'{SA}/.env')
+sftp3.put('/tmp/rms-env-line.txt', f'{BASE}/.env')
 sftp3.close()
 
 # Copy server.js to base for PM2 cwd
