@@ -171,3 +171,32 @@ Stage Summary:
 - deploy.sh creates .env with correct DATABASE_URL and preserves data dir across git reset --hard
 - All settings tabs now save to database and survive deploys
 - Zero 'Kumasi' references remain in src/
+
+---
+Task ID: 6
+Agent: Main
+Task: Fix business certificate design to match uploaded reference image
+
+Work Log:
+- User reported certificate design was changed from their original upload
+- Analyzed uploaded reference image with VLM — identified exact design specifications
+- Compared current code with reference image and found 5 key differences:
+  1. Border color: was `#8B6914` (golden/ochre), should be `#8B4513` (bronze/brown)
+  2. Title ornament: was a rotated square (diamond), should be a fleur-de-lis/floral motif SVG
+  3. Watermark: was text in a circle, should be the actual assembly seal image
+  4. Corner scrollwork: needed more intricate SVG paths (added extra arcs, circles, diagonal lines)
+  5. Modal preview: needed matching updates for all the above
+- Updated both `handlePrintCertificate` (print popup) and the modal preview IIFE
+- Fixed deploy script: tarball extraction was creating nested `standalone/standalone/` directory
+  - Changed from `cd {SA} && tar xzf` to `tar xzf -C {SA} --strip-components=1`
+- Ran `npx prisma generate` explicitly before build to ensure correct binary targets
+- Rebuilt and deployed successfully (BUILD_ID: Cd7u1n37dXP6BsQdVjGSq)
+- PM2 status: online, port 3001 listening, HTTP 200 confirmed
+
+Stage Summary:
+- Certificate border color changed to bronze/brown (#8B4513) matching reference
+- Diamond ornament replaced with fleur-de-lis flourish SVG
+- Watermark now shows assembly seal image (when configured in settings) instead of text
+- Corner scrollwork enhanced with more intricate SVG paths
+- Deploy script fixed for correct tarball extraction with --strip-components=1
+- All changes deployed to VPS and verified working

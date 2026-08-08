@@ -725,19 +725,19 @@ export function BusinessesPage() {
     .border-outer {
       position: absolute;
       inset: 0;
-      border: 3px solid #8B6914;
+      border: 3px solid #8B4513;
       pointer-events: none;
       z-index: 3;
     }
     .border-inner {
       position: absolute;
       inset: 8px;
-      border: 1.5px solid #8B6914;
+      border: 1.5px solid #8B4513;
       pointer-events: none;
       z-index: 3;
     }
     /* Corner scrollwork */
-    .corner { position: absolute; width: 80px; height: 80px; z-index: 4; }
+    .corner { position: absolute; width: 90px; height: 90px; z-index: 4; }
     .corner svg { width: 100%; height: 100%; }
     .corner-tl { top: 2px; left: 2px; }
     .corner-tr { top: 2px; right: 2px; transform: scaleX(-1); }
@@ -823,15 +823,9 @@ export function BusinessesPage() {
       justify-content: center;
       gap: 0;
     }
-    .subtitle-ornament .line { width: 120px; height: 1.5px; background: #8B6914; }
-    .subtitle-ornament .diamond {
-      width: 10px;
-      height: 10px;
-      background: #8B6914;
-      transform: rotate(45deg);
-      margin: 0 8px;
-    }
-    .subtitle-ornament .dot { width: 4px; height: 4px; background: #8B6914; border-radius: 50%; margin: 0 4px; }
+    .subtitle-ornament .line { width: 120px; height: 1.5px; background: #8B4513; }
+    .subtitle-ornament .dot { width: 4px; height: 4px; background: #8B4513; border-radius: 50%; margin: 0 6px; }
+    .subtitle-ornament .flourish { margin: 0 4px; }
     /* Business Number Section */
     .biz-number-section {
       text-align: center;
@@ -861,14 +855,19 @@ export function BusinessesPage() {
       transform: translate(-50%, -50%);
       width: 280px;
       height: 280px;
-      border: 3px solid #ccc;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0.07;
+      opacity: 0.08;
       pointer-events: none;
       z-index: 0;
+      overflow: hidden;
+    }
+    .watermark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
     .watermark-text {
       font-size: 14px;
@@ -899,7 +898,7 @@ export function BusinessesPage() {
     .separator {
       border: none;
       height: 1.5px;
-      background: linear-gradient(90deg, transparent, #8B6914, #333, #8B6914, transparent);
+      background: linear-gradient(90deg, transparent, #8B4513, #333, #8B4513, transparent);
       margin: 16px 0;
     }
     /* Fields */
@@ -1025,10 +1024,10 @@ export function BusinessesPage() {
     <div class="border-outer"></div>
     <div class="border-inner"></div>
     <!-- Corner scrollwork -->
-    <div class="corner corner-tl"><svg viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" stroke-width="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" stroke-width="1.5"/><path d="M18,56 Q18,18 56,18" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/><path d="M8,35 Q22,22 35,8" fill="none" stroke="#8B6914" stroke-width="1.5" opacity="0.6"/><path d="M5,50 Q15,35 25,20" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/></svg></div>
-    <div class="corner corner-tr"><svg viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" stroke-width="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" stroke-width="1.5"/><path d="M18,56 Q18,18 56,18" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/><path d="M8,35 Q22,22 35,8" fill="none" stroke="#8B6914" stroke-width="1.5" opacity="0.6"/><path d="M5,50 Q15,35 25,20" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/></svg></div>
-    <div class="corner corner-bl"><svg viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" stroke-width="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" stroke-width="1.5"/><path d="M18,56 Q18,18 56,18" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/><path d="M8,35 Q22,22 35,8" fill="none" stroke="#8B6914" stroke-width="1.5" opacity="0.6"/><path d="M5,50 Q15,35 25,20" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/></svg></div>
-    <div class="corner corner-br"><svg viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" stroke-width="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" stroke-width="1.5"/><path d="M18,56 Q18,18 56,18" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" stroke-width="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/><path d="M8,35 Q22,22 35,8" fill="none" stroke="#8B6914" stroke-width="1.5" opacity="0.6"/><path d="M5,50 Q15,35 25,20" fill="none" stroke="#8B6914" stroke-width="1" opacity="0.4"/></svg></div>
+    <div class="corner corner-tl"><svg viewBox="0 0 90 90"><path d="M5,80 Q5,5 80,5" fill="none" stroke="#8B4513" stroke-width="3.5"/><path d="M12,72 Q12,12 72,12" fill="none" stroke="#8B4513" stroke-width="2"/><path d="M18,64 Q18,18 64,18" fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.5"/><path d="M24,56 Q24,24 56,24" fill="none" stroke="#8B4513" stroke-width="0.8" opacity="0.3"/><circle cx="15" cy="15" r="6" fill="none" stroke="#8B4513" stroke-width="1.5"/><circle cx="15" cy="15" r="2.5" fill="#8B4513"/><path d="M8,40 Q24,24 40,8" fill="none" stroke="#8B4513" stroke-width="1.8" opacity="0.6"/><path d="M5,55 Q18,38 32,22" fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.4"/><path d="M8,8 C12,18 18,12 15,15" fill="none" stroke="#8B4513" stroke-width="1" opacity="0.5"/><circle cx="30" cy="8" r="2" fill="#8B4513" opacity="0.3"/><circle cx="8" cy="30" r="2" fill="#8B4513" opacity="0.3"/></svg></div>
+    <div class="corner corner-tr"><svg viewBox="0 0 90 90"><path d="M5,80 Q5,5 80,5" fill="none" stroke="#8B4513" stroke-width="3.5"/><path d="M12,72 Q12,12 72,12" fill="none" stroke="#8B4513" stroke-width="2"/><path d="M18,64 Q18,18 64,18" fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.5"/><path d="M24,56 Q24,24 56,24" fill="none" stroke="#8B4513" stroke-width="0.8" opacity="0.3"/><circle cx="15" cy="15" r="6" fill="none" stroke="#8B4513" stroke-width="1.5"/><circle cx="15" cy="15" r="2.5" fill="#8B4513"/><path d="M8,40 Q24,24 40,8" fill="none" stroke="#8B4513" stroke-width="1.8" opacity="0.6"/><path d="M5,55 Q18,38 32,22" fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.4"/><path d="M8,8 C12,18 18,12 15,15" fill="none" stroke="#8B4513" stroke-width="1" opacity="0.5"/><circle cx="30" cy="8" r="2" fill="#8B4513" opacity="0.3"/><circle cx="8" cy="30" r="2" fill="#8B4513" opacity="0.3"/></svg></div>
+    <div class="corner corner-bl"><svg viewBox="0 0 90 90"><path d="M5,80 Q5,5 80,5" fill="none" stroke="#8B4513" stroke-width="3.5"/><path d="M12,72 Q12,12 72,12" fill="none" stroke="#8B4513" stroke-width="2"/><path d="M18,64 Q18,18 64,18" fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.5"/><path d="M24,56 Q24,24 56,24" fill="none" stroke="#8B4513" stroke-width="0.8" opacity="0.3"/><circle cx="15" cy="15" r="6" fill="none" stroke="#8B4513" stroke-width="1.5"/><circle cx="15" cy="15" r="2.5" fill="#8B4513"/><path d="M8,40 Q24,24 40,8" fill="none" stroke="#8B4513" stroke-width="1.8" opacity="0.6"/><path d="M5,55 Q18,38 32,22" fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.4"/><path d="M8,8 C12,18 18,12 15,15" fill="none" stroke="#8B4513" stroke-width="1" opacity="0.5"/><circle cx="30" cy="8" r="2" fill="#8B4513" opacity="0.3"/><circle cx="8" cy="30" r="2" fill="#8B4513" opacity="0.3"/></svg></div>
+    <div class="corner corner-br"><svg viewBox="0 0 90 90"><path d="M5,80 Q5,5 80,5" fill="none" stroke="#8B4513" stroke-width="3.5"/><path d="M12,72 Q12,12 72,12" fill="none" stroke="#8B4513" stroke-width="2"/><path d="M18,64 Q18,18 64,18" fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.5"/><path d="M24,56 Q24,24 56,24" fill="none" stroke="#8B4513" stroke-width="0.8" opacity="0.3"/><circle cx="15" cy="15" r="6" fill="none" stroke="#8B4513" stroke-width="1.5"/><circle cx="15" cy="15" r="2.5" fill="#8B4513"/><path d="M8,40 Q24,24 40,8" fill="none" stroke="#8B4513" stroke-width="1.8" opacity="0.6"/><path d="M5,55 Q18,38 32,22" fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.4"/><path d="M8,8 C12,18 18,12 15,15" fill="none" stroke="#8B4513" stroke-width="1" opacity="0.5"/><circle cx="30" cy="8" r="2" fill="#8B4513" opacity="0.3"/><circle cx="8" cy="30" r="2" fill="#8B4513" opacity="0.3"/></svg></div>
 
     <div class="permit-inner">
       <!-- Header: Logo + Assembly Name -->
@@ -1048,7 +1047,7 @@ export function BusinessesPage() {
         <div class="subtitle-ornament">
           <div class="line"></div>
           <div class="dot"></div>
-          <div class="diamond"></div>
+          <div class="flourish"><svg width="18" height="14" viewBox="0 0 18 14"><path d="M9,0 C9,0 11,4 9,7 C7,4 9,0 9,0Z" fill="#8B4513"/><path d="M9,14 C9,14 7,10 9,7 C11,10 9,14 9,14Z" fill="#8B4513"/><path d="M0,7 C0,7 4,5 9,7 C4,9 0,7 0,7Z" fill="#8B4513" opacity="0.6"/><path d="M18,7 C18,7 14,9 9,7 C14,5 18,7 18,7Z" fill="#8B4513" opacity="0.6"/><circle cx="9" cy="7" r="1.5" fill="#8B4513"/></svg></div>
           <div class="dot"></div>
           <div class="line"></div>
         </div>
@@ -1056,9 +1055,7 @@ export function BusinessesPage() {
 
       <!-- Business Number with Watermark -->
       <div class="biz-number-section">
-        <div class="watermark">
-          <div class="watermark-text">${dynAssemblyName.toUpperCase()}</div>
-        </div>
+        <div class="watermark">${dynLogo ? `<img src="${dynLogo}" style="width:100%;height:100%;object-fit:contain;opacity:1;" />` : `<div class="watermark-text">${dynAssemblyName.toUpperCase()}</div>`}</div>
         <div class="biz-number-label">Business Name</div>
         <div class="biz-number-value">${businessNo}</div>
       </div>
@@ -1328,13 +1325,13 @@ export function BusinessesPage() {
                 <div className="rounded-lg p-4" style={{ background: '#f5f0e1' }}>
                   <div className="relative" style={{ background: '#FFFFFF', padding: '0' }}>
                     {/* Double border */}
-                    <div className="absolute" style={{ inset: '0', border: '3px solid #8B6914', pointerEvents: 'none', zIndex: 3 }} />
-                    <div className="absolute" style={{ inset: '8px', border: '1.5px solid #8B6914', pointerEvents: 'none', zIndex: 3 }} />
+                    <div className="absolute" style={{ inset: '0', border: '3px solid #8B4513', pointerEvents: 'none', zIndex: 3 }} />
+                    <div className="absolute" style={{ inset: '8px', border: '1.5px solid #8B4513', pointerEvents: 'none', zIndex: 3 }} />
                     {/* Corner SVGs */}
-                    <svg className="absolute" style={{ top: '2px', left: '2px', width: '60px', height: '60px', zIndex: 4 }} viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" strokeWidth="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/></svg>
-                    <svg className="absolute" style={{ top: '2px', right: '2px', width: '60px', height: '60px', zIndex: 4, transform: 'scaleX(-1)' }} viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" strokeWidth="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/></svg>
-                    <svg className="absolute" style={{ bottom: '2px', left: '2px', width: '60px', height: '60px', zIndex: 4, transform: 'scaleY(-1)' }} viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" strokeWidth="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/></svg>
-                    <svg className="absolute" style={{ bottom: '2px', right: '2px', width: '60px', height: '60px', zIndex: 4, transform: 'scale(-1,-1)' }} viewBox="0 0 80 80"><path d="M5,70 Q5,5 70,5" fill="none" stroke="#8B6914" strokeWidth="3"/><path d="M12,63 Q12,12 63,12" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="5" fill="none" stroke="#8B6914" strokeWidth="1.5"/><circle cx="14" cy="14" r="2" fill="#8B6914"/></svg>
+                    <svg className="absolute" style={{ top: '2px', left: '2px', width: '70px', height: '70px', zIndex: 4 }} viewBox="0 0 90 90"><path d="M5,80 Q5,5 80,5" fill="none" stroke="#8B4513" strokeWidth="3.5"/><path d="M12,72 Q12,12 72,12" fill="none" stroke="#8B4513" strokeWidth="2"/><path d="M18,64 Q18,18 64,18" fill="none" stroke="#8B4513" strokeWidth="1.2" opacity="0.5"/><circle cx="15" cy="15" r="6" fill="none" stroke="#8B4513" strokeWidth="1.5"/><circle cx="15" cy="15" r="2.5" fill="#8B4513"/><path d="M8,40 Q24,24 40,8" fill="none" stroke="#8B4513" strokeWidth="1.8" opacity="0.6"/><circle cx="30" cy="8" r="2" fill="#8B4513" opacity="0.3"/><circle cx="8" cy="30" r="2" fill="#8B4513" opacity="0.3"/></svg>
+                    <svg className="absolute" style={{ top: '2px', right: '2px', width: '70px', height: '70px', zIndex: 4, transform: 'scaleX(-1)' }} viewBox="0 0 90 90"><path d="M5,80 Q5,5 80,5" fill="none" stroke="#8B4513" strokeWidth="3.5"/><path d="M12,72 Q12,12 72,12" fill="none" stroke="#8B4513" strokeWidth="2"/><path d="M18,64 Q18,18 64,18" fill="none" stroke="#8B4513" strokeWidth="1.2" opacity="0.5"/><circle cx="15" cy="15" r="6" fill="none" stroke="#8B4513" strokeWidth="1.5"/><circle cx="15" cy="15" r="2.5" fill="#8B4513"/><path d="M8,40 Q24,24 40,8" fill="none" stroke="#8B4513" strokeWidth="1.8" opacity="0.6"/><circle cx="30" cy="8" r="2" fill="#8B4513" opacity="0.3"/><circle cx="8" cy="30" r="2" fill="#8B4513" opacity="0.3"/></svg>
+                    <svg className="absolute" style={{ bottom: '2px', left: '2px', width: '70px', height: '70px', zIndex: 4, transform: 'scaleY(-1)' }} viewBox="0 0 90 90"><path d="M5,80 Q5,5 80,5" fill="none" stroke="#8B4513" strokeWidth="3.5"/><path d="M12,72 Q12,12 72,12" fill="none" stroke="#8B4513" strokeWidth="2"/><path d="M18,64 Q18,18 64,18" fill="none" stroke="#8B4513" strokeWidth="1.2" opacity="0.5"/><circle cx="15" cy="15" r="6" fill="none" stroke="#8B4513" strokeWidth="1.5"/><circle cx="15" cy="15" r="2.5" fill="#8B4513"/><path d="M8,40 Q24,24 40,8" fill="none" stroke="#8B4513" strokeWidth="1.8" opacity="0.6"/><circle cx="30" cy="8" r="2" fill="#8B4513" opacity="0.3"/><circle cx="8" cy="30" r="2" fill="#8B4513" opacity="0.3"/></svg>
+                    <svg className="absolute" style={{ bottom: '2px', right: '2px', width: '70px', height: '70px', zIndex: 4, transform: 'scale(-1,-1)' }} viewBox="0 0 90 90"><path d="M5,80 Q5,5 80,5" fill="none" stroke="#8B4513" strokeWidth="3.5"/><path d="M12,72 Q12,12 72,12" fill="none" stroke="#8B4513" strokeWidth="2"/><path d="M18,64 Q18,18 64,18" fill="none" stroke="#8B4513" strokeWidth="1.2" opacity="0.5"/><circle cx="15" cy="15" r="6" fill="none" stroke="#8B4513" strokeWidth="1.5"/><circle cx="15" cy="15" r="2.5" fill="#8B4513"/><path d="M8,40 Q24,24 40,8" fill="none" stroke="#8B4513" strokeWidth="1.8" opacity="0.6"/><circle cx="30" cy="8" r="2" fill="#8B4513" opacity="0.3"/><circle cx="8" cy="30" r="2" fill="#8B4513" opacity="0.3"/></svg>
 
                     <div className="relative" style={{ padding: '24px 28px 20px', zIndex: 1 }}>
                       {/* Header: Logo + Assembly Name */}
@@ -1352,18 +1349,18 @@ export function BusinessesPage() {
                       <div className="text-center my-2">
                         <div style={{ fontFamily: 'Times New Roman, Times, serif', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', color: '#000' }}>Business Operating Permit</div>
                         <div className="flex items-center justify-center mt-1">
-                          <div style={{ width: '80px', height: '1.5px', background: '#8B6914' }} />
-                          <div style={{ width: '3px', height: '3px', background: '#8B6914', borderRadius: '50%', margin: '0 3px' }} />
-                          <div style={{ width: '7px', height: '7px', background: '#8B6914', transform: 'rotate(45deg)', margin: '0 5px' }} />
-                          <div style={{ width: '3px', height: '3px', background: '#8B6914', borderRadius: '50%', margin: '0 3px' }} />
-                          <div style={{ width: '80px', height: '1.5px', background: '#8B6914' }} />
+                          <div style={{ width: '80px', height: '1.5px', background: '#8B4513' }} />
+                          <div style={{ width: '3px', height: '3px', background: '#8B4513', borderRadius: '50%', margin: '0 3px' }} />
+                          <svg width="14" height="11" viewBox="0 0 18 14" style={{ margin: '0 3px' }}><path d="M9,0 C9,0 11,4 9,7 C7,4 9,0 9,0Z" fill="#8B4513"/><path d="M9,14 C9,14 7,10 9,7 C11,10 9,14 9,14Z" fill="#8B4513"/><path d="M0,7 C0,7 4,5 9,7 C4,9 0,7 0,7Z" fill="#8B4513" opacity="0.6"/><path d="M18,7 C18,7 14,9 9,7 C14,5 18,7 18,7Z" fill="#8B4513" opacity="0.6"/><circle cx="9" cy="7" r="1.5" fill="#8B4513"/></svg>
+                          <div style={{ width: '3px', height: '3px', background: '#8B4513', borderRadius: '50%', margin: '0 3px' }} />
+                          <div style={{ width: '80px', height: '1.5px', background: '#8B4513' }} />
                         </div>
                       </div>
 
                       {/* Business Number with Watermark */}
                       <div className="text-center my-3 relative">
-                        <div className="absolute" style={{ top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '180px', height: '180px', border: '2px solid #ccc', borderRadius: '50%', opacity: 0.07, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 0 }}>
-                          <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '1px' }}>{dynAssemblyName.toUpperCase()}</div>
+                        <div className="absolute" style={{ top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '180px', height: '180px', borderRadius: '50%', opacity: 0.08, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 0 }}>
+                          {_dynLogo ? <img src={_dynLogo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '1px', border: '2px solid #ccc', borderRadius: '50%', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{dynAssemblyName.toUpperCase()}</div>}
                         </div>
                         <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', color: '#000', position: 'relative', zIndex: 1 }}>Business Name</div>
                         <div style={{ fontFamily: 'Times New Roman, Times, serif', fontSize: '26px', fontWeight: 'bold', color: '#B22222', letterSpacing: '1px', position: 'relative', zIndex: 1 }}>
@@ -1380,7 +1377,7 @@ export function BusinessesPage() {
                       </div>
 
                       {/* Separator */}
-                      <div className="my-2" style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent, #8B6914, #333, #8B6914, transparent)' }} />
+                      <div className="my-2" style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent, #8B4513, #333, #8B4513, transparent)' }} />
 
                       {/* Fields */}
                       <div className="my-2 mx-auto" style={{ maxWidth: '420px' }}>
@@ -1403,7 +1400,7 @@ export function BusinessesPage() {
                       </div>
 
                       {/* Separator */}
-                      <div className="my-2" style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent, #8B6914, #333, #8B6914, transparent)' }} />
+                      <div className="my-2" style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent, #8B4513, #333, #8B4513, transparent)' }} />
 
                       {/* Dates */}
                       <div className="my-2 mx-auto" style={{ maxWidth: '420px' }}>

@@ -22,7 +22,7 @@ sftp.put('/tmp/rms-deploy.tar.gz', remote_tar)
 sftp.close()
 print('Standalone uploaded.')
 
-ssh_cmd(ssh, f'cd {SA} && tar xzf {remote_tar} && rm -f {remote_tar}')
+ssh_cmd(ssh, f'mkdir -p {SA} && tar xzf {remote_tar} -C {SA} --strip-components=1 && rm -f {remote_tar}')
 print('Standalone extracted.')
 
 sftp2 = ssh.open_sftp()
