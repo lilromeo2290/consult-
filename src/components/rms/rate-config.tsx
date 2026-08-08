@@ -127,10 +127,14 @@ export function RateConfigPage() {
     return () => { cancelled = true; mountedRef.current = false; };
   }, []);
 
+  // Keep a ref to rows — always updated BEFORE any handler reads it
+  const rowsRef = useRef<RateRow[]>(rows);
+  rowsRef.current = rows;
+
   // ── Persistence: save overrides to DB immediately (no debounce) ──────────
-  // Builds payload from React rows state to stay in sync with UI.
-  const persistOverrides = useCallback((rowsSnapshot?: RateRow[]) => {
-    const source = rowsSnapshot || rows;
+  // Always reads from rowsRef.current so it never has stale data.
+  const persistOverrides = useCallback(() => {
+    const source = rowsRef.current;
     const overrides: Record<string, RateEntry> = {};
     for (const r of source) {
       if (r.amount > 0 || r.ceiling > 0) {
@@ -145,11 +149,7 @@ export function RateConfigPage() {
     }).catch((err) => {
       console.error('Failed to save rate overrides:', err);
     });
-  }, [rows]);
-
-  // Keep a ref to rows so unmount save can access latest state
-  const rowsRef = useRef(rows);
-  rowsRef.current = rows;
+  }, []);
 
   // ── Save on unmount via fetch+keepalive (survives page teardown) ────────
   useEffect(() => {
@@ -224,29 +224,34 @@ export function RateConfigPage() {
 
   const handleAmountEdit = (code: string, val: string) => {
     const num = parseFloat(val) || 0;
-    const row = rows.find((r) => r.code === code);
+    // Read from ref to get the absolute latest state (avoids stale closure)
+    const row = rowsRef.current.find((r) => r.code === code);
     const ceiling = row?.ceiling || 0;
     if (ceiling > 0 && num > ceiling) {
       setCapWarning(code);
       setTimeout(() => setCapWarning(null), 2000);
     }
     const capped = ceiling > 0 ? Math.min(num, ceiling) : num;
-    const newRows = rows.map((r) => (r.code === code ? { ...r, amount: capped } : r));
+    // Build new array, update ref immediately, then set state
+    const newRows = rowsRef.current.map((r) => (r.code === code ? { ...r, amount: capped } : r));
+    rowsRef.current = newRows;
     setRows(newRows);
     setRateEntry(code, capped, ceiling);
-    persistOverrides(newRows);
+    persistOverrides();
   };
 
   const handleCeilingEdit = (code: string, val: string) => {
     const num = parseFloat(val) || 0;
-    const row = rows.find((r) => r.code === code);
+    // Read from ref to get the absolute latest state
+    const row = rowsRef.current.find((r) => r.code === code);
     const amount = row?.amount || 0;
     // Apply ceiling: if ceiling > 0 and amount > ceiling, cap amount
     const capped = num > 0 ? Math.min(amount, num) : amount;
-    const newRows = rows.map((r) => (r.code === code ? { ...r, ceiling: num, amount: capped } : r));
+    const newRows = rowsRef.current.map((r) => (r.code === code ? { ...r, ceiling: num, amount: capped } : r));
+    rowsRef.current = newRows;
     setRows(newRows);
     setRateEntry(code, capped, num);
-    persistOverrides(newRows);
+    persistOverrides();
   };
 
   const handleRadio = (code: string) => setRadioCode(code);
@@ -263,9 +268,10 @@ export function RateConfigPage() {
     const ceil = parseFloat(newCeiling) || 0;
     const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
     setRateEntry(trimmedCode, capped, ceil);
-    const newRows = rows.map((r) => (r.code === trimmedCode ? { ...r, amount: capped, ceiling: ceil } : r));
+    const newRows = rowsRef.current.map((r) => (r.code === trimmedCode ? { ...r, amount: capped, ceiling: ceil } : r));
+    rowsRef.current = newRows;
     setRows(newRows);
-    persistOverrides(newRows);
+    persistOverrides();
     setNewCode('');
     setNewClass('');
     setNewCategory('');
