@@ -55,16 +55,21 @@ const RATE_FIELDS: { key: string; label: string }[] = [
 ];
 
 function buildBusinessRows(): RateRow[] {
+  // Read from in-memory store (pre-populated by page.tsx from DB on app load)
+  const saved = getAllOverrides();
   return BUSINESS_CLASS_CODES.map((code) => {
     const entry = FEE_CODE_LOOKUP[code];
+    const override = saved[code];
+    const amount = override?.amount || 0;
+    const ceiling = override?.ceiling || 0;
     return {
       code,
       businessClass: entry ? entry.businessClass : '',
       category: entry ? entry.category : '',
-      amount: 0,
-      ceiling: 0,
-      originalAmount: 0,
-      originalCeiling: 0,
+      amount,
+      ceiling,
+      originalAmount: amount,
+      originalCeiling: ceiling,
       selected: false,
     };
   });
@@ -503,10 +508,10 @@ export function RateConfigPage() {
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[260px] truncate">{row.businessClass}</td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[300px] truncate">{row.category}</td>
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
-                      <input type="number" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" />
+                      <input type="number" inputMode="decimal" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} onBlur={(e) => { const v = e.target.value; if (v && isNaN(Number(v))) { e.target.value = String(row.amount || ''); handleAmountEdit(row.code, String(row.amount || '')); } }} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" />
                     </td>
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
-                      <input type="number" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
+                      <input type="number" inputMode="decimal" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} onBlur={(e) => { const v = e.target.value; if (v && isNaN(Number(v))) { e.target.value = String(row.ceiling || ''); handleCeilingEdit(row.code, String(row.ceiling || '')); } }} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
                     </td>
                   </tr>
                 ))
