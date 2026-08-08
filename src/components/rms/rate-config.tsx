@@ -231,9 +231,10 @@ export function RateConfigPage() {
       setTimeout(() => setCapWarning(null), 2000);
     }
     const capped = ceiling > 0 ? Math.min(num, ceiling) : num;
-    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, amount: capped } : r)));
+    const newRows = rows.map((r) => (r.code === code ? { ...r, amount: capped } : r));
+    setRows(newRows);
     setRateEntry(code, capped, ceiling);
-    persistOverrides();
+    persistOverrides(newRows);
   };
 
   const handleCeilingEdit = (code: string, val: string) => {
@@ -242,9 +243,10 @@ export function RateConfigPage() {
     const amount = row?.amount || 0;
     // Apply ceiling: if ceiling > 0 and amount > ceiling, cap amount
     const capped = num > 0 ? Math.min(amount, num) : amount;
-    setRows((prev) => prev.map((r) => (r.code === code ? { ...r, ceiling: num, amount: capped } : r)));
+    const newRows = rows.map((r) => (r.code === code ? { ...r, ceiling: num, amount: capped } : r));
+    setRows(newRows);
     setRateEntry(code, capped, num);
-    persistOverrides();
+    persistOverrides(newRows);
   };
 
   const handleRadio = (code: string) => setRadioCode(code);
@@ -261,8 +263,9 @@ export function RateConfigPage() {
     const ceil = parseFloat(newCeiling) || 0;
     const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
     setRateEntry(trimmedCode, capped, ceil);
-    setRows((prev) => prev.map((r) => (r.code === trimmedCode ? { ...r, amount: capped, ceiling: ceil } : r)));
-    persistOverrides();
+    const newRows = rows.map((r) => (r.code === trimmedCode ? { ...r, amount: capped, ceiling: ceil } : r));
+    setRows(newRows);
+    persistOverrides(newRows);
     setNewCode('');
     setNewClass('');
     setNewCategory('');
@@ -290,28 +293,45 @@ export function RateConfigPage() {
       const imported = await importFromExcel<Record<string, unknown>>(file, RATE_FIELDS);
       if (imported.length === 0) { alert('No data found in the file.'); return; }
       let updated = 0;
-      const importedOverrides: string[] = [];
+      const importedCodes: string[] = [];
+      const importedEntries: Record<string, RateEntry> = {};
+      for (const item of imported) {
+        const code = String(item.code || '').trim();
+        if (!code) continue;
+        const amt = parseFloat(String(item.amount || '0')) || 0;
+        const ceil = parseFloat(String(item.ceiling || '0')) || 0;
+        const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
+        setRateEntry(code, capped, ceil);
+        importedEntries[code] = { amount: capped, ceiling: ceil };
+        importedCodes.push(code);
+        updated++;
+      }
+      // Merge imported data into rows
       setRows((prev) => {
         const newRowMap = new Map(prev.map((r) => [r.code, r]));
-        for (const item of imported) {
-          const code = String(item.code || '').trim();
-          if (!code || !newRowMap.has(code)) continue;
-          const amt = parseFloat(String(item.amount || '0')) || 0;
-          const ceil = parseFloat(String(item.ceiling || '0')) || 0;
-          const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
+        for (const [code, entry] of Object.entries(importedEntries)) {
+          if (!newRowMap.has(code)) continue;
           const existing = newRowMap.get(code)!;
-          newRowMap.set(code, {
-            ...existing,
-            amount: capped,
-            ceiling: ceil,
-          });
-          setRateEntry(code, capped, ceil);
-          importedOverrides.push(code);
-          updated++;
+          newRowMap.set(code, { ...existing, amount: entry.amount, ceiling: entry.ceiling });
         }
         return Array.from(newRowMap.values());
       });
-      if (importedOverrides.length > 0) persistOverrides();
+      // Persist: merge imported entries with existing overrides from DB
+      if (importedCodes.length > 0) {
+        try {
+          const res = await fetch(`/api/rms-data?key=${RATE_OVERRIDES_KEY}`);
+          if (res.ok) {
+            const json = await res.json();
+            const existing = (json.data && typeof json.data === 'object') ? json.data as Record<string, RateEntry> : {};
+            const merged = { ...existing, ...importedEntries };
+            fetch('/api/rms-data', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: RATE_OVERRIDES_KEY, data: merged }),
+            }).catch(() => {});
+          }
+        } catch { /* best effort */ }
+      }
       alert(`${updated} rate(s) imported successfully.`);
     } catch (err) {
       alert('Failed to import file. Please ensure it is a valid Excel file exported from this system.');
