@@ -22,6 +22,11 @@ import {
   PROP_CODE_TO_CATEGORY,
 } from '@/lib/property-class-code-map';
 import {
+  FINE_CLASS_CODES,
+  FINE_CODE_TO_CLASS,
+  FINE_CODE_TO_CATEGORY,
+} from '@/lib/fines-class-code-map';
+import {
   setRateEntry,
   loadOverrides,
   RateEntry,
@@ -67,6 +72,15 @@ for (const code of PROPERTY_CLASS_CODES) {
   };
 }
 
+// Build a fines lookup from the fines maps
+const finesLookup: Record<string, { businessClass: string; category: string }> = {};
+for (const code of FINE_CLASS_CODES) {
+  finesLookup[code] = {
+    businessClass: FINE_CODE_TO_CLASS[code] || '',
+    category: FINE_CODE_TO_CATEGORY[code] || '',
+  };
+}
+
 function getTabConfig(tab: RateTab): TabConfig {
   switch (tab) {
     case 'Business':
@@ -86,7 +100,13 @@ function getTabConfig(tab: RateTab): TabConfig {
         codeToClass: PROP_CODE_TO_CLASS,
       };
     case 'Fines':
-      return { dbKey: 'rms-rate-overrides-fines', codes: [], classLabel: 'Fine Type', lookup: {}, codeToClass: {} };
+      return {
+        dbKey: 'rms-rate-overrides-fines',
+        codes: FINE_CLASS_CODES,
+        classLabel: 'Fine Type',
+        lookup: finesLookup,
+        codeToClass: FINE_CODE_TO_CLASS,
+      };
     case 'Fees':
       return { dbKey: 'rms-rate-overrides-fees', codes: [], classLabel: 'Fee Type', lookup: {}, codeToClass: {} };
     case 'Rent':
