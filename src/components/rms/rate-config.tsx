@@ -9,6 +9,8 @@ import {
   X,
   Download,
   Upload,
+  Save,
+  AlertTriangle,
 } from 'lucide-react';
 import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
 import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
@@ -135,10 +137,20 @@ export function RateConfigPage() {
 
   // Save status for visual feedback
   const [saveStatus, setSaveStatus] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // ── Track unsaved changes ─────────────────────────────────────────────
+  const hasUnsavedChanges = useMemo(() =>
+    rows.some((r) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling),
+    [rows],
+  );
+  const changedCount = useMemo(() =>
+    rows.filter((r) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling).length,
+    [rows],
+  );
 
   // ── Save overrides to DB using read-modify-write ─────────────────────
-  // Fetches current DB data, merges changed entries, then writes back.
-  // This prevents data loss if the client has incomplete/stale rows.
+  // Only called when user clicks the Save button.
   const persistOverrides = useCallback(async () => {
     const source = rowsRef.current;
     const changed: Record<string, RateEntry> = {};
@@ -149,6 +161,7 @@ export function RateConfigPage() {
     }
     if (Object.keys(changed).length === 0) return;
     const count = Object.keys(changed).length;
+    setIsSaving(true);
     try {
       // Step 1: read current DB data
       const getRes = await fetch(`/api/rms-data?key=${RATE_OVERRIDES_KEY}&_t=${Date.now()}`, { cache: 'no-store' });
@@ -168,8 +181,10 @@ export function RateConfigPage() {
         body: JSON.stringify({ key: RATE_OVERRIDES_KEY, data: merged }),
       });
       if (putRes.ok) {
-        setSaveStatus(`Saved ${count} rate(s)`);
-        setTimeout(() => setSaveStatus(''), 2000);
+        // Update originalAmount/originalCeiling so rows are no longer "dirty"
+        setRows((prev) => prev.map((r) => ({ ...r, originalAmount: r.amount, originalCeiling: r.ceiling })));
+        setSaveStatus(`Saved ${count} rate(s) to database`);
+        setTimeout(() => setSaveStatus(''), 3000);
       } else {
         setSaveStatus(`Save failed (${putRes.status})`);
         console.error('Save failed:', putRes.status, putRes.statusText);
@@ -177,6 +192,8 @@ export function RateConfigPage() {
     } catch (err) {
       setSaveStatus('Save failed (network)');
       console.error('Failed to save rate overrides:', err);
+    } finally {
+      setIsSaving(false);
     }
   }, []);
 
@@ -245,7 +262,7 @@ export function RateConfigPage() {
     rowsRef.current = newRows;
     setRows(newRows);
     setRateEntry(code, capped, ceiling);
-    persistOverrides();
+    // No auto-save — user clicks Save button when ready
   };
 
   const handleCeilingEdit = (code: string, val: string) => {
@@ -259,7 +276,7 @@ export function RateConfigPage() {
     rowsRef.current = newRows;
     setRows(newRows);
     setRateEntry(code, capped, num);
-    persistOverrides();
+    // No auto-save — user clicks Save button when ready
   };
 
   const handleRadio = (code: string) => setRadioCode(code);
@@ -279,6 +296,7 @@ export function RateConfigPage() {
     const newRows = rowsRef.current.map((r) => (r.code === trimmedCode ? { ...r, amount: capped, ceiling: ceil } : r));
     rowsRef.current = newRows;
     setRows(newRows);
+    // Auto-save on Add since it's an explicit action
     persistOverrides();
     setNewCode('');
     setNewClass('');
@@ -362,25 +380,50 @@ export function RateConfigPage() {
 
   return (
     <div className="space-y-0">
-      <div className="flex items-center gap-3 mb-4">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Rate Configuration
-        </h1>
-        {saveStatus && (
-          <span className={`text-xs font-medium px-2 py-0.5 rounded ${saveStatus.startsWith('Saved') ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-            {saveStatus}
+      {/* ── Unsaved changes warning bar ──────────────────────────────── */}
+      {hasUnsavedChanges && (
+        <div className="flex items-center gap-2 px-4 py-2.5 mb-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/40">
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <span className="text-sm font-medium text-amber-800 dark:text-amber-300">
+            You have {changedCount} unsaved change{changedCount !== 1 ? 's' : ''}. Click "Save Changes" to permanently save to the database.
           </span>
-        )}
-        {loadInfo && (
-          <span className="text-xs font-medium px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-            {loadInfo}
-          </span>
-        )}
-        {loadError && (
-          <span className="text-xs font-medium px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-            {loadError}
-          </span>
-        )}
+        </div>
+      )}
+
+      {/* ── Header row: title + save button ────────────────────────────── */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            Rate Configuration
+          </h1>
+          {saveStatus && (
+            <span className={`text-xs font-medium px-2.5 py-1 rounded ${saveStatus.startsWith('Saved') ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+              {saveStatus}
+            </span>
+          )}
+          {loadInfo && (
+            <span className="text-xs font-medium px-2.5 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+              {loadInfo}
+            </span>
+          )}
+          {loadError && (
+            <span className="text-xs font-medium px-2.5 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+              {loadError}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={persistOverrides}
+          disabled={!hasUnsavedChanges || isSaving}
+          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg transition-all shadow-sm {
+            hasUnsavedChanges && !isSaving
+              ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.97] shadow-emerald-200 dark:shadow-emerald-900/40'
+              : 'bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed'
+          }"
+        >
+          <Save className="w-4 h-4" />
+          {isSaving ? 'Saving...' : 'Save Changes'}
+        </button>
       </div>
 
       <div className="flex bg-slate-100 dark:bg-slate-800 rounded-t-lg p-1">
