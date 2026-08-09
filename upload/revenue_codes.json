@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "code,description\n1422215,Fishing Nets and Accessories Dealers License\n1422216,Funeral Undertakers License\n1422217,Furniture Showroom License\n1422218,General Goods - Sales (e.g. Generator, Water pump, Chain saw, etc.) License\n1422219,Glass Shops License\n1422220,Glass Sellers (Tinted /Plain) License\n1422221,Graphic Design Companies License\n1422222,Hair & Beauty Service Providers License\n1422223,Ice Cream/Yoghurt Dealers License\n1422224,Interior/Event Decorators License\n1422225,Jewellery Shops License\n1422226,Jewellery Repairers (watches/bracelets, etc.) License\n1422227,Key Technicians/Cutters License\n1422228,Livestock Farms License\n1422229,Media Houses License\n1422230,Medical Supply Companies License\n1422231,Mineral Water Manufacturing/Processing License\n1422232,Mineral Water Distribution/Sales License\n1422233,Mineral Marketing Companies License\n1422234,Mining Sub-Contractors License\n1422235,Mobile Phone & Accessories Sales/Assembling/Repairs License\n1422236,Mobile Phone Cards Sales  License\n1422237,Musical Instrument Sales  License\n1422238,Non-Governmental Institutions (Renewal)  License\n1422239,Palm/Kernel Oil Extraction Companies License\n1422240,Petrochemical Companies License\n1422241,Pharmaceutical Companies License\n1422242,Plastic Processing and Manufacturing Companies License\n1422243,Plastic Product Sales/ Water Tanks Suppliers License\n1422244,Plywood Manufacturers License\n1422245,Plywood Sellers License\n1422246,Poultry Farms License\n1422247,Energy Suppliers/Dealers\n1422248,Real Estate Operators License\n1422249,Recycling Plants/Companies License\n1422250,Rubber Stamp Makers License\n1422251,Safety Goods/Accessories (Workplace Related) License\n1422252,Safety Goods/Accessories (Health Related) License\n1422253,Shipping Companies License\n1422254,Signage Dealers\n1422255,Software Writers License\n1422256,Software Development/ Software Support Companies License\n1422257,Solar Energy Dealers License\n1422258,Spare Parts Sales Outlets (New) License\n1422259,Spare Parts Sales Outlets(Second-hand)  License\n1422260,Straw Basket Weavers and Sales License\n1422261,Terrazzo Making License\n1422262,Tyre/Battery Dealers  New License\n1422263,Tyre/Battery Dealers  Used License\n1422264,Urinal Operators ( Private) License\n1422265,Utility Vendors License\n1422266,Vehicle - Private Examination Centres License\n1422267,Veterinary Clinic/Hospital License\n1422268,Warehouse (Private) License\n1422269,Windscreen Dealers License\n1422270,Automobile & Part Dealers\n1422271,Airline Offices/Operators\n1422272,Aluminium Pot Dealers (Dadesen)\n1422273,Boutiques\n1422274,Building Permit Renewal\n1422275,Temporary Structure Permit\n1422276,Change of Use Permit\n1422277,Aluminium Fabricators (Doors/Windows)\n1422278,Aluminium Products\n1422279,Bags and Suitcases Dealers\n1422280,Stationery and Office Supplies  Dealers\n1422281,Construction Artisans License\n1422282,Feed Sellers License\n1422283,Tourism Licensed Facilities\n1422284,Optical Services License\n1422285,Metal Fabricators\n1422286,Leather Works License\n1422287,CD Sellers (Audio/Video) License\n1422288,Waste Management Companies\n1422289,Beads Dealers\n1422290,Gas Cylinder/ Stoves & Accessory Dealers\n1422291,Grain Distributors\n1422292,Machine Shops (Workshop for making or repairing machines)\n1422293,Machine Sharpening Operators\n1422294,Rubber Cutting Machine Operators\n1422295,School Uniform",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1786278162,
+  "id": "202608092022359c2bf4f1a2224825",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202608092022359c2bf4f1a2224825",
+  "usage": {
+    "completion_tokens": 934,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1414,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2348
+  }
+}
