@@ -8,6 +8,7 @@ type RMSPage =
   | 'properties'
   | 'rent'
   | 'rates'
+  | 'penalties'
   | 'billing'
   | 'payments'
   | 'payment-history'
@@ -25,6 +26,7 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'properties', label: 'Property Register' },
   { page: 'rent', label: 'Lease Management' },
   { page: 'rates', label: 'Rate Configuration' },
+  { page: 'penalties', label: 'Penalties' },
   { page: 'billing', label: 'Bill Management' },
   { page: 'payments', label: 'Payments' },
   { page: 'payment-history', label: 'Payment History' },

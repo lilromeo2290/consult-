@@ -12,6 +12,7 @@ import { PropertiesPage } from '@/components/rms/properties';
 import { RentPage } from '@/components/rms/rent';
 
 import { RateConfigPage } from '@/components/rms/rate-config';
+import { PenaltiesPage } from '@/components/rms/penalties';
 import { BillingPage } from '@/components/rms/billing';
 import { PaymentsPage } from '@/components/rms/payments';
 import { PaymentHistoryPage } from '@/components/rms/payment-history';
@@ -52,6 +53,7 @@ function RMSView() {
       case 'rent': return <RentPage />;
 
       case 'rates': return <RateConfigPage />;
+      case 'penalties': return <PenaltiesPage />;
       case 'billing': return <BillingPage />;
       case 'payments': return <PaymentsPage />;
       case 'payment-history': return <PaymentHistoryPage />;
