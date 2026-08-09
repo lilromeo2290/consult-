@@ -88,29 +88,39 @@ export function RateConfigPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Load overrides from DB on every mount ─────────────────────────────
+  const [loadError, setLoadError] = useState('');
+  const [loadInfo, setLoadInfo] = useState('');
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/rms-data?key=${RATE_OVERRIDES_KEY}`);
-        if (!res.ok || cancelled) return;
+        // cache: 'no-store' prevents browser from returning stale cached responses
+        const res = await fetch(`/api/rms-data?key=${RATE_OVERRIDES_KEY}&_t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok || cancelled) {
+          if (!cancelled) setLoadError(`Load failed (HTTP ${res ? res.status : 'no response'})`);
+          return;
+        }
         const json = await res.json();
         if (cancelled) return;
         const savedData = (json.data && typeof json.data === 'object')
           ? json.data as Record<string, RateEntry>
           : {};
         if (!cancelled) {
+          const entryCount = Object.keys(savedData).length;
           // Build rows directly from DB data — single source of truth
           const built = buildRowsFromData(savedData);
           setRows(built);
           // Also populate the in-memory store for other components
           loadOverrides(savedData);
           setOverridesLoaded(true);
+          setLoadInfo(`Loaded ${entryCount} saved rate(s) from server`);
+          setTimeout(() => setLoadInfo(''), 3000);
         }
       } catch (err) {
         console.error('Failed to load rate overrides:', err);
-        // Even on error, show empty rows so the UI is usable
         if (!cancelled) {
+          setLoadError('Load failed (network error)');
           setRows(buildRowsFromData({}));
           setOverridesLoaded(true);
         }
@@ -126,36 +136,48 @@ export function RateConfigPage() {
   // Save status for visual feedback
   const [saveStatus, setSaveStatus] = useState<string>('');
 
-  // ── Save all overrides to DB ────────────────────────────────────────────
-  // Reads from rowsRef.current (always up-to-date) and sends full snapshot.
-  const persistOverrides = useCallback(() => {
+  // ── Save overrides to DB using read-modify-write ─────────────────────
+  // Fetches current DB data, merges changed entries, then writes back.
+  // This prevents data loss if the client has incomplete/stale rows.
+  const persistOverrides = useCallback(async () => {
     const source = rowsRef.current;
-    const overrides: Record<string, RateEntry> = {};
+    const changed: Record<string, RateEntry> = {};
     for (const r of source) {
       if (r.amount > 0 || r.ceiling > 0) {
-        overrides[r.code] = { amount: r.amount, ceiling: r.ceiling };
+        changed[r.code] = { amount: r.amount, ceiling: r.ceiling };
       }
     }
-    if (Object.keys(overrides).length === 0) return;
-    const count = Object.keys(overrides).length;
-    fetch('/api/rms-data', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides }),
-    })
-      .then((res) => {
-        if (res.ok) {
-          setSaveStatus(`Saved ${count} rate(s)`);
-          setTimeout(() => setSaveStatus(''), 2000);
-        } else {
-          setSaveStatus(`Save failed (${res.status})`);
-          console.error('Save failed:', res.status, res.statusText);
+    if (Object.keys(changed).length === 0) return;
+    const count = Object.keys(changed).length;
+    try {
+      // Step 1: read current DB data
+      const getRes = await fetch(`/api/rms-data?key=${RATE_OVERRIDES_KEY}&_t=${Date.now()}`, { cache: 'no-store' });
+      let existing: Record<string, RateEntry> = {};
+      if (getRes.ok) {
+        const getJson = await getRes.json();
+        if (getJson.data && typeof getJson.data === 'object') {
+          existing = getJson.data as Record<string, RateEntry>;
         }
-      })
-      .catch((err) => {
-        setSaveStatus('Save failed (network)');
-        console.error('Failed to save rate overrides:', err);
+      }
+      // Step 2: merge changed entries into existing data
+      const merged = { ...existing, ...changed };
+      // Step 3: write merged data back
+      const putRes = await fetch('/api/rms-data', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: RATE_OVERRIDES_KEY, data: merged }),
       });
+      if (putRes.ok) {
+        setSaveStatus(`Saved ${count} rate(s)`);
+        setTimeout(() => setSaveStatus(''), 2000);
+      } else {
+        setSaveStatus(`Save failed (${putRes.status})`);
+        console.error('Save failed:', putRes.status, putRes.statusText);
+      }
+    } catch (err) {
+      setSaveStatus('Save failed (network)');
+      console.error('Failed to save rate overrides:', err);
+    }
   }, []);
 
   // When a code is selected, auto-fill class and category
@@ -347,6 +369,16 @@ export function RateConfigPage() {
         {saveStatus && (
           <span className={`text-xs font-medium px-2 py-0.5 rounded ${saveStatus.startsWith('Saved') ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
             {saveStatus}
+          </span>
+        )}
+        {loadInfo && (
+          <span className="text-xs font-medium px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+            {loadInfo}
+          </span>
+        )}
+        {loadError && (
+          <span className="text-xs font-medium px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+            {loadError}
           </span>
         )}
       </div>
