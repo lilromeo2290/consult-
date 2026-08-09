@@ -32,6 +32,11 @@ import {
   FEE_CODE_TO_CATEGORY,
 } from '@/lib/fees-class-code-map';
 import {
+  RENT_CLASS_CODES,
+  RENT_CODE_TO_CLASS,
+  RENT_CODE_TO_CATEGORY,
+} from '@/lib/rent-class-code-map';
+import {
   setRateEntry,
   loadOverrides,
   RateEntry,
@@ -95,6 +100,15 @@ for (const code of FEE_CLASS_CODES) {
   };
 }
 
+// Build a rent lookup from the rent maps
+const rentLookup: Record<string, { businessClass: string; category: string }> = {};
+for (const code of RENT_CLASS_CODES) {
+  rentLookup[code] = {
+    businessClass: RENT_CODE_TO_CLASS[code] || '',
+    category: RENT_CODE_TO_CATEGORY[code] || '',
+  };
+}
+
 function getTabConfig(tab: RateTab): TabConfig {
   switch (tab) {
     case 'Business':
@@ -130,7 +144,13 @@ function getTabConfig(tab: RateTab): TabConfig {
         codeToClass: FEE_CODE_TO_CLASS,
       };
     case 'Rent':
-      return { dbKey: 'rms-rate-overrides-rent', codes: [], classLabel: 'Rent Type', lookup: {}, codeToClass: {} };
+      return {
+        dbKey: 'rms-rate-overrides-rent',
+        codes: RENT_CLASS_CODES,
+        classLabel: 'Rent Type',
+        lookup: rentLookup,
+        codeToClass: RENT_CODE_TO_CLASS,
+      };
   }
 }
 
