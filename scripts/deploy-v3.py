@@ -60,9 +60,9 @@ ssh_cmd(ssh, f'cp {SA}/server.js {BASE}/server.js')
 bid = ssh_cmd(ssh, f'cat {SA}/.next/BUILD_ID')
 print(f'BUILD_ID: {bid}')
 
-# Restart with correct PORT
+# Restart with correct PORT and DATABASE_URL as env vars (more reliable than .env file)
 ssh_cmd(ssh, 'pm2 delete consult-rms 2>/dev/null')
-ssh_cmd(ssh, f'cd {BASE} && PORT=3001 pm2 start server.js --name consult-rms')
+ssh_cmd(ssh, f'cd {BASE} && DATABASE_URL="file:{BASE}/data/rms.db" PORT=3001 pm2 start server.js --name consult-rms')
 time.sleep(4)
 
 status = ssh_cmd(ssh, 'pm2 jlist')

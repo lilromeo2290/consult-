@@ -123,6 +123,9 @@ export function RateConfigPage() {
   const rowsRef = useRef<RateRow[]>(rows);
   rowsRef.current = rows;
 
+  // Save status for visual feedback
+  const [saveStatus, setSaveStatus] = useState<string>('');
+
   // ── Save all overrides to DB ────────────────────────────────────────────
   // Reads from rowsRef.current (always up-to-date) and sends full snapshot.
   const persistOverrides = useCallback(() => {
@@ -134,13 +137,25 @@ export function RateConfigPage() {
       }
     }
     if (Object.keys(overrides).length === 0) return;
+    const count = Object.keys(overrides).length;
     fetch('/api/rms-data', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides }),
-    }).catch((err) => {
-      console.error('Failed to save rate overrides:', err);
-    });
+    })
+      .then((res) => {
+        if (res.ok) {
+          setSaveStatus(`Saved ${count} rate(s)`);
+          setTimeout(() => setSaveStatus(''), 2000);
+        } else {
+          setSaveStatus(`Save failed (${res.status})`);
+          console.error('Save failed:', res.status, res.statusText);
+        }
+      })
+      .catch((err) => {
+        setSaveStatus('Save failed (network)');
+        console.error('Failed to save rate overrides:', err);
+      });
   }, []);
 
   // When a code is selected, auto-fill class and category
@@ -325,9 +340,16 @@ export function RateConfigPage() {
 
   return (
     <div className="space-y-0">
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-        Rate Configuration
-      </h1>
+      <div className="flex items-center gap-3 mb-4">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Rate Configuration
+        </h1>
+        {saveStatus && (
+          <span className={`text-xs font-medium px-2 py-0.5 rounded ${saveStatus.startsWith('Saved') ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+            {saveStatus}
+          </span>
+        )}
+      </div>
 
       <div className="flex bg-slate-100 dark:bg-slate-800 rounded-t-lg p-1">
         {TABS.map((tab) => (
