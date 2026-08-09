@@ -68,6 +68,7 @@ interface Property {
   hasBuildingPermit: string;
   permitNumber: string;
   excludedFromRating: boolean;
+  valuedProperty: string;
   comments: string;
   // New fields (matching Businesses arrangement)
   daAssignmentNo: string;
@@ -204,6 +205,7 @@ export function PropertiesPage() {
     hasBuildingPermit: 'No',
     permitNumber: '',
     excludedFromRating: false,
+    valuedProperty: 'No',
     comments: '',
     // New fields
     daAssignmentNo: '',
@@ -460,6 +462,7 @@ export function PropertiesPage() {
       revenueDescription2: (prop as any).revenueDescription2 || '',
       revenueCode: (prop as any).revenueCode || '',
       businessClassCode: (prop as any).businessClassCode || '',
+      valuedProperty: (prop as any).valuedProperty || 'No',
       type: (prop as any).type || '',
       employees: (prop as any).employees || '',
       yearEstablished: (prop as any).yearEstablished || '',
@@ -831,6 +834,22 @@ export function PropertiesPage() {
                   emptyMessage={form.type ? 'No categories' : 'Select class or code first'}
                   className={inputClass}
                 />
+              </div>
+              {/* Valued Property */}
+              <div>
+                <label className={`${labelClass} block`}>Valued Property</label>
+                <div className="flex items-center gap-3 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => setForm((p) => ({ ...p, valuedProperty: 'Yes' }))}
+                    className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${form.valuedProperty === 'Yes' ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}
+                  >Yes</button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((p) => ({ ...p, valuedProperty: 'No' }))}
+                    className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${form.valuedProperty === 'No' ? 'bg-slate-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}
+                  >No</button>
+                </div>
               </div>
               {/* Value */}
               <div>
