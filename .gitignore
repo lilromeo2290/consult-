@@ -53,3 +53,5 @@ server.log
 # Skills directory
 /skills/tool-results
 *.txt
+deploy.tar
+deploy.tar.gz
