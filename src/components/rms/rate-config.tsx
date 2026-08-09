@@ -46,7 +46,7 @@ import {
 import { Combobox } from '@/components/ui/combobox';
 import { exportToExcel, importFromExcel } from '@/lib/import-export';
 
-type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent';
+type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent' | 'Valued Property';
 type SortColumn = 'code' | 'class' | 'category' | 'amount' | 'ceiling';
 type SortDir = 'asc' | 'desc';
 
@@ -61,7 +61,7 @@ interface RateRow {
   selected: boolean;
 }
 
-const TABS: RateTab[] = ['Business', 'Property', 'Fines', 'Fees', 'Rent'];
+const TABS: RateTab[] = ['Business', 'Property', 'Valued Property', 'Fines', 'Fees', 'Rent'];
 const PAGE_SIZE = 25;
 
 // ── Per-tab configuration ─────────────────────────────────────────────────
@@ -155,6 +155,8 @@ function getTabConfig(tab: RateTab): TabConfig {
         lookup: rentLookup,
         codeToClass: RENT_CODE_TO_CLASS,
       };
+    case 'Valued Property':
+      return { dbKey: 'rms-rate-overrides-valued-property', codes: [], classLabel: 'Property Class', lookup: {}, codeToClass: {} };
   }
 }
 
