@@ -30,6 +30,15 @@ import {
 } from 'lucide-react';
 import { exportToExcel, importFromExcel, RENT_FIELDS } from '@/lib/import-export';
 import { RENT_REVENUE_CODES, RENT_CODE_TO_DESC, RENT_DESC_TO_CODE } from '@/lib/rent-revenue-codes';
+import {
+  RENT_CODE_TO_CLASS,
+  RENT_CLASS_TO_FIRST_CODE,
+  RENT_CLASS_TO_CODES,
+  RENT_CODE_TO_CATEGORY,
+  RENT_CLASS_CODES,
+  RENT_CLASS_NAMES,
+} from '@/lib/rent-class-code-map';
+import { Combobox } from '@/components/ui/combobox';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Rent {
@@ -244,19 +253,38 @@ export function RentPage() {
     if (type === 'checkbox') {
       setForm((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
     } else if (name === 'rentPropertyType') {
-      // Auto-fill type code and generate property number
-      const typeCode = PROPERTY_TYPE_CODE_MAP[value] || '';
-      // Count existing rents with same type to determine next number
+      // Class changed → auto-fill code and generate property number
+      const typeCode = RENT_CLASS_TO_FIRST_CODE[value] || '';
       const existingCount = rents.filter((r) => r.rentPropertyType === value).length;
       const nextNum = String(existingCount + 1).padStart(4, '0');
       const propertyNumber = typeCode ? `${typeCode}${nextNum}` : '';
+      const defaultCat = typeCode ? (RENT_CODE_TO_CATEGORY[typeCode] || '') : '';
       setForm((prev) => ({
         ...prev,
         rentPropertyType: value,
         rentPropertyTypeCode: typeCode,
         rentPropertyNumber: propertyNumber,
-        rentPropertyTypeCategory: '',
+        rentPropertyTypeCategory: defaultCat,
+        amount: '',
       }));
+      rentCodeDialogTriggered.current = '';
+    } else if (name === 'rentPropertyTypeCode') {
+      // Code changed → auto-fill Class and Category
+      const cls = RENT_CODE_TO_CLASS[value] || '';
+      const cat = RENT_CODE_TO_CATEGORY[value] || '';
+      const existingCount = rents.filter((r) => r.rentPropertyType === cls).length;
+      const nextNum = String(existingCount + 1).padStart(4, '0');
+      const typeCode = PROPERTY_TYPE_CODE_MAP[cls] || '';
+      const propertyNumber = typeCode ? `${typeCode}${nextNum}` : '';
+      setForm((prev) => ({
+        ...prev,
+        rentPropertyTypeCode: value,
+        rentPropertyType: cls,
+        rentPropertyTypeCategory: cat,
+        rentPropertyNumber: propertyNumber,
+        amount: '',
+      }));
+      rentCodeDialogTriggered.current = '';
     } else if (name === 'rentRevenueCode') {
       const desc = RENT_CODE_TO_DESC[value] || '';
       setForm((prev) => ({ ...prev, rentRevenueCode: value, rentRevenueDescription: desc }));
@@ -279,6 +307,39 @@ export function RentPage() {
           item.code.includes(revenueSearch)
       )
     : RENT_REVENUE_CODES;
+
+  // ── Cascading Code/Class/Category for Rent Rate lookup ────────────────
+  const rentClassCodes = form.rentPropertyType
+    ? (RENT_CLASS_TO_CODES[form.rentPropertyType] || [])
+    : RENT_CLASS_CODES;
+  const rentClassCategories = rentClassCodes
+    .map((c) => RENT_CODE_TO_CATEGORY[c])
+    .filter(Boolean);
+
+  // When all three (Code, Class, Category) are set, fetch amount from Rent Rate Config
+  const rentCodeDialogTriggered = useRef<string>('');
+  useEffect(() => {
+    const code = form.rentPropertyTypeCode;
+    const cls = form.rentPropertyType;
+    const cat = form.rentPropertyTypeCategory;
+    if (code && cls && cat && RENT_CLASS_CODES.includes(code) && code !== rentCodeDialogTriggered.current) {
+      rentCodeDialogTriggered.current = code;
+      // Fetch rent rate from DB
+      (async () => {
+        try {
+          const res = await fetch(`/api/rms-data?key=rms-rate-overrides-rent&_t=${Date.now()}`, { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            const data = json?.data || json;
+            if (data && data[code] && typeof data[code].amount === 'number') {
+              setForm((p) => ({ ...p, amount: String(data[code].amount) }));
+              return;
+            }
+          }
+        } catch { /* ignore */ }
+      })();
+    }
+  }, [form.rentPropertyTypeCode, form.rentPropertyType, form.rentPropertyTypeCategory]);
 
   const selectRevenue = (item: { code: string; description: string }) => {
     setForm((prev) => ({ ...prev, rentRevenueCode: item.code, rentRevenueDescription: item.description }));
@@ -387,6 +448,7 @@ export function RentPage() {
       comments: rent.comments,
     });
     setEditingId(rent.id);
+    rentCodeDialogTriggered.current = rent.rentPropertyTypeCode || '';
     setView('form');
   };
 
@@ -428,7 +490,7 @@ export function RentPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setForm({ ...defaultForm, occupantUniqueId: generateUniqueId() }); setEditingId(null); setView('form'); setRevenueSearch(''); setShowRevenueDropdown(false); }}
+              onClick={() => { setForm({ ...defaultForm, occupantUniqueId: generateUniqueId() }); setEditingId(null); setView('form'); setRevenueSearch(''); setShowRevenueDropdown(false); rentCodeDialogTriggered.current = ''; }}
               className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
@@ -655,22 +717,44 @@ export function RentPage() {
                 <label className={`${labelClass} block`}>Rent Property Number</label>
                 <input type="text" name="rentPropertyNumber" value={form.rentPropertyNumber} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
               </div>
+              {/* Code */}
               <div>
-                <label className={`${labelClass} block`}>Rent Property Type Code</label>
-                <input type="text" name="rentPropertyTypeCode" value={form.rentPropertyTypeCode} placeholder="Auto-filled" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
+                <label className={`${labelClass} block`}>Code</label>
+                <Combobox
+                  name="rentPropertyTypeCode"
+                  value={form.rentPropertyTypeCode}
+                  onChange={handleFormChange}
+                  options={rentClassCodes.map((c) => ({ value: c, label: `${c} – ${RENT_CODE_TO_CLASS[c] || ''} – ${RENT_CODE_TO_CATEGORY[c] || ''}` }))}
+                  placeholder="Select code..."
+                  emptyMessage="No matching code"
+                  className={inputClass}
+                />
               </div>
-              <div className="sm:col-span-2">
-                <label className={`${labelClass} block`}>Rent Property Type</label>
-                <select name="rentPropertyType" value={form.rentPropertyType} onChange={handleFormChange} className={inputClass}>
-                  <option value="">Search to select property type</option>
-                  {PROPERTY_TYPES.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Class */}
               <div>
-                <label className={`${labelClass} block`}>Rent Property Type Category</label>
-                <input type="text" name="rentPropertyTypeCategory" value={form.rentPropertyTypeCategory} onChange={handleFormChange} placeholder="Enter category" className={inputClass} />
+                <label className={`${labelClass} block`}>Class</label>
+                <Combobox
+                  name="rentPropertyType"
+                  value={form.rentPropertyType}
+                  onChange={handleFormChange}
+                  options={RENT_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
+                  placeholder="Select class..."
+                  emptyMessage="No matching class"
+                  className={inputClass}
+                />
+              </div>
+              {/* Category */}
+              <div>
+                <label className={`${labelClass} block`}>Category</label>
+                <Combobox
+                  name="rentPropertyTypeCategory"
+                  value={form.rentPropertyTypeCategory}
+                  onChange={handleFormChange}
+                  options={rentClassCategories.map((c) => ({ value: c, label: c }))}
+                  placeholder="Select category..."
+                  emptyMessage={form.rentPropertyType ? 'No categories' : 'Select class or code first'}
+                  className={inputClass}
+                />
               </div>
               <div>
                 <label className={`${labelClass} block`}>Rent Revenue Code</label>
