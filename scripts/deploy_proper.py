@@ -45,8 +45,8 @@ def deploy():
         'rm -f ' + REMOTE_APP + '/.next',
         'ln -sf ' + REMOTE_APP + '/standalone/.next ' + REMOTE_APP + '/.next',
         # ALWAYS write the correct .env (overwrite whatever was baked at build time)
-        f'echo "DATABASE_URL={CORRECT_DB_URL}" > {REMOTE_APP}/standalone/.env',
-        f'echo "DATABASE_URL={CORRECT_DB_URL}" > {REMOTE_APP}/.env',
+        f'printf "DATABASE_URL={CORRECT_DB_URL}\nPORT=3000" > {REMOTE_APP}/standalone/.env',
+        f'printf "DATABASE_URL={CORRECT_DB_URL}\nPORT=3000" > {REMOTE_APP}/.env',
     ]
     for cmd in cmds:
         stdin, stdout, stderr = ssh.exec_command(cmd, timeout=60)
