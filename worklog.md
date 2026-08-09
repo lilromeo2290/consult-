@@ -200,3 +200,27 @@ Stage Summary:
 - Corner scrollwork enhanced with more intricate SVG paths
 - Deploy script fixed for correct tarball extraction with --strip-components=1
 - All changes deployed to VPS and verified working
+
+---
+Task ID: 1
+Agent: main
+Task: Fix "Application error: client-side exception" and rate config persistence
+
+Work Log:
+- Analyzed user screenshot: showed "Application error: a client-side exception has occurred" on clipe233eng.net
+- Checked PM2 logs: server running fine, no server-side errors
+- Discovered HTML references chunks (15a3111e0cf6ba21.js, ea7709dcf66769f9.css) that DON'T EXIST on server
+- Root cause: BUILD_ID mismatch — server HTML from build KxnF1MAn_Sq6EMHuxMVXL but static assets from build zcLzsHyUKQ8EjQ1V79FNz
+- Old deploy script (deploy-v3.py) used `cp -r` to merge static dirs, causing chunks from 3+ different builds to accumulate
+- Wrote new deploy-clean.py: wipes .next completely on server before each deploy, flattens standalone correctly, verifies all chunks
+- Performed clean rebuild (rm -rf .next → prisma generate → next build) and deployed
+- Verified: all 13 referenced chunks exist on server, HTTP 200, no "Application error" in HTML
+- Added cache-busting nginx headers for /_next/static/ to prevent stale browser cache
+- Updated deploy-clean.py as canonical deploy script for future use
+
+Stage Summary:
+- Root cause was deployment issue (mixed build artifacts), NOT code issue
+- App now loads correctly with all chunks matching
+- DB has 9 rate override entries intact
+- Nginx cache-busting configured for future deploys
+- Rate config persistence should now work (was never a code bug — app was crashing before it could load/save)
