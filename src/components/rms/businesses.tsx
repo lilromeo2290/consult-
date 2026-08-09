@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   Search,
@@ -483,7 +484,18 @@ export function BusinessesPage() {
   };
 
   const handleSave = () => {
-    if (!form.name || !form.type) return;
+    // Validate compulsory fields
+    const missing: string[] = [];
+    if (!form.name?.trim()) missing.push('Business Name');
+    if (!form.type) missing.push('Business Type/Class');
+    if (!form.ownerName?.trim()) missing.push('Owner Name');
+    if (!form.locality?.trim()) missing.push('Locality');
+    if (!form.dateRegistered) missing.push('Date Registered');
+    if (!form.businessAddress?.trim()) missing.push('Business Address');
+    if (missing.length > 0) {
+      alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
+      return;
+    }
     const regNum = form.regNumber || `BUN-${String(businesses.length + 1).padStart(4, '0')}`;
     // Generate final DA Assignment No. at save time (for new entries only)
     const finalDANo = editingRegNumber
@@ -586,6 +598,7 @@ export function BusinessesPage() {
       setBizCerts((prev) => [...prev, newCert]);
     } catch { /* cert generation failure should not block registration */ }
 
+    toast.success('Successfully saved');
     setEditingRegNumber(null);
     setForm({ ...defaultForm });
     setView('list');

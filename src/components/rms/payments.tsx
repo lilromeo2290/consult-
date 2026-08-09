@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   Plus,
@@ -183,7 +184,14 @@ export function PaymentsPage() {
   const closeModal = () => setModalOpen(false);
 
   const handleSave = () => {
-    if (!selectedBill || !payAmount) return;
+    // Validate compulsory fields
+    const missing: string[] = [];
+    if (!selectedBill) missing.push('Bill Number');
+    if (!payAmount || parseFloat(payAmount) <= 0) missing.push('Payment Amount');
+    if (missing.length > 0) {
+      alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
+      return;
+    }
 
     const bill = availableBills.find((b) => b.billNo === selectedBill);
     if (!bill) return;
@@ -207,6 +215,7 @@ export function PaymentsPage() {
     };
 
     setPayments([newPayment, ...payments]);
+    toast.success('Successfully saved');
 
     // Update the bill status in billing
     setRealBills((prev) =>

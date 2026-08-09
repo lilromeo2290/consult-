@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import {
   ChevronDown,
   ChevronUp,
@@ -253,6 +254,7 @@ export function RateConfigPage() {
       if (putRes.ok) {
         setRows((prev) => prev.map((r) => ({ ...r, originalAmount: r.amount, originalCeiling: r.ceiling })));
         setSaveStatus(`Saved ${count} rate(s) to database`);
+        toast.success('Successfully saved');
         setTimeout(() => setSaveStatus(''), 3000);
       } else {
         setSaveStatus(`Save failed (${putRes.status})`);
@@ -350,6 +352,7 @@ export function RateConfigPage() {
       // Update originals so it's not marked as dirty
       setRows((prev) => prev.map((r) => r.code === trimmedCode ? { ...r, originalAmount: capped, originalCeiling: ceil } : r));
       setSaveStatus('Rate added and saved');
+      toast.success('Successfully saved');
       setTimeout(() => setSaveStatus(''), 2000);
     } catch { /* best effort */ }
 

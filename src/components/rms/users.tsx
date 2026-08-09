@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   Search,
@@ -229,6 +230,18 @@ export function UsersPage() {
   const deselectAllPages = () => setForm((prev) => ({ ...prev, accessiblePages: [] }));
 
   const handleSave = () => {
+    // Validate compulsory fields
+    const missing: string[] = [];
+    if (!form.username?.trim()) missing.push('Username');
+    if (!editUser && !form.password?.trim()) missing.push('Password');
+    if (!form.firstName?.trim()) missing.push('First Name');
+    if (!form.lastName?.trim()) missing.push('Last Name');
+    if (!form.email?.trim()) missing.push('Email');
+    if (!form.phone?.trim()) missing.push('Phone');
+    if (missing.length > 0) {
+      alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
+      return;
+    }
     if (editUser) {
       updateUsers((prev) =>
         prev.map((u) =>
@@ -250,6 +263,7 @@ export function UsersPage() {
       updateUsers((prev) => [newUser, ...prev]);
       setShowAddModal(false);
     }
+    toast.success('Successfully saved');
     setForm(emptyForm);
   };
 

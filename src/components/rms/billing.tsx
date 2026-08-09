@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   Search,
@@ -243,7 +244,15 @@ export function BillingPage() {
   // ── Generate bill ──────────────────────────────────────────────────────
 
   const handleGenerateBill = () => {
-    if (!formData.entityName || !formData.revenueItem || formData.amount <= 0) return;
+    // Validate compulsory fields
+    const missing: string[] = [];
+    if (!formData.entityName?.trim()) missing.push('Entity Name');
+    if (!formData.revenueItem) missing.push('Revenue Item');
+    if (formData.amount <= 0) missing.push('Amount (must be greater than 0)');
+    if (missing.length > 0) {
+      alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
+      return;
+    }
 
     const newBillNumber = `BILL-2024-${String(bills.length + 156).padStart(4, '0')}`;
     const totalDue = formData.amount + formData.previousBalance + formData.penalty;
@@ -265,6 +274,7 @@ export function BillingPage() {
     };
 
     setBills((prev) => [newBill, ...prev]);
+    toast.success('Successfully saved');
     setShowModal(false);
     setFormData({
       entityName: '',
@@ -301,7 +311,14 @@ export function BillingPage() {
   // ── Bulk generate bills ────────────────────────────────────────────────
 
   const handleBulkGenerate = () => {
-    if (!bulkForm.revenueItem || bulkEligibleCount === 0) return;
+    // Validate compulsory fields
+    const missing: string[] = [];
+    if (!bulkForm.revenueItem) missing.push('Revenue Item');
+    if (bulkEligibleCount === 0) missing.push('No eligible entities found for the selected criteria');
+    if (missing.length > 0) {
+      alert('Cannot generate bills:\n\n' + missing.map((f) => '• ' + f).join('\n'));
+      return;
+    }
 
     setBulkProgress('generating');
 
@@ -341,6 +358,7 @@ export function BillingPage() {
       setBulkGeneratedCount(newBills.length);
       setBulkProgress('done');
       setCurrentPage(1);
+      toast.success(`Successfully generated ${newBills.length} bill(s)`);
     }, 800);
   };
 

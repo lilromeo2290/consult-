@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   Search,
@@ -300,8 +301,14 @@ export function RentPage() {
   };
 
   const handleSave = async () => {
-    if (!form.occupantName) {
-      alert('Please fill in the required field: Occupant\'s Name.');
+    // Validate compulsory fields
+    const missing: string[] = [];
+    if (!form.occupantName?.trim()) missing.push("Occupant's Name");
+    if (!form.rentPropertyLocation?.trim()) missing.push('Property Location');
+    if (!form.rentPropertyType) missing.push('Property Type');
+    if (!form.amount || parseFloat(form.amount) <= 0) missing.push('Rent Amount (must be greater than 0)');
+    if (missing.length > 0) {
+      alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
       return;
     }
     setSaving(true);
@@ -318,6 +325,7 @@ export function RentPage() {
         };
         setRents((prev) => [...prev, newRent]);
       }
+      toast.success('Successfully saved');
       setForm(defaultForm);
       setView('list');
       setCurrentPage(1);

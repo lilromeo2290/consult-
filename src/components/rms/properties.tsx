@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   Search,
@@ -332,7 +333,17 @@ export function PropertiesPage() {
   };
 
   const handleSave = () => {
-    if (!form.ownerName || !form.propertyUseType) return;
+    // Validate compulsory fields
+    const missing: string[] = [];
+    if (!form.ownerName?.trim()) missing.push('Owner Name');
+    if (!form.propertyUseType) missing.push('Property Use Type');
+    if (!form.locality?.trim()) missing.push('Locality');
+    if (!form.streetName?.trim()) missing.push('Street Name');
+    if (!form.houseNo?.trim()) missing.push('House Number');
+    if (missing.length > 0) {
+      alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
+      return;
+    }
     const propNum = form.propNumber || `UPN-${String(properties.length + 1).padStart(4, '0')}`;
     const newProp: Property = {
       propNumber: propNum,
@@ -351,6 +362,7 @@ export function PropertiesPage() {
       setProperties((prev) => [...prev, newProp]);
     }
 
+    toast.success('Successfully saved');
     setEditingPropNumber(null);
     setForm({ ...defaultForm });
     setView('list');

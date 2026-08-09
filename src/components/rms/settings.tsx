@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { toast } from 'sonner';
 import {
   Building,
   Phone,
@@ -166,6 +167,7 @@ export function SettingsPage() {
     // useSyncedStorage auto-syncs to server on every setter call.
     // The "Save" button gives visual confirmation.
     setSaved(true);
+    toast.success('Successfully saved');
     setTimeout(() => setSaved(false), 2000);
   };
 
