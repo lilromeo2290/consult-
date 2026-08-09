@@ -29,7 +29,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { exportToExcel, importFromExcel, RENT_FIELDS } from '@/lib/import-export';
-import { REVENUE_CODE_MAP, DESCRIPTION_TO_CODE, CODE_TO_DESCRIPTION } from '@/lib/revenue-code-map';
+import { RENT_REVENUE_CODES, RENT_CODE_TO_DESC, RENT_DESC_TO_CODE } from '@/lib/rent-revenue-codes';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Rent {
@@ -104,13 +104,7 @@ const PROPERTY_TYPES = Object.keys(PROPERTY_TYPE_CODE_MAP);
 
 const VACANT_OPTIONS = ['Yes', 'No'];
 
-// Rent-relevant revenue codes for search
-const RENT_REVENUE_CODES = REVENUE_CODE_MAP.filter(
-  (item) =>
-    item.code.startsWith('1415') ||
-    item.description.toLowerCase().includes('market and stores') ||
-    item.description.toLowerCase().includes('rent of properties')
-);
+
 
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -125,9 +119,28 @@ export function RentPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const revenueDropdownRef = useRef<HTMLDivElement>(null);
+  const rentRevenueCodeRef = useRef<HTMLDivElement>(null);
   const [revenueSearch, setRevenueSearch] = useState('');
   const [showRevenueDropdown, setShowRevenueDropdown] = useState(false);
+  const [rentRevenueCodeSearch, setRentRevenueCodeSearch] = useState('');
+  const [rentRevenueCodeShowDropdown, setRentRevenueCodeShowDropdown] = useState(false);
   const itemsPerPage = 10;
+
+  const rentRevenueCodeFiltered = rentRevenueCodeSearch
+    ? RENT_REVENUE_CODES.filter(
+        (item) =>
+          item.code.includes(rentRevenueCodeSearch) ||
+          item.description.toLowerCase().includes(rentRevenueCodeSearch.toLowerCase())
+      )
+    : RENT_REVENUE_CODES;
+
+  const handleRentRevenueSelect = (item: { code: string; description: string }) => {
+    setForm((prev) => ({ ...prev, rentRevenueCode: item.code, rentRevenueDescription: item.description }));
+    setRentRevenueCodeSearch(item.code);
+    setRevenueSearch(item.description);
+    setRentRevenueCodeShowDropdown(false);
+    setShowRevenueDropdown(false);
+  };
 
   // ── Import / Export ───────────────────────────────────────────────────────
   const handleExport = () => {
@@ -245,12 +258,12 @@ export function RentPage() {
         rentPropertyTypeCategory: '',
       }));
     } else if (name === 'rentRevenueCode') {
-      const desc = CODE_TO_DESCRIPTION[value] || '';
+      const desc = RENT_CODE_TO_DESC[value] || '';
       setForm((prev) => ({ ...prev, rentRevenueCode: value, rentRevenueDescription: desc }));
       setRevenueSearch(desc || value);
       setShowRevenueDropdown(false);
     } else if (name === 'rentRevenueDescription') {
-      const code = DESCRIPTION_TO_CODE[value] || '';
+      const code = RENT_DESC_TO_CODE[value] || '';
       setForm((prev) => ({ ...prev, rentRevenueDescription: value, rentRevenueCode: code }));
       setRevenueSearch(value || code);
       setShowRevenueDropdown(false);
@@ -270,7 +283,9 @@ export function RentPage() {
   const selectRevenue = (item: { code: string; description: string }) => {
     setForm((prev) => ({ ...prev, rentRevenueCode: item.code, rentRevenueDescription: item.description }));
     setRevenueSearch(item.description);
+    setRentRevenueCodeSearch(item.code);
     setShowRevenueDropdown(false);
+    setRentRevenueCodeShowDropdown(false);
   };
 
   // Close dropdown on outside click
@@ -278,6 +293,9 @@ export function RentPage() {
     const handleClickOutside = (e: MouseEvent) => {
       if (revenueDropdownRef.current && !revenueDropdownRef.current.contains(e.target as Node)) {
         setShowRevenueDropdown(false);
+      }
+      if (rentRevenueCodeRef.current && !rentRevenueCodeRef.current.contains(e.target as Node)) {
+        setRentRevenueCodeShowDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -656,7 +674,29 @@ export function RentPage() {
               </div>
               <div>
                 <label className={`${labelClass} block`}>Rent Revenue Code</label>
-                <input type="text" name="rentRevenueCode" value={form.rentRevenueCode} onChange={handleFormChange} onFocus={() => { setRevenueSearch(form.rentRevenueDescription || form.rentRevenueCode); setShowRevenueDropdown(true); }} placeholder="Search to select" className={inputClass} />
+                <div className="relative" ref={rentRevenueCodeRef}>
+                <input
+                  type="text"
+                  name="rentRevenueCode"
+                  value={rentRevenueCodeShowDropdown ? rentRevenueCodeSearch : form.rentRevenueCode}
+                  onChange={(e) => { setRentRevenueCodeSearch(e.target.value); setRentRevenueCodeShowDropdown(true); }}
+                  onFocus={() => { setRentRevenueCodeSearch(form.rentRevenueCode || ''); setRentRevenueCodeShowDropdown(true); }}
+                  placeholder="Search rent revenue code..."
+                  className={inputClass}
+                />
+                {rentRevenueCodeShowDropdown && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    {rentRevenueCodeFiltered.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                    ) : rentRevenueCodeFiltered.slice(0, 50).map((item) => (
+                      <button key={item.code} type="button" onClick={() => { handleRentRevenueSelect(item); setRentRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
+                        <span className="font-mono text-xs text-slate-500 mr-2">{item.code}</span>
+                        <span className="text-slate-800 dark:text-white">{item.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               </div>
               <div className="sm:col-span-2 relative" ref={revenueDropdownRef}>
                 <label className={`${labelClass} block`}>Rent Revenue Description</label>
@@ -666,7 +706,7 @@ export function RentPage() {
                     value={showRevenueDropdown ? revenueSearch : form.rentRevenueDescription}
                     onChange={(e) => { setRevenueSearch(e.target.value); setShowRevenueDropdown(true); }}
                     onFocus={() => { setRevenueSearch(form.rentRevenueDescription || ''); setShowRevenueDropdown(true); }}
-                    placeholder="Type to search revenue description"
+                    placeholder="Search rent revenue description..."
                     className={inputClass}
                   />
                   {showRevenueDropdown && (
