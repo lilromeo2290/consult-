@@ -116,7 +116,9 @@ const propertyUseTypes = [
 const propertyTypes = ['All', 'Residential', 'Commercial', 'Industrial', 'Institutional', 'Mixed Use'];
 const occupancyStatuses = ['All', 'Occupied', 'Vacant', 'Under Construction'];
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Property Register Component ───────────────────────────────────────
+
+const _PROPS_VERSION = '2.1';
 
 export function PropertiesPage() {
   const [view, setView] = useState<'list' | 'form'>('list');
