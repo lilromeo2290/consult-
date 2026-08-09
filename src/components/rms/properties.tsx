@@ -745,8 +745,7 @@ export function PropertiesPage() {
                         <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
                       ) : propRevenueCodeFiltered.slice(0, 50).map((item) => (
                         <button key={item.code} type="button" onClick={() => { handlePropRevenueSelect(item); setPropRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                          <span className="font-mono text-xs text-slate-500 mr-2">{item.code}</span>
-                          <span className="text-slate-800 dark:text-white">{item.description}</span>
+                          <span className="font-mono text-slate-800 dark:text-white">{item.code}</span>
                         </button>
                       ))}
                     </div>
@@ -772,7 +771,6 @@ export function PropertiesPage() {
                       ) : propRevenueDescFiltered.slice(0, 50).map((item) => (
                         <button key={item.code} type="button" onClick={() => { handlePropRevenueSelect(item); setPropRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
                           <span className="text-slate-800 dark:text-white">{item.description}</span>
-                          <span className="ml-2 font-mono text-xs text-slate-400">{item.code}</span>
                         </button>
                       ))}
                     </div>
