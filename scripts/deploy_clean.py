@@ -57,30 +57,38 @@ print('Step 5: Copy static files...')
 run(ssh, f'cp -r {REMOTE_APP}/static {REMOTE_APP}/standalone/.next/static', timeout=60)
 run(ssh, f'ls {REMOTE_APP}/standalone/.next/static/ 2>&1 | wc -l')
 
-# 6. Cleanup tar
-print('Step 6: Cleanup...')
-run(ssh, f'rm -f {REMOTE_APP}/deploy.tar.gz {REMOTE_APP}/static')
+# 6. Fix .env to point to server database
+print('Step 6: Fix .env for production DB...')
+run(ssh, f'echo "DATABASE_URL=file:/home/consult-rms/data/rms.db" > {REMOTE_APP}/standalone/.env')
+run(ssh, f'cat {REMOTE_APP}/standalone/.env')
 
-# 7. Verify prisma client
-print('Step 7: Verify Prisma client...')
+# 7. Cleanup tar
+print('Step 7: Cleanup...')
+run(ssh, f'rm -rf {REMOTE_APP}/deploy.tar.gz {REMOTE_APP}/static')
+
+# 8. Verify prisma client
+print('Step 8: Verify Prisma client...')
 run(ssh, f'ls {REMOTE_APP}/standalone/node_modules/@prisma/client/default.js 2>&1')
 run(ssh, f'ls {REMOTE_APP}/standalone/node_modules/.prisma/client/index.js 2>&1')
 
-# 8. Start PM2
-print('Step 8: Start PM2...')
-run(ssh, f'cd {REMOTE_APP} && PORT=3001 pm2 restart consult-rms 2>&1')
-time.sleep(4)
+# 9. Delete old PM2 process and start fresh
+print('Step 9: Restart PM2 (fresh)...')
+run(ssh, 'pm2 delete consult-rms 2>&1')
+time.sleep(1)
+run(ssh, f'cd {REMOTE_APP}/standalone && PORT=3001 pm2 start server.js --name consult-rms 2>&1')
+time.sleep(3)
+run(ssh, 'pm2 save 2>&1')
 
-# 9. Status
-print('Step 9: PM2 Status...')
+# 10. Status
+print('Step 10: PM2 Status...')
 run(ssh, 'pm2 status consult-rms 2>&1')
 
-# 10. Test API
-print('Step 10: Test API...')
-run(ssh, 'curl -s -o /dev/null -w "HTTP_CODE:%{http_code}" http://localhost:3001/api/rms-data')
+# 11. Test API
+print('Step 11: Test API...')
+run(ssh, 'curl -s -m 10 "http://localhost:3001/api/rms-data?key=rates" 2>&1')
 
-# 11. Check logs
-print('Step 11: Error logs...')
+# 12. Check logs
+print('Step 12: Error logs...')
 run(ssh, 'pm2 logs consult-rms --err --lines 5 --nostream 2>&1')
 
 print('DEPLOY COMPLETE')
