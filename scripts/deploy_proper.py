@@ -7,6 +7,7 @@ HOST = '153.75.247.4'
 USER = 'root'
 PASS = 'Do1_BuZe4_M1-V6v1_S4'
 REMOTE_APP = '/home/consult-rms'
+CORRECT_DB_URL = 'file:/home/consult-rms/data/rms.db'
 
 def deploy():
     ssh = paramiko.SSHClient()
@@ -36,15 +37,16 @@ def deploy():
     sftp.putfo(buf, remote_tar)
     print('Upload done.')
 
-    # Clean old static, extract, ensure symlink, restart
+    # Ensure data directory exists
     cmds = [
+        'mkdir -p ' + REMOTE_APP + '/data',
         'rm -rf ' + REMOTE_APP + '/standalone/.next/static/',
         'cd ' + REMOTE_APP + ' && tar xf deploy.tar && rm deploy.tar',
         'rm -f ' + REMOTE_APP + '/.next',
         'ln -sf ' + REMOTE_APP + '/standalone/.next ' + REMOTE_APP + '/.next',
-        'ls -la ' + REMOTE_APP + '/.next',
-        'pm2 restart consult-rms || cd ' + REMOTE_APP + '/standalone && pm2 start server.js --name consult-rms',
-        'pm2 save',
+        # ALWAYS write the correct .env (overwrite whatever was baked at build time)
+        f'echo "DATABASE_URL={CORRECT_DB_URL}" > {REMOTE_APP}/standalone/.env',
+        f'echo "DATABASE_URL={CORRECT_DB_URL}" > {REMOTE_APP}/.env',
     ]
     for cmd in cmds:
         stdin, stdout, stderr = ssh.exec_command(cmd, timeout=60)
@@ -53,6 +55,23 @@ def deploy():
         if out: print(f'  {out[:200]}')
         if err and 'cannot' not in err.lower(): print(f'  ERR: {err[:200]}')
 
+    # Restart PM2 process
+    stdin, stdout, stderr = ssh.exec_command(
+        'pm2 restart consult-rms 2>&1', timeout=30
+    )
+    out = stdout.read().decode().strip()
+    if 'not found' in out.lower() or 'error' in out.lower():
+        # Process doesn't exist — start it
+        stdin, stdout, stderr = ssh.exec_command(
+            f'cd {REMOTE_APP}/standalone && pm2 start server.js --name consult-rms 2>&1',
+            timeout=30,
+        )
+        out2 = stdout.read().decode().strip()
+        print(f'  {out2[:200]}')
+    else:
+        print(f'  {out[:200]}')
+
+    ssh.exec_command('pm2 save 2>&1', timeout=15)
     sftp.close()
     ssh.close()
     print('Deployed!')

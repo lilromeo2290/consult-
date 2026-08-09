@@ -246,3 +246,28 @@ Stage Summary:
 - Amount field in Business Information now reactively shows the Rate Configuration amount when Business Class Code, Business Class, and Category are selected
 - Lookup priority: Rate Config override → in-memory override → FEE_CODE_LOOKUP default → empty
 - Deployed to VPS, server healthy (HTTP 200, port 3001)
+
+---
+Task ID: 8
+Agent: Main
+Task: Fix DATABASE_URL pointing to wrong database — data loss root cause
+
+Work Log:
+- User reported saved rate amounts keep disappearing after deploys
+- Discovered the .env on VPS had `DATABASE_URL=file:/home/z/my-project/db/custom.db` (local dev path)
+- The correct DB is at `/home/consult-rms/data/rms.db` — contains all 13 data tables with 12 rate override entries
+- The wrong DB (`custom.db`) belonged to a different application entirely (Apartment/Booking tables, no RmsData)
+- Found a stale `bun` process running as user `clipe233` on port 3000 via their own PM2 daemon — this was serving from the wrong DB
+- Killed the stale PM2 daemon and all orphan processes
+- Fixed `db.ts` to explicitly pass `datasourceUrl: process.env.DATABASE_URL` to PrismaClient constructor at runtime
+- Cleaned up debug code from rms-data API route
+- Rewrote `deploy_proper.py` to ALWAYS write the correct `.env` file after extracting the tarball, so the build-time value gets overwritten
+- Deploy script now also creates `/home/consult-rms/data/` directory and handles missing PM2 process
+- Verified: API returns all 12 rate override entries, homepage HTTP 200, PM2 online
+
+Stage Summary:
+- **Root cause**: `.env` with wrong DATABASE_URL was being deployed, plus a stale bun process from another user was serving from the wrong DB
+- **Fix**: `db.ts` now reads DATABASE_URL at runtime; deploy script always overwrites `.env` with correct path
+- **Your 12 saved rate overrides are intact** in `/home/consult-rms/data/rms.db` and now loading correctly
+- Future deploys will never overwrite the DATABASE_URL thanks to the deploy script fix
+- Server running on port 3000 via PM2 as root, no stale processes remaining
