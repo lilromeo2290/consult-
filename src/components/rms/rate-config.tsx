@@ -415,11 +415,11 @@ export function RateConfigPage() {
         <button
           onClick={persistOverrides}
           disabled={!hasUnsavedChanges || isSaving}
-          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg transition-all shadow-sm {
+          className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg transition-all shadow-sm ${
             hasUnsavedChanges && !isSaving
               ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.97] shadow-emerald-200 dark:shadow-emerald-900/40'
               : 'bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed'
-          }"
+          }`}
         >
           <Save className="w-4 h-4" />
           {isSaving ? 'Saving...' : 'Save Changes'}
