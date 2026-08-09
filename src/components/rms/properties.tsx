@@ -790,6 +790,45 @@ export function PropertiesPage() {
                   className={inputClass}
                 />
               </div>
+              {/* Code */}
+              <div>
+                <label className={`${labelClass} block`}>Code</label>
+                <Combobox
+                  name="businessClassCode"
+                  value={form.businessClassCode}
+                  onChange={handleFormChange}
+                  options={classCodes.map((c) => ({ value: c, label: `${c} – ${PROP_CODE_TO_CATEGORY[c] || ''}` }))}
+                  placeholder="Select property code..."
+                  emptyMessage="No matching code"
+                  className={inputClass}
+                />
+              </div>
+              {/* Class */}
+              <div>
+                <label className={`${labelClass} block`}>Class</label>
+                <Combobox
+                  name="type"
+                  value={form.type}
+                  onChange={handleFormChange}
+                  options={PROPERTY_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
+                  placeholder="Select property class..."
+                  emptyMessage="No matching class"
+                  className={inputClass}
+                />
+              </div>
+              {/* Category */}
+              <div>
+                <label className={`${labelClass} block`}>Category</label>
+                <Combobox
+                  name="category"
+                  value={form.category}
+                  onChange={handleFormChange}
+                  options={classCategories.map((c) => ({ value: c, label: c }))}
+                  placeholder="Select category..."
+                  emptyMessage={form.type ? 'No categories' : 'Select class first'}
+                  className={inputClass}
+                />
+              </div>
               {/* Value */}
               <div>
                 <label className={`${labelClass} block`}>Value (GHS)</label>
