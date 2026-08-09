@@ -27,6 +27,11 @@ import {
   FINE_CODE_TO_CATEGORY,
 } from '@/lib/fines-class-code-map';
 import {
+  FEE_CLASS_CODES,
+  FEE_CODE_TO_CLASS,
+  FEE_CODE_TO_CATEGORY,
+} from '@/lib/fees-class-code-map';
+import {
   setRateEntry,
   loadOverrides,
   RateEntry,
@@ -81,6 +86,15 @@ for (const code of FINE_CLASS_CODES) {
   };
 }
 
+// Build a fees lookup from the fees maps
+const feesLookup: Record<string, { businessClass: string; category: string }> = {};
+for (const code of FEE_CLASS_CODES) {
+  feesLookup[code] = {
+    businessClass: FEE_CODE_TO_CLASS[code] || '',
+    category: FEE_CODE_TO_CATEGORY[code] || '',
+  };
+}
+
 function getTabConfig(tab: RateTab): TabConfig {
   switch (tab) {
     case 'Business':
@@ -108,7 +122,13 @@ function getTabConfig(tab: RateTab): TabConfig {
         codeToClass: FINE_CODE_TO_CLASS,
       };
     case 'Fees':
-      return { dbKey: 'rms-rate-overrides-fees', codes: [], classLabel: 'Fee Type', lookup: {}, codeToClass: {} };
+      return {
+        dbKey: 'rms-rate-overrides-fees',
+        codes: FEE_CLASS_CODES,
+        classLabel: 'Fee Type',
+        lookup: feesLookup,
+        codeToClass: FEE_CODE_TO_CLASS,
+      };
     case 'Rent':
       return { dbKey: 'rms-rate-overrides-rent', codes: [], classLabel: 'Rent Type', lookup: {}, codeToClass: {} };
   }
