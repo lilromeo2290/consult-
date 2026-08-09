@@ -736,7 +736,7 @@ export function PropertiesPage() {
                     value={propRevenueCodeShowDropdown ? propRevenueCodeSearch : form.revenueCode}
                     onChange={(e) => { setPropRevenueCodeSearch(e.target.value); setPropRevenueCodeShowDropdown(true); }}
                     onFocus={() => { setPropRevenueCodeSearch(form.revenueCode || ''); setPropRevenueCodeShowDropdown(true); }}
-                    placeholder="Type to search code..."
+                    placeholder="Search property revenue code..."
                     className={inputClass}
                   />
                   {propRevenueCodeShowDropdown && (
@@ -762,7 +762,7 @@ export function PropertiesPage() {
                     value={propRevenueDescShowDropdown ? propRevenueDescSearch : form.revenueDescription}
                     onChange={(e) => { setPropRevenueDescSearch(e.target.value); setPropRevenueDescShowDropdown(true); }}
                     onFocus={() => { setPropRevenueDescSearch(form.revenueDescription || ''); setPropRevenueDescShowDropdown(true); }}
-                    placeholder="Type to search description..."
+                    placeholder="Search property revenue description..."
                     className={inputClass}
                   />
                   {propRevenueDescShowDropdown && (
