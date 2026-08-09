@@ -34,7 +34,17 @@ import {
   PROP_CODE_TO_CATEGORY,
   PROPERTY_CLASS_CODES,
   PROPERTY_CLASS_NAMES,
+  PROP_DEFAULT_RATES,
 } from '@/lib/property-class-code-map';
+import { VALUED_DEFAULT_RATES } from '@/lib/valued-property-class-code-map';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Combobox } from '@/components/ui/combobox';
 import { AutoSuggestInput } from '@/components/ui/auto-suggest-input';
 
@@ -224,6 +234,12 @@ export function PropertiesPage() {
   const [locating, setLocating] = useState(false);
   const [locatingOwner, setLocatingOwner] = useState(false);
 
+  // ── Valued Property Dialog State ───────────────────────────────────────
+  const [showValuedDialog, setShowValuedDialog] = useState(false);
+  const [showAmountDialog, setShowAmountDialog] = useState(false);
+  const [valuedAmountInput, setValuedAmountInput] = useState('');
+  const valuedDialogTriggered = useRef<string>(''); // tracks which code triggered it
+
   // Property Revenue Code/Description Search
   const propRevenueCodeRef = useRef<HTMLDivElement>(null);
   const propRevenueDescRef = useRef<HTMLDivElement>(null);
@@ -268,6 +284,62 @@ export function PropertiesPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // ── Valued Property Dialog Trigger ──────────────────────────────────────
+  // When Code + Class + Category are all selected, ask if it's a valued property
+  useEffect(() => {
+    const code = form.businessClassCode;
+    const cls = form.type;
+    const cat = form.category;
+    if (code && cls && cat && code !== valuedDialogTriggered.current) {
+      valuedDialogTriggered.current = code;
+      setShowValuedDialog(true);
+    }
+  }, [form.businessClassCode, form.type, form.category]);
+
+  // Helper: fetch rate from DB, fallback to defaults
+  const fetchRateForCode = async (dbKey: string, code: string, defaults: Record<string, number>): Promise<number> => {
+    try {
+      const res = await fetch(`/api/rms-data?key=${dbKey}&_t=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
+        const data = json?.data || json;
+        if (data && data[code] && typeof data[code].amount === 'number') return data[code].amount;
+      }
+    } catch { /* fallback to default */ }
+    return defaults[code] ?? 0;
+  };
+
+  // Handle "Not Valued" → use flat rate from Rate Config (Property)
+  const handleNotValued = async () => {
+    const code = form.businessClassCode;
+    setShowValuedDialog(false);
+    const rate = await fetchRateForCode('rms-rate-overrides-property', code, PROP_DEFAULT_RATES);
+    setForm((p) => ({ ...p, value: String(rate), valuedProperty: 'No' }));
+  };
+
+  // Handle "Valued" → show amount input dialog
+  const handleValuedYes = () => {
+    setShowValuedDialog(false);
+    setValuedAmountInput('');
+    setShowAmountDialog(true);
+  };
+
+  // Handle amount submission → multiply by valued property rate
+  const handleValuedAmountSubmit = async () => {
+    const amount = parseFloat(valuedAmountInput);
+    if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount.'); return; }
+    const code = form.businessClassCode;
+    const rateFactor = await fetchRateForCode('rms-rate-overrides-valued-property', code, VALUED_DEFAULT_RATES);
+    // rateFactor is a percentage (e.g., 0.50 means 0.50%)
+    const calculatedValue = (amount * rateFactor) / 100;
+    setShowAmountDialog(false);
+    setForm((p) => ({
+      ...p,
+      value: calculatedValue.toFixed(2),
+      valuedProperty: amount.toLocaleString(),
+    }));
+  };
 
   const fetchGps = () => {
     if (!navigator.geolocation) { alert('Geolocation is not supported.'); return; }
@@ -467,6 +539,7 @@ export function PropertiesPage() {
       employees: (prop as any).employees || '',
       yearEstablished: (prop as any).yearEstablished || '',
     });
+    valuedDialogTriggered.current = prop.businessClassCode || '';
     setView('form');
   };
 
@@ -503,7 +576,7 @@ export function PropertiesPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setEditingPropNumber(null); setForm({ ...defaultForm, propertyUniqueNumber: generatePropertyUniqueNumber(), propertyCertNo: generatePropertyCertNo(), daAssignmentNo: generateDaAssignmentNo() }); setView('form'); }}
+              onClick={() => { setEditingPropNumber(null); setForm({ ...defaultForm, propertyUniqueNumber: generatePropertyUniqueNumber(), propertyCertNo: generatePropertyCertNo(), daAssignmentNo: generateDaAssignmentNo() }); valuedDialogTriggered.current = ''; setView('form'); }}
               className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
@@ -837,19 +910,14 @@ export function PropertiesPage() {
               </div>
               {/* Valued Property */}
               <div>
-                <label className={`${labelClass} block`}>Valued Property</label>
-                <div className="flex items-center gap-3 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => setForm((p) => ({ ...p, valuedProperty: 'Yes' }))}
-                    className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${form.valuedProperty === 'Yes' ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}
-                  >Yes</button>
-                  <button
-                    type="button"
-                    onClick={() => setForm((p) => ({ ...p, valuedProperty: 'No' }))}
-                    className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${form.valuedProperty === 'No' ? 'bg-slate-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}
-                  >No</button>
-                </div>
+                <label className={`${labelClass} block`}>Valued Property Amount</label>
+                <input
+                  type="text"
+                  value={form.valuedProperty === 'No' ? 'N/A (Flat Rate)' : form.valuedProperty ? `GHS ${form.valuedProperty}` : ''}
+                  readOnly
+                  placeholder="Auto-populated after selection"
+                  className={`${inputClass} bg-slate-100 dark:bg-slate-900/60 cursor-not-allowed`}
+                />
               </div>
               {/* Value */}
               <div>
@@ -952,6 +1020,75 @@ export function PropertiesPage() {
           </button>
         </div>
       </div>
+
+      {/* ════════════════════════════════════════════════════════════════════
+          DIALOG 1: Is this a Valued Property?
+         ════════════════════════════════════════════════════════════════════ */}
+      <Dialog open={showValuedDialog} onOpenChange={setShowValuedDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Valued Property</DialogTitle>
+            <DialogDescription>
+              Is this property a valued property? Selecting &quot;No&quot; will use the flat rate from Rate Config. Selecting &quot;Yes&quot; will require entering the property&apos;s valued amount.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-3 sm:gap-0">
+            <button
+              onClick={handleNotValued}
+              className="flex-1 px-5 py-2.5 rounded-lg bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium transition-colors cursor-pointer"
+            >
+              No — Use Flat Rate
+            </button>
+            <button
+              onClick={handleValuedYes}
+              className="flex-1 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors cursor-pointer"
+            >
+              Yes — Enter Amount
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ════════════════════════════════════════════════════════════════════
+          DIALOG 2: Enter Property Valued Amount
+         ════════════════════════════════════════════════════════════════════ */}
+      <Dialog open={showAmountDialog} onOpenChange={setShowAmountDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Property Valued Amount</DialogTitle>
+            <DialogDescription>
+              Enter the total valued amount of this property. It will be multiplied by the rate impost from Rate Config to calculate the annual rate.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <label className={`${'text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide'} block mb-1.5`}>Amount (GHS)</label>
+            <input
+              type="number"
+              value={valuedAmountInput}
+              onChange={(e) => setValuedAmountInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleValuedAmountSubmit(); }}
+              placeholder="e.g. 500000"
+              min="0"
+              autoFocus
+              className={inputClass}
+            />
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setShowAmountDialog(false)}
+              className="px-5 py-2.5 rounded-lg bg-slate-500 hover:bg-slate-600 text-white text-sm font-medium transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleValuedAmountSubmit}
+              className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors cursor-pointer"
+            >
+              Calculate Value
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
