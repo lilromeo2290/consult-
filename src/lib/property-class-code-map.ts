@@ -93,6 +93,38 @@ export const PROP_CODE_TO_CATEGORY: Record<string, string> = {
   '21102': 'Wooden Kiosks/Sheds',
 };
 
+// Default Unassessed Rates per code (from official rate schedule)
+export const PROP_DEFAULT_RATES: Record<string, number> = {
+  '10101': 70,
+  '10111': 50,
+  '10121': 20,
+  '10131': 20,
+  '10141': 20,
+  '20201': 1000,
+  '20211': 1000,
+  '20221': 1000,
+  '20231': 1000,
+  '20241': 1000,
+  '20301': 1800,
+  '20311': 1800,
+  '20321': 1800,
+  '20331': 1800,
+  '20341': 1800,
+  '20401': 2800,
+  '20402': 2650,
+  '20411': 2800,
+  '20421': 2800,
+  '20431': 2650,
+  '20500': 0,
+  '20601': 0,
+  '20701': 0,
+  '20801': 0,
+  '20811': 0,
+  '20999': 0,
+  '21101': 0,
+  '21102': 0,
+};
+
 // All property class codes flat list
 export const PROPERTY_CLASS_CODES = Object.keys(PROP_CODE_TO_CLASS);
 

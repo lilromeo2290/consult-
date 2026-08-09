@@ -21,6 +21,7 @@ import {
   PROPERTY_CLASS_CODES,
   PROP_CODE_TO_CLASS,
   PROP_CODE_TO_CATEGORY,
+  PROP_DEFAULT_RATES,
 } from '@/lib/property-class-code-map';
 import {
   FINE_CLASS_CODES,
@@ -72,6 +73,8 @@ interface TabConfig {
   lookup: Record<string, { businessClass: string; category: string }>;
   /** Code → class name map for Combobox */
   codeToClass: Record<string, string>;
+  /** Optional default rates (code → amount) */
+  defaultRates?: Record<string, number>;
 }
 
 // Build a property lookup from the property maps
@@ -127,6 +130,7 @@ function getTabConfig(tab: RateTab): TabConfig {
         classLabel: 'Property Class',
         lookup: propertyLookup,
         codeToClass: PROP_CODE_TO_CLASS,
+        defaultRates: PROP_DEFAULT_RATES,
       };
     case 'Fines':
       return {
@@ -169,6 +173,7 @@ function buildRowsFromData(
   codes: string[],
   lookup: Record<string, { businessClass: string; category: string }>,
   savedData: Record<string, RateEntry>,
+  defaultRates?: Record<string, number>,
 ): RateRow[] {
   // For tabs with predefined codes: iterate codes
   // For tabs without predefined codes: iterate saved data keys
@@ -181,8 +186,8 @@ function buildRowsFromData(
   return allCodes.map((code) => {
     const entry = lookup[code];
     const override = savedData[code];
-    const amount = override?.amount || 0;
-    const ceiling = override?.ceiling || 0;
+    const amount = override?.amount ?? defaultRates?.[code] ?? 0;
+    const ceiling = override?.ceiling ?? 0;
     return {
       code,
       businessClass: entry?.businessClass || override?.businessClass || savedData[code]?.businessClass || '',
@@ -255,7 +260,7 @@ export function RateConfigPage() {
         ? json.data as Record<string, RateEntry>
         : {};
 
-      const built = buildRowsFromData(config.codes, config.lookup, savedData);
+      const built = buildRowsFromData(config.codes, config.lookup, savedData, config.defaultRates);
       setRows(built);
       // Also populate in-memory store for Business tab
       if (tab === 'Business') loadOverrides(savedData);
@@ -269,7 +274,7 @@ export function RateConfigPage() {
       console.error('Failed to load rate overrides:', err);
       setLoadError('Load failed (network error)');
       const config = getTabConfig(tab);
-      setRows(buildRowsFromData(config.codes, config.lookup, {}));
+      setRows(buildRowsFromData(config.codes, config.lookup, {}, config.defaultRates));
       setOverridesLoaded(true);
     }
   }, []);
