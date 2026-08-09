@@ -40,6 +40,12 @@ export async function PUT(request: NextRequest) {
       create: { key, data: jsonData },
     });
 
+    // Log rate-override saves for debugging
+    if (key === 'rms-rate-overrides') {
+      const entryCount = data && typeof data === 'object' ? Object.keys(data).length : 0;
+      console.log(`[rate-overrides] SAVED ${entryCount} entries`);
+    }
+
     return NextResponse.json({ success: true, key });
   } catch (error) {
     console.error('PUT /api/rms-data error:', error);

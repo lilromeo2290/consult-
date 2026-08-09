@@ -14,12 +14,7 @@ import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
 import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
 import { CODE_TO_CLASS } from '@/lib/business-class-code-map';
 import {
-  getRateOverride,
-  setRateOverride,
-  getRateCeiling,
-  setRateCeiling,
   setRateEntry,
-  getAllOverrides,
   loadOverrides,
   RateEntry,
 } from '@/lib/rate-overrides';
@@ -54,12 +49,11 @@ const RATE_FIELDS: { key: string; label: string }[] = [
   { key: 'ceiling', label: 'Ceiling' },
 ];
 
-function buildBusinessRows(): RateRow[] {
-  // Read from in-memory store (pre-populated by page.tsx from DB on app load)
-  const saved = getAllOverrides();
+/** Build rows from explicit saved data (DB payload). */
+function buildRowsFromData(savedData: Record<string, RateEntry>): RateRow[] {
   return BUSINESS_CLASS_CODES.map((code) => {
     const entry = FEE_CODE_LOOKUP[code];
-    const override = saved[code];
+    const override = savedData[code];
     const amount = override?.amount || 0;
     const ceiling = override?.ceiling || 0;
     return {
@@ -77,7 +71,9 @@ function buildBusinessRows(): RateRow[] {
 
 export function RateConfigPage() {
   const [activeTab, setActiveTab] = useState<RateTab>('Business');
-  const [rows, setRows] = useState<RateRow[]>(buildBusinessRows);
+  // Start empty — we ONLY populate after DB confirms data
+  const [rows, setRows] = useState<RateRow[]>([]);
+  const [overridesLoaded, setOverridesLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortCol, setSortCol] = useState<SortColumn>('code');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
@@ -90,49 +86,45 @@ export function RateConfigPage() {
   const [newAmount, setNewAmount] = useState('');
   const [newCeiling, setNewCeiling] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mountedRef = useRef(false);
 
-  // ── Persistence: load overrides from DB on mount ────────────────────────
-  const [overridesLoaded, setOverridesLoaded] = useState(false);
-
+  // ── Load overrides from DB on every mount ─────────────────────────────
   useEffect(() => {
-    mountedRef.current = true;
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch(`/api/rms-data?key=${RATE_OVERRIDES_KEY}`);
         if (!res.ok || cancelled) return;
         const json = await res.json();
-        if (json.data && typeof json.data === 'object' && !cancelled) {
-          const savedData = json.data as Record<string, RateEntry>;
-          // Apply saved data directly to rows — do NOT go through in-memory store
-          // to avoid race conditions with the page.tsx preload.
-          setRows((prev) =>
-            prev.map((r) => {
-              const entry = savedData[r.code];
-              if (!entry) return r;
-              const amt = typeof entry.amount === 'number' ? entry.amount : r.amount;
-              const ceil = typeof entry.ceiling === 'number' ? entry.ceiling : r.ceiling;
-              return { ...r, amount: amt, ceiling: ceil, originalAmount: amt, originalCeiling: ceil };
-            }),
-          );
-          // Also populate the in-memory store for other components (e.g. businesses.tsx)
+        if (cancelled) return;
+        const savedData = (json.data && typeof json.data === 'object')
+          ? json.data as Record<string, RateEntry>
+          : {};
+        if (!cancelled) {
+          // Build rows directly from DB data — single source of truth
+          const built = buildRowsFromData(savedData);
+          setRows(built);
+          // Also populate the in-memory store for other components
           loadOverrides(savedData);
+          setOverridesLoaded(true);
         }
       } catch (err) {
         console.error('Failed to load rate overrides:', err);
+        // Even on error, show empty rows so the UI is usable
+        if (!cancelled) {
+          setRows(buildRowsFromData({}));
+          setOverridesLoaded(true);
+        }
       }
-      if (!cancelled) setOverridesLoaded(true);
     })();
-    return () => { cancelled = true; mountedRef.current = false; };
+    return () => { cancelled = true; };
   }, []);
 
-  // Keep a ref to rows — always updated BEFORE any handler reads it
+  // Keep a ref to rows — updated on every render AND manually in handlers
   const rowsRef = useRef<RateRow[]>(rows);
   rowsRef.current = rows;
 
-  // ── Persistence: save overrides to DB immediately (no debounce) ──────────
-  // Always reads from rowsRef.current so it never has stale data.
+  // ── Save all overrides to DB ────────────────────────────────────────────
+  // Reads from rowsRef.current (always up-to-date) and sends full snapshot.
   const persistOverrides = useCallback(() => {
     const source = rowsRef.current;
     const overrides: Record<string, RateEntry> = {};
@@ -149,27 +141,6 @@ export function RateConfigPage() {
     }).catch((err) => {
       console.error('Failed to save rate overrides:', err);
     });
-  }, []);
-
-  // ── Save on unmount via fetch+keepalive (survives page teardown) ────────
-  useEffect(() => {
-    return () => {
-      const overrides: Record<string, RateEntry> = {};
-      for (const r of rowsRef.current) {
-        if (r.amount > 0 || r.ceiling > 0) {
-          overrides[r.code] = { amount: r.amount, ceiling: r.ceiling };
-        }
-      }
-      if (Object.keys(overrides).length === 0) return;
-      const payload = JSON.stringify({ key: RATE_OVERRIDES_KEY, data: overrides });
-      // keepalive ensures the request completes even after the component unmounts
-      fetch('/api/rms-data', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        keepalive: true,
-      }).catch(() => {});
-    };
   }, []);
 
   // When a code is selected, auto-fill class and category
@@ -528,7 +499,13 @@ export function RateConfigPage() {
             </thead>
 
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-              {activeTab !== 'Business' ? (
+              {!overridesLoaded ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500">
+                    Loading rates...
+                  </td>
+                </tr>
+              ) : activeTab !== 'Business' ? (
                 <tr>
                   <td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500">
                     No rates loaded for {activeTab}.
