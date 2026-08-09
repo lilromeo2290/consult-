@@ -224,3 +224,25 @@ Stage Summary:
 - DB has 9 rate override entries intact
 - Nginx cache-busting configured for future deploys
 - Rate config persistence should now work (was never a code bug — app was crashing before it could load/save)
+
+---
+Task ID: 7
+Agent: Main
+Task: Make Business Information Amount field auto-populate from Rate Configuration
+
+Work Log:
+- Analyzed the existing `displayAmount` logic in businesses.tsx (line 371-373)
+- Found it already used `getRateOverride()` but with a React reactivity gap: the in-memory `overrides` object is a plain JS object, not React state
+- When rate overrides load asynchronously, the component doesn't re-render, so the Amount field could show stale data
+- Fixed by adding a `rateOverrides` React state in businesses.tsx that fetches from `/api/rms-data?key=rms-rate-overrides` on mount
+- Updated `displayAmount` to check `rateOverrides[code]?.amount` first (reactive), then fall back to `getRateOverride()` (in-memory), then `FEE_CODE_LOOKUP` (default)
+- Also calls `loadOverrides(data)` to keep the in-memory store in sync
+- Updated import to include `loadOverrides` and `RateEntry` type
+- Fixed PM2 process on VPS (was deleted, port 3000 EADDRINUSE)
+- Server running on port 3001, HTTP 200, no errors
+- Updated deploy_proper.py to handle missing PM2 process with fallback start command
+
+Stage Summary:
+- Amount field in Business Information now reactively shows the Rate Configuration amount when Business Class Code, Business Class, and Category are selected
+- Lookup priority: Rate Config override → in-memory override → FEE_CODE_LOOKUP default → empty
+- Deployed to VPS, server healthy (HTTP 200, port 3001)

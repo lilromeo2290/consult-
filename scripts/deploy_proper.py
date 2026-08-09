@@ -43,7 +43,8 @@ def deploy():
         'rm -f ' + REMOTE_APP + '/.next',
         'ln -sf ' + REMOTE_APP + '/standalone/.next ' + REMOTE_APP + '/.next',
         'ls -la ' + REMOTE_APP + '/.next',
-        'pm2 restart consult-rms',
+        'pm2 restart consult-rms || cd ' + REMOTE_APP + '/standalone && pm2 start server.js --name consult-rms',
+        'pm2 save',
     ]
     for cmd in cmds:
         stdin, stdout, stderr = ssh.exec_command(cmd, timeout=60)

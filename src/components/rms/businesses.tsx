@@ -35,7 +35,7 @@ import { REVENUE_CODE_MAP, DESCRIPTION_TO_CODE, CODE_TO_DESCRIPTION } from '@/li
 import { CLASS_TO_FIRST_CODE, CLASS_TO_CODES, CODE_TO_CLASS } from '@/lib/business-class-code-map';
 import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
 import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
-import { getRateOverride } from '@/lib/rate-overrides';
+import { getRateOverride, loadOverrides, type RateEntry } from '@/lib/rate-overrides';
 import { Combobox } from '@/components/ui/combobox';
 import { BUSINESS_REVENUE_CODES, BIZ_CODE_TO_DESC, BIZ_DESC_TO_CODE } from '@/lib/business-revenue-codes';
 // QRCode removed - original cert design does not use QR codes
@@ -333,6 +333,24 @@ export function BusinessesPage() {
     return getNextDaNumberForAreaCode(areaCode || form.areaCode);
   };
 
+  // ── Rate Overrides (reactive) ───────────────────────────────────────────
+  // Fetch rate overrides from DB so the Amount field reacts to loaded data
+  const [rateOverrides, setRateOverrides] = useState<Record<string, RateEntry>>({});
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/rms-data?key=rms-rate-overrides&_t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.data && typeof json.data === 'object') {
+          const data = json.data as Record<string, RateEntry>;
+          setRateOverrides(data);
+          loadOverrides(data); // also populate in-memory store
+        }
+      } catch { /* silent */ }
+    })();
+  }, []);
+
   // ── Form State ───────────────────────────────────────────────────────────
   const [form, setForm] = useState({ ...defaultForm });
   const [locating, setLocating] = useState(false);
@@ -368,8 +386,9 @@ export function BusinessesPage() {
     (c) => c.name === form.category
   );
   // Show amount from rate overrides (Rate Configuration) with fallback to default fee
+  // Uses reactive state (rateOverrides) for proper re-rendering, plus in-memory fallback
   const displayAmount = form.businessClassCode
-    ? (getRateOverride(form.businessClassCode) ?? FEE_CODE_LOOKUP[form.businessClassCode]?.amount ?? null)
+    ? (rateOverrides[form.businessClassCode]?.amount ?? getRateOverride(form.businessClassCode) ?? FEE_CODE_LOOKUP[form.businessClassCode]?.amount ?? null)
     : null;
 
   // ── Filtering & Pagination ───────────────────────────────────────────────
