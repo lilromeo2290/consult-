@@ -39,6 +39,12 @@ import {
   RENT_CODE_TO_CATEGORY,
 } from '@/lib/rent-class-code-map';
 import {
+  VALUED_PROPERTY_CODES,
+  VALUED_CODE_TO_CLASS,
+  VALUED_CODE_TO_CATEGORY,
+  VALUED_DEFAULT_RATES,
+} from '@/lib/valued-property-class-code-map';
+import {
   setRateEntry,
   loadOverrides,
   RateEntry,
@@ -113,6 +119,15 @@ for (const code of RENT_CLASS_CODES) {
   };
 }
 
+// Build a valued property lookup from the property maps
+const valuedPropertyLookup: Record<string, { businessClass: string; category: string }> = {};
+for (const code of VALUED_PROPERTY_CODES) {
+  valuedPropertyLookup[code] = {
+    businessClass: VALUED_CODE_TO_CLASS[code] || '',
+    category: VALUED_CODE_TO_CATEGORY[code] || '',
+  };
+}
+
 function getTabConfig(tab: RateTab): TabConfig {
   switch (tab) {
     case 'Business':
@@ -156,7 +171,14 @@ function getTabConfig(tab: RateTab): TabConfig {
         codeToClass: RENT_CODE_TO_CLASS,
       };
     case 'Valued Property':
-      return { dbKey: 'rms-rate-overrides-valued-property', codes: [], classLabel: 'Property Class', lookup: {}, codeToClass: {} };
+      return {
+        dbKey: 'rms-rate-overrides-valued-property',
+        codes: VALUED_PROPERTY_CODES,
+        classLabel: 'Property Class',
+        lookup: valuedPropertyLookup,
+        codeToClass: VALUED_CODE_TO_CLASS,
+        defaultRates: VALUED_DEFAULT_RATES,
+      };
   }
 }
 
