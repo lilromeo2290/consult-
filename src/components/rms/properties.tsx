@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
@@ -26,7 +26,7 @@ import {
 import { exportToExcel, importFromExcel, PROPERTY_FIELDS } from '@/lib/import-export';
 import { LOCALITIES, LOCALITY_AREA_CODE_MAP } from '@/lib/localities';
 import { REVENUE_DESCRIPTIONS } from '@/lib/revenue-descriptions';
-import { REVENUE_CODE_MAP, DESCRIPTION_TO_CODE, CODE_TO_DESCRIPTION } from '@/lib/revenue-code-map';
+import { PROPERTY_REVENUE_CODES, PROP_CODE_TO_DESC, PROP_DESC_TO_CODE } from '@/lib/property-revenue-codes';
 import {
   PROP_CODE_TO_CLASS,
   PROP_CLASS_TO_FIRST_CODE,
@@ -220,6 +220,51 @@ export function PropertiesPage() {
   const [locating, setLocating] = useState(false);
   const [locatingOwner, setLocatingOwner] = useState(false);
 
+  // Property Revenue Code/Description Search
+  const propRevenueCodeRef = useRef<HTMLDivElement>(null);
+  const propRevenueDescRef = useRef<HTMLDivElement>(null);
+  const [propRevenueCodeSearch, setPropRevenueCodeSearch] = useState('');
+  const [propRevenueDescSearch, setPropRevenueDescSearch] = useState('');
+  const [propRevenueCodeShowDropdown, setPropRevenueCodeShowDropdown] = useState(false);
+  const [propRevenueDescShowDropdown, setPropRevenueDescShowDropdown] = useState(false);
+
+  const propRevenueCodeFiltered = propRevenueCodeSearch
+    ? PROPERTY_REVENUE_CODES.filter(
+        (item) =>
+          item.code.includes(propRevenueCodeSearch) ||
+          item.description.toLowerCase().includes(propRevenueCodeSearch.toLowerCase())
+      )
+    : PROPERTY_REVENUE_CODES;
+
+  const propRevenueDescFiltered = propRevenueDescSearch
+    ? PROPERTY_REVENUE_CODES.filter(
+        (item) =>
+          item.description.toLowerCase().includes(propRevenueDescSearch.toLowerCase()) ||
+          item.code.includes(propRevenueDescSearch)
+      )
+    : PROPERTY_REVENUE_CODES;
+
+  const handlePropRevenueSelect = (item: { code: string; description: string }) => {
+    setForm((prev) => ({ ...prev, revenueCode: item.code, revenueDescription: item.description }));
+    setPropRevenueCodeSearch(item.code);
+    setPropRevenueDescSearch(item.description);
+    setPropRevenueCodeShowDropdown(false);
+    setPropRevenueDescShowDropdown(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (propRevenueCodeRef.current && !propRevenueCodeRef.current.contains(e.target as Node)) {
+        setPropRevenueCodeShowDropdown(false);
+      }
+      if (propRevenueDescRef.current && !propRevenueDescRef.current.contains(e.target as Node)) {
+        setPropRevenueDescShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const fetchGps = () => {
     if (!navigator.geolocation) { alert('Geolocation is not supported.'); return; }
     setLocating(true);
@@ -302,11 +347,11 @@ export function PropertiesPage() {
         updated.propertyUniqueNumber = `${updated.areaCode}/PR/${String(nextNum).padStart(4, '0')}`;
       }
       // Link Revenue Description <-> Revenue Code
-      if (name === 'revenueDescription' && DESCRIPTION_TO_CODE[updated.revenueDescription]) {
-        updated.revenueCode = DESCRIPTION_TO_CODE[updated.revenueDescription];
+      if (name === 'revenueDescription' && PROP_DESC_TO_CODE[updated.revenueDescription]) {
+        updated.revenueCode = PROP_DESC_TO_CODE[updated.revenueDescription];
       }
-      if (name === 'revenueCode' && CODE_TO_DESCRIPTION[updated.revenueCode]) {
-        updated.revenueDescription = CODE_TO_DESCRIPTION[updated.revenueCode];
+      if (name === 'revenueCode' && PROP_CODE_TO_DESC[updated.revenueCode]) {
+        updated.revenueDescription = PROP_CODE_TO_DESC[updated.revenueCode];
       }
       // Link Property Class <-> Property Class Code
       if (name === 'type' && PROP_CLASS_TO_FIRST_CODE[updated.type]) {
@@ -685,12 +730,54 @@ export function PropertiesPage() {
               {/* Property Revenue Code */}
               <div>
                 <label className={`${labelClass} block`}>Property Revenue Code</label>
-                <input type="text" name="revenueCode" value={form.revenueCode} onChange={handleFormChange} placeholder="e.g. 1412025" className={inputClass} />
+                <div className="relative" ref={propRevenueCodeRef}>
+                  <input
+                    type="text"
+                    value={propRevenueCodeShowDropdown ? propRevenueCodeSearch : form.revenueCode}
+                    onChange={(e) => { setPropRevenueCodeSearch(e.target.value); setPropRevenueCodeShowDropdown(true); }}
+                    onFocus={() => { setPropRevenueCodeSearch(form.revenueCode || ''); setPropRevenueCodeShowDropdown(true); }}
+                    placeholder="Type to search code..."
+                    className={inputClass}
+                  />
+                  {propRevenueCodeShowDropdown && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                      {propRevenueCodeFiltered.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                      ) : propRevenueCodeFiltered.slice(0, 50).map((item) => (
+                        <button key={item.code} type="button" onClick={() => { handlePropRevenueSelect(item); setPropRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
+                          <span className="font-mono text-xs text-slate-500 mr-2">{item.code}</span>
+                          <span className="text-slate-800 dark:text-white">{item.description}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               {/* Property Revenue Description */}
               <div className="sm:col-span-2">
                 <label className={`${labelClass} block`}>Property Revenue Description</label>
-                <input type="text" name="revenueDescription" value={form.revenueDescription} onChange={handleFormChange} placeholder="Select or enter revenue description" className={inputClass} />
+                <div className="relative" ref={propRevenueDescRef}>
+                  <input
+                    type="text"
+                    value={propRevenueDescShowDropdown ? propRevenueDescSearch : form.revenueDescription}
+                    onChange={(e) => { setPropRevenueDescSearch(e.target.value); setPropRevenueDescShowDropdown(true); }}
+                    onFocus={() => { setPropRevenueDescSearch(form.revenueDescription || ''); setPropRevenueDescShowDropdown(true); }}
+                    placeholder="Type to search description..."
+                    className={inputClass}
+                  />
+                  {propRevenueDescShowDropdown && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                      {propRevenueDescFiltered.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                      ) : propRevenueDescFiltered.slice(0, 50).map((item) => (
+                        <button key={item.code} type="button" onClick={() => { handlePropRevenueSelect(item); setPropRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
+                          <span className="text-slate-800 dark:text-white">{item.description}</span>
+                          <span className="ml-2 font-mono text-xs text-slate-400">{item.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               {/* Property Use Type */}
               <div>

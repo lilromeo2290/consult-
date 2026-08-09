@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n[\n  {\n    \"code\": \"1413001\",\n    \"description\": \"Property Rate\"\n  }\n]\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1786280116,
+  "id": "2026080920551695feda1652d14334",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026080920551695feda1652d14334",
+  "usage": {
+    "completion_tokens": 28,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 111,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 139
+  }
+}
