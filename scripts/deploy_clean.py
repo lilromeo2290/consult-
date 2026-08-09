@@ -1,81 +1,87 @@
-import paramiko
-import tarfile
-import io
-import os
+import paramiko, os, sys, time
 
 HOST = '153.75.247.4'
 USER = 'root'
 PASS = 'Do1_BuZe4_M1-V6v1_S4'
 REMOTE_APP = '/home/consult-rms'
+TAR_PATH = '/home/z/my-project/deploy.tar.gz'
 
-def deploy():
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(HOST, username=USER, password=PASS)
-    sftp = ssh.open_sftp()
+def run(ssh, cmd, timeout=30):
+    try:
+        stdin, stdout, stderr = ssh.exec_command(cmd, timeout=timeout)
+        out = stdout.read().decode()[:500]
+        err = stderr.read().decode()[:500]
+        print(f'  >> {cmd[:100]}')
+        if out.strip(): print(f'  OUT: {out}')
+        if err.strip(): print(f'  ERR: {err}')
+        return out + err
+    except Exception as e:
+        print(f'  TIMEOUT/ERR on: {cmd[:80]} -> {e}')
+        return ''
 
-    # Create tar: standalone + static
-    print("Creating tar archive...")
-    buf = io.BytesIO()
-    with tarfile.open(fileobj=buf, mode='w:') as tar:
-        # standalone (server code + .next/static copied into it)
-        standalone_dir = '/home/z/my-project/.next/standalone'
-        for root, dirs, files in os.walk(standalone_dir):
-            for f in files:
-                full = os.path.join(root, f)
-                arc = os.path.relpath(full, standalone_dir)
-                tar.add(full, arcname='standalone/' + arc)
-        # static files go into standalone/.next/static/
-        static_dir = '/home/z/my-project/.next/static'
-        for root, dirs, files in os.walk(static_dir):
-            for f in files:
-                full = os.path.join(root, f)
-                arc = os.path.relpath(full, static_dir)
-                tar.add(full, arcname='standalone/.next/static/' + arc)
+print('Step 0: Connecting...')
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(HOST, username=USER, password=PASS, timeout=30)
+print('  Connected!')
 
-    buf.seek(0)
-    remote_tar = REMOTE_APP + '/deploy.tar'
-    sz = buf.getbuffer().nbytes / 1024 / 1024
-    print(f"Uploading tar ({sz:.1f} MB)...")
-    sftp.putfo(buf, remote_tar)
-    print("Upload complete.")
+# 1. Stop PM2
+print('Step 1: Stop PM2')
+run(ssh, f'cd {REMOTE_APP} && pm2 stop consult-rms 2>&1')
+time.sleep(1)
 
-    # Clean old chunks, extract, restart
-    print("Cleaning old files...")
-    cmds = [
-        'rm -rf ' + REMOTE_APP + '/standalone/.next/static/',
-        'cd ' + REMOTE_APP + ' && tar xf deploy.tar && rm deploy.tar',
-    ]
-    for cmd in cmds:
-        print(f"  {cmd[:80]}")
-        stdin, stdout, stderr = ssh.exec_command(cmd, timeout=120)
-        out = stdout.read().decode()
-        err = stderr.read().decode()
-        if out.strip(): print(f"  OUT: {out[:200]}")
-        if err.strip(): print(f"  ERR: {err[:200]}")
+# 2. Nuke old standalone
+print('Step 2: Nuke old standalone')
+run(ssh, f'rm -rf {REMOTE_APP}/standalone', timeout=60)
 
-    # Verify chunks
-    stdin, stdout, stderr = ssh.exec_command('ls ' + REMOTE_APP + '/standalone/.next/static/chunks/*.js 2>&1 | wc -l')
-    print(f"Chunks count: {stdout.read().decode().strip()}")
+# 3. Upload gzipped tar
+print('Step 3: Uploading (this takes a while for 63MB)...')
+sftp = ssh.open_sftp()
+remote_tar = f'{REMOTE_APP}/deploy.tar.gz'
+# Use put with callback for progress
+start = time.time()
+sftp.put(TAR_PATH, remote_tar)
+elapsed = time.time() - start
+local_sz = os.path.getsize(TAR_PATH)
+remote_sz = sftp.stat(remote_tar).st_size
+print(f'  Uploaded {local_sz:,} bytes in {elapsed:.1f}s ({local_sz/(elapsed*1024*1024):.1f} MB/s)')
+print(f'  Size match: {local_sz == remote_sz}')
+sftp.close()
 
-    stdin, stdout, stderr = ssh.exec_command('ls ' + REMOTE_APP + '/standalone/.next/static/chunks/*.js 2>&1')
-    print(f"Chunks: {stdout.read().decode().strip()[:500]}")
+# 4. Extract
+print('Step 4: Extracting...')
+run(ssh, f'cd {REMOTE_APP} && tar -xzf deploy.tar.gz', timeout=120)
 
-    # Check 1413001
-    stdin, stdout, stderr = ssh.exec_command('grep -rl "1413001" ' + REMOTE_APP + '/standalone/.next/static/chunks/ 2>/dev/null')
-    print(f"1413001 in: {stdout.read().decode().strip()}")
+# 5. Copy static files into standalone/.next/static
+print('Step 5: Copy static files...')
+run(ssh, f'cp -r {REMOTE_APP}/static {REMOTE_APP}/standalone/.next/static', timeout=60)
+run(ssh, f'ls {REMOTE_APP}/standalone/.next/static/ 2>&1 | wc -l')
 
-    # Check Property Revenue Code
-    stdin, stdout, stderr = ssh.exec_command('grep -rl "Property Revenue Code" ' + REMOTE_APP + '/standalone/.next/static/chunks/ 2>/dev/null')
-    print(f"Property Revenue Code in: {stdout.read().decode().strip()}")
+# 6. Cleanup tar
+print('Step 6: Cleanup...')
+run(ssh, f'rm -f {REMOTE_APP}/deploy.tar.gz {REMOTE_APP}/static')
 
-    # Restart PM2
-    stdin, stdout, stderr = ssh.exec_command('pm2 restart consult-rms 2>&1 | tail -5')
-    print(stdout.read().decode().strip())
+# 7. Verify prisma client
+print('Step 7: Verify Prisma client...')
+run(ssh, f'ls {REMOTE_APP}/standalone/node_modules/@prisma/client/default.js 2>&1')
+run(ssh, f'ls {REMOTE_APP}/standalone/node_modules/.prisma/client/index.js 2>&1')
 
-    sftp.close()
-    ssh.close()
-    print("Done!")
+# 8. Start PM2
+print('Step 8: Start PM2...')
+run(ssh, f'cd {REMOTE_APP} && PORT=3001 pm2 restart consult-rms 2>&1')
+time.sleep(4)
 
-if __name__ == '__main__':
-    deploy()
+# 9. Status
+print('Step 9: PM2 Status...')
+run(ssh, 'pm2 status consult-rms 2>&1')
+
+# 10. Test API
+print('Step 10: Test API...')
+run(ssh, 'curl -s -o /dev/null -w "HTTP_CODE:%{http_code}" http://localhost:3001/api/rms-data')
+
+# 11. Check logs
+print('Step 11: Error logs...')
+run(ssh, 'pm2 logs consult-rms --err --lines 5 --nostream 2>&1')
+
+print('DEPLOY COMPLETE')
+ssh.close()
