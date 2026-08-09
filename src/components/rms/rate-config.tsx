@@ -359,6 +359,7 @@ export function RateConfigPage() {
   // ── Handlers ────────────────────────────────────────────────────────────
   const tabConfig = getTabConfig(activeTab);
   const hasPredefinedCodes = tabConfig.codes.length > 0;
+  const isValuedProperty = activeTab === 'Valued Property';
 
   const handleCodeSelect = (code: string) => {
     setNewCode(code);
@@ -659,13 +660,15 @@ export function RateConfigPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">{activeTab === 'Property' ? 'Unassessed Rate' : 'Amount'}</label>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">{activeTab === 'Property' ? 'Unassessed Rate' : isValuedProperty ? 'Rate Impost' : 'Amount'}</label>
                     <input type="number" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="0.00" step="0.01" min="0" />
                   </div>
+                  {!isValuedProperty && (
                   <div>
                     <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">{activeTab === 'Property' ? 'Minimum Rate' : 'Ceiling'}</label>
                     <input type="number" value={newCeiling} onChange={(e) => setNewCeiling(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="0.00 (max limit)" step="0.01" min="0" />
                   </div>
+                  )}
                   <button onClick={handleAddRate} disabled={!newCode.trim() || !newAmount.trim()} className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                     Add Entry
                   </button>
@@ -687,15 +690,17 @@ export function RateConfigPage() {
                 <th onClick={() => handleSort('code')} className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Code <SortIcon col="code" /></th>
                 <th onClick={() => handleSort('class')} className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Class <SortIcon col="class" /></th>
                 <th onClick={() => handleSort('category')} className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Category <SortIcon col="category" /></th>
-                <th onClick={() => handleSort('amount')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">{activeTab === 'Property' ? 'Unassessed Rate' : 'Amount'} <SortIcon col="amount" /></th>
+                <th onClick={() => handleSort('amount')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">{activeTab === 'Property' ? 'Unassessed Rate' : isValuedProperty ? 'Rate Impost' : 'Amount'} <SortIcon col="amount" /></th>
+                {!isValuedProperty && (
                 <th onClick={() => handleSort('ceiling')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">{activeTab === 'Property' ? 'Minimum Rate' : 'Ceiling'} <SortIcon col="ceiling" /></th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
               {!overridesLoaded ? (
-                <tr><td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading rates...</td></tr>
+                <tr><td colSpan={isValuedProperty ? 6 : 7} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading rates...</td></tr>
               ) : paged.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500">{searchQuery ? 'No rates found matching your search.' : `No rates configured for ${activeTab}. Click "Add Rate" to get started.`}</td></tr>
+                <tr><td colSpan={isValuedProperty ? 6 : 7} className="text-center py-16 text-slate-400 dark:text-slate-500">{searchQuery ? 'No rates found matching your search.' : `No rates configured for ${activeTab}. Click "Add Rate" to get started.`}</td></tr>
               ) : (
                 paged.map((row, idx) => (
                   <tr key={row.code} className={idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/40'}>
@@ -707,9 +712,11 @@ export function RateConfigPage() {
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
                       <input type="number" inputMode="decimal" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" />
                     </td>
+                    {!isValuedProperty && (
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
                       <input type="number" inputMode="decimal" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
                     </td>
+                    )}
                   </tr>
                 ))
               )}
