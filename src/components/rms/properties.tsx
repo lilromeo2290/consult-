@@ -298,7 +298,8 @@ export function PropertiesPage() {
     handleFormChange(e as unknown as React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>);
   };
 
-  const classCodes = form.type ? (PROP_CLASS_TO_CODES[form.type] || []) : [];
+  // Cascading Code/Class/Category: when Class is selected, filter codes; otherwise show all
+  const classCodes = form.type ? (PROP_CLASS_TO_CODES[form.type] || []) : PROPERTY_CLASS_CODES;
   const classCategories = classCodes
     .map((code) => PROP_CODE_TO_CATEGORY[code])
     .filter(Boolean);
@@ -799,8 +800,8 @@ export function PropertiesPage() {
                   name="businessClassCode"
                   value={form.businessClassCode}
                   onChange={handleFormChange}
-                  options={classCodes.map((c) => ({ value: c, label: `${c} – ${PROP_CODE_TO_CATEGORY[c] || ''}` }))}
-                  placeholder="Select property code..."
+                  options={classCodes.map((c) => ({ value: c, label: `${c} – ${PROP_CODE_TO_CLASS[c] || ''} – ${PROP_CODE_TO_CATEGORY[c] || ''}` }))}
+                  placeholder="Select code..."
                   emptyMessage="No matching code"
                   className={inputClass}
                 />
@@ -813,7 +814,7 @@ export function PropertiesPage() {
                   value={form.type}
                   onChange={handleFormChange}
                   options={PROPERTY_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
-                  placeholder="Select property class..."
+                  placeholder="Select class..."
                   emptyMessage="No matching class"
                   className={inputClass}
                 />
@@ -827,7 +828,7 @@ export function PropertiesPage() {
                   onChange={handleFormChange}
                   options={classCategories.map((c) => ({ value: c, label: c }))}
                   placeholder="Select category..."
-                  emptyMessage={form.type ? 'No categories' : 'Select class first'}
+                  emptyMessage={form.type ? 'No categories' : 'Select class or code first'}
                   className={inputClass}
                 />
               </div>
