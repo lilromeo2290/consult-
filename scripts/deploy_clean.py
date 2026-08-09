@@ -1,10 +1,11 @@
-import paramiko, os, sys, time
+import paramiko, os, sys, time, subprocess
 
 HOST = '153.75.247.4'
 USER = 'root'
 PASS = 'Do1_BuZe4_M1-V6v1_S4'
 REMOTE_APP = '/home/consult-rms'
-TAR_PATH = '/home/z/my-project/deploy.tar.gz'
+PROJECT_DIR = '/home/z/my-project'
+TAR_PATH = f'{PROJECT_DIR}/deploy.tar.gz'
 
 def run(ssh, cmd, timeout=30):
     try:
@@ -24,6 +25,17 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(HOST, username=USER, password=PASS, timeout=30)
 print('  Connected!')
+
+# 0.5 Build fresh deploy tar from .next output
+print('Step 0.5: Build fresh deploy tar...')
+next_dir = f'{PROJECT_DIR}/.next'
+if not os.path.exists(f'{next_dir}/standalone'):
+    print('  ERROR: .next/standalone not found. Run "npx next build" first.')
+    sys.exit(1)
+os.system(f'cd {next_dir} && tar -czf {TAR_PATH} standalone/ static/')
+tar_sz = os.path.getsize(TAR_PATH)
+print(f'  Created {TAR_PATH} ({tar_sz:,} bytes)')
+print(f'  BUILD_ID: {open(f"{next_dir}/BUILD_ID").read().strip()}')
 
 # 1. Stop PM2
 print('Step 1: Stop PM2')

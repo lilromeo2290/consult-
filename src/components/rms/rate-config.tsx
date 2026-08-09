@@ -1,4 +1,5 @@
 'use client';
+// Rate Configuration - v2.4 (rent codes added)
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
