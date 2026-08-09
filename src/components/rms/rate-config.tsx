@@ -1,5 +1,5 @@
 'use client';
-// Rate Configuration - v2.4 (rent codes added)
+// Rate Configuration - v2.5 (Fine and Fees merged)
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
@@ -52,8 +52,8 @@ import {
 import { Combobox } from '@/components/ui/combobox';
 import { exportToExcel, importFromExcel } from '@/lib/import-export';
 
-type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent' | 'Valued Property';
-type SortColumn = 'code' | 'class' | 'category' | 'amount' | 'ceiling';
+type RateTab = 'Business' | 'Property' | 'Fine and Fees' | 'Rent' | 'Valued Property';
+type SortColumn = 'code' | 'class' | 'category' | 'amount' | 'ceiling' | 'type';
 type SortDir = 'asc' | 'desc';
 
 interface RateRow {
@@ -67,12 +67,14 @@ interface RateRow {
   selected: boolean;
 }
 
-const TABS: RateTab[] = ['Business', 'Property', 'Valued Property', 'Fines', 'Fees', 'Rent'];
+const TABS: RateTab[] = ['Business', 'Property', 'Valued Property', 'Fine and Fees', 'Rent'];
 const PAGE_SIZE = 25;
 
 // ── Per-tab configuration ─────────────────────────────────────────────────
 interface TabConfig {
   dbKey: string;
+  /** Optional second dbKey for combined tabs (e.g. Fine and Fees) */
+  dbKey2?: string;
   codes: string[];
   classLabel: string;
   /** Lookup code → { businessClass, category } */
@@ -81,6 +83,8 @@ interface TabConfig {
   codeToClass: Record<string, string>;
   /** Optional default rates (code → amount) */
   defaultRates?: Record<string, number>;
+  /** Whether this is a combined Fine+Fees tab */
+  isFineAndFees?: boolean;
 }
 
 // Build a property lookup from the property maps
@@ -128,6 +132,17 @@ for (const code of VALUED_PROPERTY_CODES) {
   };
 }
 
+// Combined Fine + Fee lookup and codes
+const fineAndFeesLookup: Record<string, { businessClass: string; category: string }> = {
+  ...finesLookup,
+  ...feesLookup,
+};
+const FINE_AND_FEES_CODES = [...FINE_CLASS_CODES, ...FEE_CLASS_CODES];
+const fineCodeSet = new Set(FINE_CLASS_CODES);
+function codeType(code: string): 'Fine' | 'Fee' {
+  return fineCodeSet.has(code) ? 'Fine' : 'Fee';
+}
+
 function getTabConfig(tab: RateTab): TabConfig {
   switch (tab) {
     case 'Business':
@@ -146,21 +161,15 @@ function getTabConfig(tab: RateTab): TabConfig {
         lookup: propertyLookup,
         codeToClass: PROP_CODE_TO_CLASS,
       };
-    case 'Fines':
+    case 'Fine and Fees':
       return {
         dbKey: 'rms-rate-overrides-fines',
-        codes: FINE_CLASS_CODES,
-        classLabel: 'Fine Type',
-        lookup: finesLookup,
-        codeToClass: FINE_CODE_TO_CLASS,
-      };
-    case 'Fees':
-      return {
-        dbKey: 'rms-rate-overrides-fees',
-        codes: FEE_CLASS_CODES,
-        classLabel: 'Fee Type',
-        lookup: feesLookup,
-        codeToClass: FEE_CODE_TO_CLASS,
+        dbKey2: 'rms-rate-overrides-fees',
+        codes: FINE_AND_FEES_CODES,
+        classLabel: 'Class',
+        lookup: fineAndFeesLookup,
+        codeToClass: { ...FINE_CODE_TO_CLASS, ...FEE_CODE_TO_CLASS },
+        isFineAndFees: true,
       };
     case 'Rent':
       return {
@@ -273,31 +282,56 @@ export function RateConfigPage() {
 
     const config = getTabConfig(tab);
     try {
-      const res = await fetch(`/api/rms-data?key=${config.dbKey}&_t=${Date.now()}`, { cache: 'no-store' });
-      if (!res.ok) {
-        setLoadError(`Load failed (HTTP ${res.status})`);
-        return;
-      }
-      const json = await res.json();
-      const savedData = (json.data && typeof json.data === 'object')
-        ? json.data as Record<string, RateEntry>
-        : {};
+      // For Fine and Fees: load from both DB keys in parallel
+      if (config.isFineAndFees && config.dbKey2) {
+        const [res1, res2] = await Promise.all([
+          fetch(`/api/rms-data?key=${config.dbKey}&_t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/rms-data?key=${config.dbKey2}&_t=${Date.now()}`, { cache: 'no-store' }),
+        ]);
+        if (!res1.ok || !res2.ok) {
+          setLoadError(`Load failed (HTTP ${!res1.ok ? res1.status : res2.status})`);
+          return;
+        }
+        const [json1, json2] = await Promise.all([res1.json(), res2.json()]);
+        const data1 = (json1.data && typeof json1.data === 'object') ? json1.data as Record<string, RateEntry> : {};
+        const data2 = (json2.data && typeof json2.data === 'object') ? json2.data as Record<string, RateEntry> : {};
+        const savedData = { ...data1, ...data2 };
 
-      const built = buildRowsFromData(config.codes, config.lookup, savedData, config.defaultRates);
-      setRows(built);
-      // Also populate in-memory store for Business tab
-      if (tab === 'Business') loadOverrides(savedData);
-      setOverridesLoaded(true);
-      const entryCount = Object.keys(savedData).length;
-      if (entryCount > 0) {
-        setLoadInfo(`Loaded ${entryCount} saved rate(s)`);
-        setTimeout(() => setLoadInfo(''), 3000);
+        const built = buildRowsFromData(config.codes, config.lookup, savedData, config.defaultRates);
+        setRows(built);
+        setOverridesLoaded(true);
+        const entryCount = Object.keys(savedData).length;
+        if (entryCount > 0) {
+          setLoadInfo(`Loaded ${entryCount} saved rate(s)`);
+          setTimeout(() => setLoadInfo(''), 3000);
+        }
+      } else {
+        const res = await fetch(`/api/rms-data?key=${config.dbKey}&_t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) {
+          setLoadError(`Load failed (HTTP ${res.status})`);
+          return;
+        }
+        const json = await res.json();
+        const savedData = (json.data && typeof json.data === 'object')
+          ? json.data as Record<string, RateEntry>
+          : {};
+
+        const built = buildRowsFromData(config.codes, config.lookup, savedData, config.defaultRates);
+        setRows(built);
+        // Also populate in-memory store for Business tab
+        if (tab === 'Business') loadOverrides(savedData);
+        setOverridesLoaded(true);
+        const entryCount = Object.keys(savedData).length;
+        if (entryCount > 0) {
+          setLoadInfo(`Loaded ${entryCount} saved rate(s)`);
+          setTimeout(() => setLoadInfo(''), 3000);
+        }
       }
     } catch (err) {
       console.error('Failed to load rate overrides:', err);
       setLoadError('Load failed (network error)');
-      const config = getTabConfig(tab);
-      setRows(buildRowsFromData(config.codes, config.lookup, {}, config.defaultRates));
+      const cfg = getTabConfig(tab);
+      setRows(buildRowsFromData(cfg.codes, cfg.lookup, {}, cfg.defaultRates));
       setOverridesLoaded(true);
     }
   }, []);
@@ -310,10 +344,10 @@ export function RateConfigPage() {
   const persistOverrides = useCallback(async () => {
     const source = rowsRef.current;
     const config = getTabConfig(activeTab);
-    const changed: Record<string, RateEntry> = {};
+    const allChanged: Record<string, RateEntry> = {};
     for (const r of source) {
       if (r.amount > 0 || r.ceiling > 0) {
-        changed[r.code] = {
+        allChanged[r.code] = {
           amount: r.amount,
           ceiling: r.ceiling,
           ...(r.businessClass ? { businessClass: r.businessClass } : {}),
@@ -321,32 +355,64 @@ export function RateConfigPage() {
         };
       }
     }
-    if (Object.keys(changed).length === 0) return;
-    const count = Object.keys(changed).length;
+    if (Object.keys(allChanged).length === 0) return;
+    const count = Object.keys(allChanged).length;
     setIsSaving(true);
     try {
-      // Read current DB data
-      const getRes = await fetch(`/api/rms-data?key=${config.dbKey}&_t=${Date.now()}`, { cache: 'no-store' });
-      let existing: Record<string, RateEntry> = {};
-      if (getRes.ok) {
-        const getJson = await getRes.json();
-        if (getJson.data && typeof getJson.data === 'object') {
-          existing = getJson.data as Record<string, RateEntry>;
+      if (config.isFineAndFees && config.dbKey2) {
+        // Split changed entries by code type (fine vs fee)
+        const finesChanged: Record<string, RateEntry> = {};
+        const feesChanged: Record<string, RateEntry> = {};
+        for (const [code, entry] of Object.entries(allChanged)) {
+          if (fineCodeSet.has(code)) finesChanged[code] = entry;
+          else feesChanged[code] = entry;
         }
-      }
-      const merged = { ...existing, ...changed };
-      const putRes = await fetch('/api/rms-data', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: config.dbKey, data: merged }),
-      });
-      if (putRes.ok) {
-        setRows((prev) => prev.map((r) => ({ ...r, originalAmount: r.amount, originalCeiling: r.ceiling })));
-        setSaveStatus(`Saved ${count} rate(s) to database`);
-        toast.success('Successfully saved');
-        setTimeout(() => setSaveStatus(''), 3000);
+        // Read existing data for both keys
+        const [res1, res2] = await Promise.all([
+          fetch(`/api/rms-data?key=${config.dbKey}&_t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/rms-data?key=${config.dbKey2}&_t=${Date.now()}`, { cache: 'no-store' }),
+        ]);
+        let existing1: Record<string, RateEntry> = {};
+        let existing2: Record<string, RateEntry> = {};
+        if (res1.ok) { const j = await res1.json(); if (j.data && typeof j.data === 'object') existing1 = j.data; }
+        if (res2.ok) { const j = await res2.json(); if (j.data && typeof j.data === 'object') existing2 = j.data; }
+        // Save both
+        const [put1, put2] = await Promise.all([
+          fetch('/api/rms-data', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: config.dbKey, data: { ...existing1, ...finesChanged } }) }),
+          fetch('/api/rms-data', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: config.dbKey2, data: { ...existing2, ...feesChanged } }) }),
+        ]);
+        if (put1.ok && put2.ok) {
+          setRows((prev) => prev.map((r) => ({ ...r, originalAmount: r.amount, originalCeiling: r.ceiling })));
+          setSaveStatus(`Saved ${count} rate(s) to database`);
+          toast.success('Successfully saved');
+          setTimeout(() => setSaveStatus(''), 3000);
+        } else {
+          setSaveStatus(`Save failed`);
+        }
       } else {
-        setSaveStatus(`Save failed (${putRes.status})`);
+        // Single dbKey path (original logic)
+        const getRes = await fetch(`/api/rms-data?key=${config.dbKey}&_t=${Date.now()}`, { cache: 'no-store' });
+        let existing: Record<string, RateEntry> = {};
+        if (getRes.ok) {
+          const getJson = await getRes.json();
+          if (getJson.data && typeof getJson.data === 'object') {
+            existing = getJson.data as Record<string, RateEntry>;
+          }
+        }
+        const merged = { ...existing, ...allChanged };
+        const putRes = await fetch('/api/rms-data', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: config.dbKey, data: merged }),
+        });
+        if (putRes.ok) {
+          setRows((prev) => prev.map((r) => ({ ...r, originalAmount: r.amount, originalCeiling: r.ceiling })));
+          setSaveStatus(`Saved ${count} rate(s) to database`);
+          toast.success('Successfully saved');
+          setTimeout(() => setSaveStatus(''), 3000);
+        } else {
+          setSaveStatus(`Save failed (${putRes.status})`);
+        }
       }
     } catch (err) {
       setSaveStatus('Save failed (network)');
@@ -360,6 +426,7 @@ export function RateConfigPage() {
   const tabConfig = getTabConfig(activeTab);
   const hasPredefinedCodes = tabConfig.codes.length > 0;
   const isValuedProperty = activeTab === 'Valued Property';
+  const isFineAndFees = tabConfig.isFineAndFees === true;
 
   const handleCodeSelect = (code: string) => {
     setNewCode(code);
@@ -521,7 +588,12 @@ export function RateConfigPage() {
     let data = rows;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      data = data.filter((r) => r.code.toLowerCase().includes(q) || r.businessClass.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
+      data = data.filter((r) =>
+        r.code.toLowerCase().includes(q) ||
+        r.businessClass.toLowerCase().includes(q) ||
+        r.category.toLowerCase().includes(q) ||
+        (isFineAndFees && codeType(r.code).toLowerCase().includes(q))
+      );
     }
     const dir = sortDir === 'asc' ? 1 : -1;
     data = [...data].sort((a, b) => {
@@ -531,11 +603,15 @@ export function RateConfigPage() {
         case 'category': return a.category.localeCompare(b.category) * dir;
         case 'amount': return (a.amount - b.amount) * dir;
         case 'ceiling': return (a.ceiling - b.ceiling) * dir;
+        case 'type': return codeType(a.code).localeCompare(codeType(b.code)) * dir;
         default: return 0;
       }
     });
     return data;
   }, [rows, searchQuery, sortCol, sortDir]);
+
+  // Column count for colSpan
+  const colSpan = (isValuedProperty ? 5 : 6) + (isFineAndFees ? 1 : 0);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -688,6 +764,9 @@ export function RateConfigPage() {
                 <th className="w-10 px-1 py-2.5" />
                 <th className="w-10 px-1 py-2.5" />
                 <th onClick={() => handleSort('code')} className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Code <SortIcon col="code" /></th>
+                {isFineAndFees && (
+                <th onClick={() => handleSort('type')} className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Type <SortIcon col="type" /></th>
+                )}
                 <th onClick={() => handleSort('class')} className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Class <SortIcon col="class" /></th>
                 <th onClick={() => handleSort('category')} className="px-3 py-2.5 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Category <SortIcon col="category" /></th>
                 <th onClick={() => handleSort('amount')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">{activeTab === 'Property' ? 'Unassessed Rate' : isValuedProperty ? 'Rate Impost' : 'Amount'} <SortIcon col="amount" /></th>
@@ -698,15 +777,20 @@ export function RateConfigPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
               {!overridesLoaded ? (
-                <tr><td colSpan={isValuedProperty ? 6 : 7} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading rates...</td></tr>
+                <tr><td colSpan={colSpan} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading rates...</td></tr>
               ) : paged.length === 0 ? (
-                <tr><td colSpan={isValuedProperty ? 6 : 7} className="text-center py-16 text-slate-400 dark:text-slate-500">{searchQuery ? 'No rates found matching your search.' : `No rates configured for ${activeTab}. Click "Add Rate" to get started.`}</td></tr>
+                <tr><td colSpan={colSpan} className="text-center py-16 text-slate-400 dark:text-slate-500">{searchQuery ? 'No rates found matching your search.' : `No rates configured for ${activeTab}. Click "Add Rate" to get started.`}</td></tr>
               ) : (
                 paged.map((row, idx) => (
                   <tr key={row.code} className={idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/40'}>
                     <td className="px-1 py-1.5 text-center"><input type="radio" name="rateRadio" checked={radioCode === row.code} onChange={() => handleRadio(row.code)} className="accent-emerald-600" /></td>
                     <td className="px-1 py-1.5 text-center"><input type="checkbox" checked={row.selected} onChange={() => handleCheck(row.code)} className="accent-emerald-600" /></td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 font-mono whitespace-nowrap">{row.code}</td>
+                    {isFineAndFees && (
+                    <td className="px-3 py-1.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${codeType(row.code) === 'Fine' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>{codeType(row.code)}</span>
+                    </td>
+                    )}
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[260px] truncate">{row.businessClass}</td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[300px] truncate">{row.category}</td>
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
