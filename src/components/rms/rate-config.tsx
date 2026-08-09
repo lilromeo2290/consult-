@@ -130,7 +130,6 @@ function getTabConfig(tab: RateTab): TabConfig {
         classLabel: 'Property Class',
         lookup: propertyLookup,
         codeToClass: PROP_CODE_TO_CLASS,
-        defaultRates: PROP_DEFAULT_RATES,
       };
     case 'Fines':
       return {
