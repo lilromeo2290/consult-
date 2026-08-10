@@ -109,7 +109,21 @@ export const useAppStore = create<AppState>()(
       }),
       // Mark as hydrated after rehydration completes
       onRehydrateStorage: () => (state) => {
-        if (state) state.hydrated = true;
+        if (state) {
+          // Migration: add any newly-added pages to admin's accessiblePages
+          if (state.currentUser && state.currentUser.role === 'Administrator') {
+            const allPages = ALL_RMS_PAGES.map((p) => p.page);
+            const current = state.currentUser.accessiblePages || [];
+            const hasNew = allPages.some((p) => !current.includes(p));
+            if (hasNew) {
+              state.currentUser = {
+                ...state.currentUser,
+                accessiblePages: allPages,
+              };
+            }
+          }
+          state.hydrated = true;
+        }
       },
     },
   ),
