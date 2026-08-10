@@ -29,7 +29,6 @@ import { useAppStore, type RMSPage } from '@/stores/app-store';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -210,7 +209,7 @@ function SidebarContent({
       </div>
 
       {/* Nav items */}
-      <ScrollArea className='flex-1 px-3 py-3'>
+      <div className='flex-1 overflow-y-auto px-3 py-3'>
         <nav
           className='flex flex-col gap-1'
           role='navigation'
@@ -229,7 +228,7 @@ function SidebarContent({
             <p className='text-xs text-muted-foreground text-center py-4'>No pages assigned</p>
           )}
         </nav>
-      </ScrollArea>
+      </div>
 
       {/* Bottom section - Back / Exit */}
       <div className='shrink-0 border-t border-border p-3'>
