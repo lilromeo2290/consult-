@@ -28,6 +28,7 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'rent', label: 'Lease Management' },
   { page: 'rates', label: 'Rate Configuration' },
   { page: 'penalties', label: 'Penalties' },
+  { page: 'building-permit', label: 'Building Permit' },
   { page: 'billing', label: 'Bill Management' },
   { page: 'payments', label: 'Payments' },
   { page: 'payment-history', label: 'Payment History' },
@@ -37,7 +38,6 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'settings', label: 'Settings' },
   { page: 'audit-trail', label: 'Audit Trail' },
   { page: 'search', label: 'Search' },
-  { page: 'building-permit', label: 'Building Permit' },
 ];
 
 interface AppUser {

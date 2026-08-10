@@ -57,6 +57,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Lease Management', page: 'rent', icon: Key },
   { label: 'Rate Config', page: 'rates', icon: Settings2 },
   { label: 'Penalties', page: 'penalties', icon: Gavel },
+  { label: 'Building Permit', page: 'building-permit', icon: HardHat },
   { label: 'Billing', page: 'billing', icon: FileText },
   { label: 'Payments', page: 'payments', icon: CreditCard },
   { label: 'Payment History', page: 'payment-history', icon: Clock },
@@ -66,7 +67,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Settings', page: 'settings', icon: Settings },
   { label: 'Audit Trail', page: 'audit-trail', icon: Shield },
   { label: 'Search', page: 'search', icon: Search },
-  { label: 'Building Permit', page: 'building-permit', icon: HardHat },
 ];
 
 const PAGE_TITLES: Record<RMSPage, string> = {
