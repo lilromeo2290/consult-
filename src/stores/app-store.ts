@@ -17,7 +17,8 @@ type RMSPage =
   | 'users'
   | 'settings'
   | 'search'
-  | 'audit-trail';
+  | 'audit-trail'
+  | 'building-permit';
 
 /** All available RMS pages for the permission picker */
 const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
@@ -36,6 +37,7 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'settings', label: 'Settings' },
   { page: 'audit-trail', label: 'Audit Trail' },
   { page: 'search', label: 'Search' },
+  { page: 'building-permit', label: 'Building Permit' },
 ];
 
 interface AppUser {

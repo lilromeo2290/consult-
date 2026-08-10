@@ -16,6 +16,7 @@ import {
   Shield,
   Search,
   Gavel,
+  HardHat,
   PanelLeftClose,
   PanelLeftOpen,
   Menu,
@@ -66,6 +67,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Settings', page: 'settings', icon: Settings },
   { label: 'Audit Trail', page: 'audit-trail', icon: Shield },
   { label: 'Search', page: 'search', icon: Search },
+  { label: 'Building Permit', page: 'building-permit', icon: HardHat },
 ];
 
 const PAGE_TITLES: Record<RMSPage, string> = {
@@ -84,6 +86,7 @@ const PAGE_TITLES: Record<RMSPage, string> = {
   settings: 'Settings',
   search: 'Search',
   'audit-trail': 'Audit Trail',
+  'building-permit': 'Building Permit',
 };
 
 // ---------- Constants ----------
