@@ -28,6 +28,7 @@ const BILLING_KEY = 'rms-settings-billing';
 const SECURITY_KEY = 'rms-settings-security';
 const NOTIFICATIONS_KEY = 'rms-settings-notifications';
 const BACKUP_KEY = 'rms-settings-backup';
+const BILL_CATEGORY_KEY = 'rms-settings-bill-categories';
 
 // ── Types ──
 interface AssemblyInfo {
@@ -81,6 +82,32 @@ interface BackupInfo {
   autoDailyBackup: boolean;
   retentionDays: string;
 }
+
+interface BillCategoryConfig {
+  billPrefix: string;
+  receiptPrefix: string;
+  defaultDueDays: string;
+  penaltyAfterDays: string;
+  enabled: boolean;
+}
+
+type BillCategorySettings = Record<string, BillCategoryConfig>;
+
+const REVENUE_CATEGORIES = [
+  { key: 'BOP', label: 'Business Operating Permit (BOP)', shortLabel: 'BOP', color: 'emerald' },
+  { key: 'Property Rate', label: 'Property Rate', shortLabel: 'Property', color: 'blue' },
+  { key: 'Rent', label: 'Rent', shortLabel: 'Rent', color: 'amber' },
+  { key: 'Fine', label: 'Fine', shortLabel: 'Fine', color: 'red' },
+  { key: 'BP', label: 'Building Permit (BP)', shortLabel: 'BP', color: 'purple' },
+] as const;
+
+const defaultBillCategories: BillCategorySettings = {
+  'BOP': { billPrefix: 'BOP-BILL', receiptPrefix: 'BOP-REC', defaultDueDays: '30', penaltyAfterDays: '15', enabled: true },
+  'Property Rate': { billPrefix: 'PROP-BILL', receiptPrefix: 'PROP-REC', defaultDueDays: '30', penaltyAfterDays: '15', enabled: true },
+  'Rent': { billPrefix: 'RENT-BILL', receiptPrefix: 'RENT-REC', defaultDueDays: '30', penaltyAfterDays: '15', enabled: true },
+  'Fine': { billPrefix: 'FINE-BILL', receiptPrefix: 'FINE-REC', defaultDueDays: '14', penaltyAfterDays: '7', enabled: true },
+  'BP': { billPrefix: 'BP-BILL', receiptPrefix: 'BP-REC', defaultDueDays: '30', penaltyAfterDays: '15', enabled: true },
+};
 
 const defaultAssembly: AssemblyInfo = {
   name: '',
@@ -151,13 +178,15 @@ export function SettingsPage() {
   const [security, setSecurity, securityLoading] = useSyncedStorage<SecurityInfo>(SECURITY_KEY, defaultSecurity);
   const [notifications, setNotifications, notifLoading] = useSyncedStorage<NotificationInfo>(NOTIFICATIONS_KEY, defaultNotifications);
   const [backup, setBackup, backupLoading] = useSyncedStorage<BackupInfo>(BACKUP_KEY, defaultBackup);
+  const [billCategories, setBillCategories, billCatLoading] = useSyncedStorage<BillCategorySettings>(BILL_CATEGORY_KEY, defaultBillCategories);
 
-  const loaded = !assemblyLoading && !financialLoading && !billingLoading && !securityLoading && !notifLoading && !backupLoading;
+  const loaded = !assemblyLoading && !financialLoading && !billingLoading && !securityLoading && !notifLoading && !backupLoading && !billCatLoading;
 
   const tabs = [
     { id: 'assembly', label: 'Assembly Info', icon: Building },
     { id: 'financial', label: 'Financial', icon: DollarSign },
     { id: 'billing', label: 'Billing Config', icon: FileText },
+    { id: 'bill-categories', label: 'Revenue Categories', icon: FileText },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'backup', label: 'Backup & Restore', icon: Database },
@@ -224,6 +253,9 @@ export function SettingsPage() {
         )}
         {activeTab === 'billing' && loaded && (
           <BillingSettings data={billing} onChange={(field, value) => setBilling((p: BillingInfo) => ({ ...p, [field]: value }))} />
+        )}
+        {activeTab === 'bill-categories' && loaded && (
+          <BillCategorySettingsPanel data={billCategories} onChange={setBillCategories} />
         )}
         {activeTab === 'security' && loaded && (
           <SecuritySettings data={security} onChange={(field, value) => setSecurity((p: SecurityInfo) => ({ ...p, [field]: value }))} />
@@ -561,6 +593,104 @@ function BackupSettings({ data, onChange }: { data: BackupInfo; onChange: (field
             No backups yet. Click "Manual Backup Now" to create your first backup.
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Revenue Categories Tab ──
+function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySettings; onChange: React.Dispatch<React.SetStateAction<BillCategorySettings>> }) {
+  const updateCategory = (key: string, field: keyof BillCategoryConfig, value: string | boolean) => {
+    onChange((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], [field]: value },
+    }));
+  };
+
+  const colorMap: Record<string, { border: string; bg: string; text: string; badge: string }> = {
+    emerald: { border: 'border-emerald-300 dark:border-emerald-700', bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' },
+    blue: { border: 'border-blue-300 dark:border-blue-700', bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-400', badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' },
+    amber: { border: 'border-amber-300 dark:border-amber-700', bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-400', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' },
+    red: { border: 'border-red-300 dark:border-red-700', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-400', badge: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' },
+    purple: { border: 'border-purple-300 dark:border-purple-700', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400', badge: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400' },
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700">Revenue Category Configuration</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Configure billing settings for each revenue category individually. These settings override the global billing configuration when generating bills.</p>
+      </div>
+      <div className="space-y-4">
+        {REVENUE_CATEGORIES.map((cat) => {
+          const config = data[cat.key] || defaultBillCategories[cat.key];
+          const colors = colorMap[cat.color] || colorMap.emerald;
+          return (
+            <div key={cat.key} className={`rounded-xl border ${colors.border} ${colors.bg} overflow-hidden transition-all`}>
+              {/* Category Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/60 dark:border-slate-700/60">
+                <div className="flex items-center gap-3">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${colors.badge}`}>
+                    {cat.shortLabel}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{cat.label}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => updateCategory(cat.key, 'enabled', !config.enabled)}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${config.enabled ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${config.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+              {/* Category Fields */}
+              <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5 ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Bill Prefix</label>
+                  <input
+                    type="text"
+                    value={config.billPrefix}
+                    onChange={(e) => updateCategory(cat.key, 'billPrefix', e.target.value)}
+                    placeholder="e.g. BOP-BILL"
+                    className={inputCls}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Receipt Prefix</label>
+                  <input
+                    type="text"
+                    value={config.receiptPrefix}
+                    onChange={(e) => updateCategory(cat.key, 'receiptPrefix', e.target.value)}
+                    placeholder="e.g. BOP-REC"
+                    className={inputCls}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Default Due Days</label>
+                  <input
+                    type="number"
+                    value={config.defaultDueDays}
+                    onChange={(e) => updateCategory(cat.key, 'defaultDueDays', e.target.value)}
+                    placeholder="30"
+                    className={inputCls}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Penalty After (Days)</label>
+                  <input
+                    type="number"
+                    value={config.penaltyAfterDays}
+                    onChange={(e) => updateCategory(cat.key, 'penaltyAfterDays', e.target.value)}
+                    placeholder="15"
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
