@@ -113,9 +113,9 @@ function CertificateView({ data }: { data: CertData }) {
             )}
             {/* Content */}
             <div style={{ margin: '35px 40px', position: 'relative', zIndex: 2 }}>
-              {/* Header: Logo + Assembly Name */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                <div style={{ width: '90px', height: '90px', flexShrink: 0 }}>
+              {/* Header: Logo + Assembly Name - Centered */}
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ width: '90px', height: '90px', margin: '0 auto 12px auto' }}>
                   {asmLogo
                     ? <img src={asmLogo} alt={asmName} style={{ width: '90px', height: '90px', objectFit: 'contain' }} />
                     : <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: '#f0ece0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #8B7355' }}>
@@ -123,8 +123,7 @@ function CertificateView({ data }: { data: CertData }) {
                       </div>
                   }
                 </div>
-                <div style={{ width: '1px', height: '80px', background: '#CCCCCC', flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
+                <div>
                   {asmName.toUpperCase().split(' ').map((word, i) => (
                     <div key={i} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '28px', fontWeight: 900, textTransform: 'uppercase', color: '#000000', letterSpacing: '-0.5px', lineHeight: 1.15 }}>{word}</div>
                   ))}
