@@ -71,7 +71,6 @@ interface Property {
   ownerTin: string;
   nationalId: string;
   ownershipType: string;
-  propertyUseType: string;
   category: string;
   value: string;
   rooms: string;
@@ -108,20 +107,6 @@ const OWNERSHIP_TYPES = [
   'Traditional Authority',
   'Joint Ownership',
   'Other',
-];
-
-const propertyUseTypes = [
-  '20121 : Residential : 3rd Class Residential : 420',
-  '20122 : Residential : 2nd Class Residential : 520',
-  '20123 : Residential : 1st Class Residential : 750',
-  '20201 : Commercial : 3rd Class Commercial : 650',
-  '20202 : Commercial : 2nd Class Commercial : 850',
-  '20203 : Commercial : 1st Class Commercial : 1200',
-  '20301 : Industrial : Light Industrial : 500',
-  '20302 : Industrial : Heavy Industrial : 800',
-  '20401 : Institutional : Educational : 400',
-  '20402 : Institutional : Health : 450',
-  '20501 : Mixed Use : Residential-Commercial : 900',
 ];
 
 const propertyTypes = ['All', 'Residential', 'Commercial', 'Industrial', 'Institutional', 'Mixed Use'];
@@ -208,7 +193,7 @@ export function PropertiesPage() {
     ownerTin: '',
     nationalId: '',
     ownershipType: '',
-    propertyUseType: '',
+
     category: '',
     value: '',
     rooms: '',
@@ -365,7 +350,7 @@ export function PropertiesPage() {
   // ── Autocomplete suggestion sources from existing properties ────────────
   const daAssignmentSuggestions = [...new Set(properties.map((p) => (p as any).daAssignmentNo).filter(Boolean))];
   const propertyUniqueNoSuggestions = [...new Set(properties.map((p) => (p as any).propertyUniqueNumber).filter(Boolean))];
-  const propertyUseTypeOptions = propertyUseTypes.map((t) => ({ value: t, label: t }));
+
 
   // Wrapper to handle Combobox's select-like onChange for AutoSuggestInput
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -386,7 +371,7 @@ export function PropertiesPage() {
       p.propNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ((p as any).propertyUniqueNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.streetName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchType = typeFilter === 'All' || p.propertyUseType.toLowerCase().includes(typeFilter.toLowerCase());
+    const matchType = typeFilter === 'All' || (p as any).type?.toLowerCase().includes(typeFilter.toLowerCase());
     return matchSearch && matchType;
   });
 
@@ -398,12 +383,12 @@ export function PropertiesPage() {
   const showingTo = Math.min(startIdx + itemsPerPage, filtered.length);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  // Derived: unique categories from propertyUseTypes
-  const categories = [...new Set(propertyUseTypes.map((t) => t.split(':')[1]?.trim()).filter(Boolean))];
+  // Derived: unique categories from property class code map
+  const categories = [...new Set(Object.values(PROP_CODE_TO_CATEGORY).filter(Boolean))];
 
   // Derived: sub-categories for the selected category
   const subCategories = form.category
-    ? propertyUseTypes.filter((t) => t.split(':')[1]?.trim() === form.category)
+    ? Object.entries(PROP_CODE_TO_CATEGORY).filter(([, v]) => v === form.category).map(([k]) => k)
     : [];
 
   const handleFormChange = (
@@ -458,7 +443,6 @@ export function PropertiesPage() {
     // Validate compulsory fields
     const missing: string[] = [];
     if (!form.ownerName?.trim()) missing.push('Owner Name');
-    if (!form.propertyUseType) missing.push('Property Use Type');
     if (!form.locality?.trim()) missing.push('Locality');
     if (!form.streetName?.trim()) missing.push('Street Name');
     if (!form.houseNo?.trim()) missing.push('House Number');
@@ -519,7 +503,6 @@ export function PropertiesPage() {
       ownerTin: (prop as any).ownerTin || '',
       nationalId: prop.nationalId,
       ownershipType: prop.ownershipType,
-      propertyUseType: prop.propertyUseType,
       category: prop.category,
       value: prop.value,
       rooms: prop.rooms,
@@ -632,7 +615,6 @@ export function PropertiesPage() {
                 <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Property Unique Number</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Owner</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Property Use Type</th>
                   <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Value</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Street</th>
                   <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Actions</th>
@@ -641,7 +623,7 @@ export function PropertiesPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {paged.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <td colSpan={5} className="text-center py-12 text-slate-400 dark:text-slate-500">
                       <Home className="w-10 h-10 mx-auto mb-3 opacity-40" />
                       No properties found.
                     </td>
@@ -651,7 +633,6 @@ export function PropertiesPage() {
                     <tr key={prop.propNumber} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap font-medium">{(prop as any).propertyUniqueNumber || prop.propNumber}</td>
                       <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{prop.ownerName}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap max-w-[200px] truncate">{(prop.propertyUseType || '').split(':')[1] ? (prop.propertyUseType || '').split(':')[1].trim() : (prop.propertyUseType || '')}</td>
                       <td className="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">{formatVal(prop.value)}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{prop.streetName}</td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -855,19 +836,6 @@ export function PropertiesPage() {
                     </div>
                   )}
                 </div>
-              </div>
-              {/* Property Use Type */}
-              <div>
-                <label className={`${labelClass} block`}>Property Use Type <span className="text-red-500">*</span></label>
-                <Combobox
-                  name="propertyUseType"
-                  value={form.propertyUseType}
-                  onChange={handleFormChange}
-                  options={propertyUseTypeOptions}
-                  placeholder="Type to search use types..."
-                  emptyMessage="No matching use type"
-                  className={inputClass}
-                />
               </div>
               {/* Code */}
               <div>
