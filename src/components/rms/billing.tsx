@@ -27,6 +27,8 @@ import { encodeBarcodeData, getVerificationUrl } from '@/lib/barcode-utils';
 import { BUSINESS_CLASSES } from '@/lib/fee-schedule';
 import { RENT_CLASS_NAMES } from '@/lib/rent-class-code-map';
 import { FINE_CLASS_NAMES } from '@/lib/fines-class-code-map';
+import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
+import { getRateOverride, loadOverrides, type RateEntry } from '@/lib/rate-overrides';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -95,10 +97,10 @@ function searchEntities(
   properties: any[],
   rents: any[],
   buildingPermits: any[],
-): { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string }[] {
+): { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string; businessClassCode: string }[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
-  const results: { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string }[] = [];
+  const results: { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string; businessClassCode: string }[] = [];
 
   if (billType === 'BOP') {
     businesses.forEach((b) => {
@@ -113,6 +115,7 @@ function searchEntities(
           businessClass: b.type || '',
           category: b.category || '',
           location: b.businessAddress || '',
+          businessClassCode: b.businessClassCode || '',
         });
       }
     });
@@ -132,6 +135,7 @@ function searchEntities(
           businessClass: classLabel,
           category: '',
           location: loc || p.ownerAddress || '',
+          businessClassCode: '',
         });
       }
     });
@@ -148,6 +152,7 @@ function searchEntities(
           businessClass: '',
           category: r.rentPropertyType || '',
           location: r.rentPropertyLocation || '',
+          businessClassCode: '',
         });
       }
     });
@@ -164,6 +169,7 @@ function searchEntities(
           businessClass: '',
           category: b.typeOfDevelopment || '',
           location: b.siteLocation || '',
+          businessClassCode: '',
         });
       }
     });
@@ -191,6 +197,18 @@ export function BillingPage() {
   const [bpData] = useSyncedStorage<any[]>('rms-building-permits', []);
   // Payments data for arrears calculation
   const [paymentsData] = useSyncedStorage<any[]>('rms-payments', []);
+  // Rate overrides for auto-charge lookup
+  const [rateOverrides, setRateOverrides] = useState<Record<string, RateEntry>>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('rms-settings-rate-config');
+      if (raw) {
+        const data = JSON.parse(raw);
+        setRateOverrides(data);
+        loadOverrides(data);
+      }
+    } catch {}
+  }, []);
   // Field officers from user management
   const [usersData] = useSyncedStorage<any[]>('rms-users', []);
   const fieldOfficers = useMemo(() => {
@@ -248,7 +266,12 @@ export function BillingPage() {
     return searchEntities(entitySearch, formData.billType, bizData, propData, rentData, bpData);
   }, [entitySearch, formData.billType, bizData, propData, rentData, bpData]);
 
-  const handleSelectEntity = (entity: { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string }) => {
+  const handleSelectEntity = (entity: { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string; businessClassCode: string }) => {
+    // Auto-calculate charge from business registration (rate overrides / fee lookup)
+    let autoCharge = 0;
+    if (entity.businessClassCode) {
+      autoCharge = rateOverrides[entity.businessClassCode]?.amount ?? getRateOverride(entity.businessClassCode) ?? FEE_CODE_LOOKUP[entity.businessClassCode]?.amount ?? 0;
+    }
     // Calculate arrears: sum of outstanding balances from existing unpaid/partial bills
     // for the same uniqueNumber + billType
     let arrears = 0;
@@ -272,6 +295,7 @@ export function BillingPage() {
       category: entity.category,
       location: entity.location,
       arrears,
+      charge: autoCharge,
     }));
     setEntitySearch(entity.uniqueNumber);
     setShowEntityDropdown(false);
@@ -289,6 +313,7 @@ export function BillingPage() {
       category: '',
       location: '',
       arrears: 0,
+      charge: 0,
     }));
     setEntitySearch('');
     setShowEntityDropdown(false);
@@ -1433,23 +1458,21 @@ export function BillingPage() {
                 <div>
                   <label className={labelClass}>Arrears (GH₵)</label>
                   <input
-                    type="number"
-                    min={0}
-                    value={formData.arrears || ''}
-                    onChange={(e) => setFormData((p) => ({ ...p, arrears: Number(e.target.value) }))}
-                    className={inputClass}
-                    placeholder="0"
+                    type="text"
+                    value={formData.arrears ? formatCurrency(formData.arrears) : ''}
+                    className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`}
+                    placeholder="Auto-filled"
+                    readOnly
                   />
                 </div>
                 <div>
                   <label className={labelClass}>Charge (GH₵)</label>
                   <input
-                    type="number"
-                    min={0}
-                    value={formData.charge || ''}
-                    onChange={(e) => setFormData((p) => ({ ...p, charge: Number(e.target.value) }))}
-                    className={inputClass}
-                    placeholder="0"
+                    type="text"
+                    value={formData.charge ? formatCurrency(formData.charge) : ''}
+                    className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`}
+                    placeholder="Auto-filled from registration"
+                    readOnly
                   />
                 </div>
                 <div>
@@ -1457,7 +1480,7 @@ export function BillingPage() {
                   <input
                     type="text"
                     value={formatCurrency(formData.arrears + formData.charge)}
-                    className={inputClass}
+                    className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-emerald-700 dark:text-emerald-400 font-semibold`}
                     readOnly
                   />
                 </div>
