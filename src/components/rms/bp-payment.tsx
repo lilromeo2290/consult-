@@ -197,7 +197,7 @@ export function BPPaymentPage() {
                 </select>
               </div>
               <div>
-                <label className={`${labelClass} block`}>Amount (GH\u20a2) <span className="text-red-500">*</span></label>
+                <label className={`${labelClass} block`}>Amount (GH₵) <span className="text-red-500">*</span></label>
                 <input type="number" name="amount" value={form.amount} onChange={handleFormChange} placeholder="0.00" min="0" step="0.01" className={inputClass} />
               </div>
               <div>
@@ -252,11 +252,11 @@ export function BPPaymentPage() {
         </div>
         <div className="rounded-lg border bg-card p-4">
           <p className="text-xs text-muted-foreground">Total Amount</p>
-          <p className="text-2xl font-bold mt-1">GH\u20a2 {totalAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
+          <p className="text-2xl font-bold mt-1">GH₵ {totalAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
         </div>
         <div className="rounded-lg border bg-card p-4">
           <p className="text-xs text-muted-foreground">Paid</p>
-          <p className="text-2xl font-bold mt-1 text-emerald-600">GH\u20a2 {paidAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
+          <p className="text-2xl font-bold mt-1 text-emerald-600">GH₵ {paidAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
         </div>
       </div>
 
@@ -308,7 +308,7 @@ export function BPPaymentPage() {
                 <td className="px-4 py-3 font-mono text-xs">{p.permitNumber}</td>
                 <td className="px-4 py-3">{p.applicantFullName || '\u2014'}</td>
                 <td className="px-4 py-3 hidden md:table-cell">{p.paymentType || '\u2014'}</td>
-                <td className="px-4 py-3 text-right font-mono">GH\u20a2 {parseFloat(p.amount || '0').toFixed(2)}</td>
+                <td className="px-4 py-3 text-right font-mono">GH₵ {parseFloat(p.amount || '0').toFixed(2)}</td>
                 <td className="px-4 py-3 hidden lg:table-cell">{p.paymentMethod || '\u2014'}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[p.status] || 'bg-gray-100 text-gray-800'}`}>{p.status}</span>
