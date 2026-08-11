@@ -97,24 +97,29 @@ function lookupEntity(
 
   if (billType === 'BOP') {
     const biz = businesses.find(
-      (b) => (b.regNumber || '').toLowerCase() === num || (b.businessId || '').toLowerCase() === num,
+      (b) => (b.regNumber || '').toLowerCase() === num,
     );
-    if (biz) return { businessName: biz.name || '', owner: biz.ownerName || '', category: biz.category || biz.type || '', location: biz.address || '' };
+    if (biz) return { businessName: biz.name || '', owner: biz.owner || '', category: biz.type || biz.category || '', location: biz.businessAddress || '' };
   } else if (billType === 'Property Rate') {
     const prop = properties.find(
-      (p) => (p.propNumber || '').toLowerCase() === num || (p.propertyId || '').toLowerCase() === num,
+      (p) => (p.propNumber || '').toLowerCase() === num,
     );
-    if (prop) return { businessName: prop.ownerName || '', owner: prop.ownerName || '', category: prop.category || prop.propertyUseType || '', location: prop.location || prop.address || '' };
+    if (prop) {
+      const useType = prop.propertyUseType || '';
+      const classLabel = useType.split(':')[1]?.trim() || useType || prop.category || '';
+      const loc = [prop.streetName, prop.houseNo, prop.locality].filter(Boolean).join(', ');
+      return { businessName: prop.ownerName || '', owner: prop.ownerName || '', category: classLabel, location: loc || prop.ownerAddress || '' };
+    }
   } else if (billType === 'Rent') {
     const rent = rents.find(
-      (r) => (r.rentNumber || '').toLowerCase() === num || (r.id || '').toLowerCase() === num,
+      (r) => (r.rentPropertyNumber || '').toLowerCase() === num || (r.id || '').toLowerCase() === num,
     );
-    if (rent) return { businessName: rent.rentObjectName || '', owner: rent.tenantName || rent.rentObjectName || '', category: rent.rentClass || rent.rentCategory || '', location: rent.location || '' };
+    if (rent) return { businessName: rent.occupantName || '', owner: rent.occupantName || '', category: rent.rentPropertyType || '', location: rent.rentPropertyLocation || '' };
   } else if (billType === 'BP') {
     const bp = buildingPermits.find(
-      (b) => (b.applicationNumber || '').toLowerCase() === num || (b.id || '').toLowerCase() === num,
+      (b) => (b.permitNumber || '').toLowerCase() === num || (b.id || '').toLowerCase() === num,
     );
-    if (bp) return { businessName: bp.applicantName || '', owner: bp.applicantName || '', category: bp.developmentType || '', location: bp.propertyAddress || '' };
+    if (bp) return { businessName: bp.applicantFullName || '', owner: bp.applicantFullName || '', category: bp.typeOfDevelopment || '', location: bp.siteLocation || '' };
   }
   return null;
 }
@@ -374,15 +379,15 @@ export function BillingPage() {
     else if (bt === 'Rent') source = rentData;
     else if (bt === 'BP') source = bpData;
     return source.filter((e: any) => {
-      const entityClass = bt === 'BOP' ? (e.type || e.businessType || '')
+      const entityClass = bt === 'BOP' ? (e.type || '')
         : bt === 'Property Rate' ? (e.propertyUseType || '').split(':')[1]?.trim() || (e.category || '')
-        : bt === 'Rent' ? (e.rentClass || e.rentPropertyType || '')
-        : (e.typeOfDevelopment || e.developmentType || '');
+        : bt === 'Rent' ? (e.rentPropertyType || '')
+        : (e.typeOfDevelopment || '');
       if (!entityClass || !entityClass.includes(cls)) return false;
-      const idField = bt === 'BOP' ? (e.regNumber || e.businessId)
-        : bt === 'Property Rate' ? (e.propNumber || e.propertyId)
-        : bt === 'Rent' ? (e.rentNumber || e.id)
-        : (e.applicationNumber || e.id);
+      const idField = bt === 'BOP' ? e.regNumber
+        : bt === 'Property Rate' ? e.propNumber
+        : bt === 'Rent' ? (e.rentPropertyNumber || e.id)
+        : (e.permitNumber || e.id);
       if (!idField) return false;
       const exists = bills.find(
         (b) => b.uniqueNumber === idField && b.billType === bt,
@@ -411,41 +416,41 @@ export function BillingPage() {
 
     setTimeout(() => {
       const eligibleEntities = source.filter((e: any) => {
-        const entityClass = bt === 'BOP' ? (e.type || e.businessType || '')
+        const entityClass = bt === 'BOP' ? (e.type || '')
           : bt === 'Property Rate' ? (e.propertyUseType || '').split(':')[1]?.trim() || (e.category || '')
-          : bt === 'Rent' ? (e.rentClass || e.rentPropertyType || '')
-          : (e.typeOfDevelopment || e.developmentType || '');
+          : bt === 'Rent' ? (e.rentPropertyType || '')
+          : (e.typeOfDevelopment || '');
         if (!entityClass || !entityClass.includes(cls)) return false;
-        const idField = bt === 'BOP' ? (e.regNumber || e.businessId)
-          : bt === 'Property Rate' ? (e.propNumber || e.propertyId)
-          : bt === 'Rent' ? (e.rentNumber || e.id)
-          : (e.applicationNumber || e.id);
+        const idField = bt === 'BOP' ? e.regNumber
+          : bt === 'Property Rate' ? e.propNumber
+          : bt === 'Rent' ? (e.rentPropertyNumber || e.id)
+          : (e.permitNumber || e.id);
         if (!idField) return false;
         const exists = bills.find((b) => b.uniqueNumber === idField && b.billType === bt);
         return !exists;
       });
 
       const newBills: Bill[] = eligibleEntities.map((entity, idx) => {
-        const idField = bt === 'BOP' ? (entity.regNumber || entity.businessId)
-          : bt === 'Property Rate' ? (entity.propNumber || entity.propertyId)
-          : bt === 'Rent' ? (entity.rentNumber || entity.id)
-          : (entity.applicationNumber || entity.id);
-        const nameField = bt === 'BOP' ? (entity.name || entity.businessName || '')
-          : bt === 'Property Rate' ? (entity.ownerName || entity.name || '')
-          : bt === 'Rent' ? (entity.rentObjectName || entity.tenantName || '')
-          : (entity.applicantName || entity.name || '');
-        const ownerField = bt === 'BOP' ? (entity.ownerName || entity.owner || nameField)
+        const idField = bt === 'BOP' ? entity.regNumber
+          : bt === 'Property Rate' ? entity.propNumber
+          : bt === 'Rent' ? (entity.rentPropertyNumber || entity.id)
+          : (entity.permitNumber || entity.id);
+        const nameField = bt === 'BOP' ? (entity.name || '')
+          : bt === 'Property Rate' ? (entity.ownerName || '')
+          : bt === 'Rent' ? (entity.occupantName || '')
+          : (entity.applicantFullName || '');
+        const ownerField = bt === 'BOP' ? (entity.owner || nameField)
           : bt === 'Property Rate' ? (entity.ownerName || nameField)
-          : bt === 'Rent' ? (entity.tenantName || nameField)
-          : (entity.applicantName || nameField);
-        const catField = bt === 'BOP' ? (entity.type || entity.businessType || '')
+          : bt === 'Rent' ? (entity.occupantName || nameField)
+          : (entity.applicantFullName || nameField);
+        const catField = bt === 'BOP' ? (entity.type || '')
           : bt === 'Property Rate' ? (entity.propertyUseType || '').split(':')[1]?.trim() || (entity.category || '')
-          : bt === 'Rent' ? (entity.rentClass || entity.rentPropertyType || '')
-          : (entity.typeOfDevelopment || entity.developmentType || '');
-        const locField = bt === 'BOP' ? (entity.address || entity.businessAddress || '')
-          : bt === 'Property Rate' ? (entity.location || entity.address || '')
-          : bt === 'Rent' ? (entity.location || '')
-          : (entity.propertyAddress || entity.location || '');
+          : bt === 'Rent' ? (entity.rentPropertyType || '')
+          : (entity.typeOfDevelopment || '');
+        const locField = bt === 'BOP' ? (entity.businessAddress || '')
+          : bt === 'Property Rate' ? [entity.streetName, entity.houseNo, entity.locality].filter(Boolean).join(', ')
+          : bt === 'Rent' ? (entity.rentPropertyLocation || '')
+          : (entity.siteLocation || '');
         return {
           id: String(Date.now() + idx),
           billNumber: `BILL-2024-${String(bills.length + 156 + idx).padStart(4, '0')}`,
