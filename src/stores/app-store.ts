@@ -18,7 +18,9 @@ type RMSPage =
   | 'settings'
   | 'search'
   | 'audit-trail'
-  | 'building-permit';
+  | 'building-permit'
+  | 'bp-official'
+  | 'bp-payment';
 
 /** All available RMS pages for the permission picker */
 const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
@@ -29,6 +31,8 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'rates', label: 'Rate Configuration' },
   { page: 'penalties', label: 'Penalties' },
   { page: 'building-permit', label: 'Building Permit' },
+  { page: 'bp-official', label: 'BP Official' },
+  { page: 'bp-payment', label: 'BP Payment' },
   { page: 'billing', label: 'Bill Management' },
   { page: 'payments', label: 'Payments' },
   { page: 'payment-history', label: 'Payment History' },

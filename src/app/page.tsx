@@ -23,6 +23,8 @@ import { SettingsPage } from '@/components/rms/settings';
 import { SearchPage } from '@/components/rms/search';
 import { AuditTrailPage } from '@/components/rms/audit-trail';
 import { BuildingPermitPage } from '@/components/rms/building-permit';
+import { BPOfficialPage } from '@/components/rms/bp-official';
+import { BPPaymentPage } from '@/components/rms/bp-payment';
 import { useAppStore, type RMSPage } from '@/stores/app-store';
 import { loadOverrides } from '@/lib/rate-overrides';
 import type { RateEntry } from '@/lib/rate-overrides';
@@ -65,6 +67,8 @@ function RMSView() {
       case 'search': return <SearchPage />;
       case 'audit-trail': return <AuditTrailPage />;
       case 'building-permit': return <BuildingPermitPage />;
+      case 'bp-official': return <BPOfficialPage />;
+      case 'bp-payment': return <BPPaymentPage />;
       default: return <DashboardPage />;
     }
   };
