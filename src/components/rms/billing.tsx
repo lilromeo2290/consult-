@@ -54,6 +54,7 @@ interface BillFormData {
   uniqueNumber: string;
   businessName: string;
   owner: string;
+  businessClass: string;
   category: string;
   location: string;
   arrears: number;
@@ -94,10 +95,10 @@ function searchEntities(
   properties: any[],
   rents: any[],
   buildingPermits: any[],
-): { businessName: string; owner: string; category: string; location: string; uniqueNumber: string }[] {
+): { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string }[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
-  const results: { businessName: string; owner: string; category: string; location: string; uniqueNumber: string }[] = [];
+  const results: { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string }[] = [];
 
   if (billType === 'BOP') {
     businesses.forEach((b) => {
@@ -109,7 +110,8 @@ function searchEntities(
           uniqueNumber: b.regNumber || '',
           businessName: b.name || '',
           owner: b.owner || '',
-          category: b.type || b.category || '',
+          businessClass: b.type || '',
+          category: b.category || '',
           location: b.businessAddress || '',
         });
       }
@@ -127,7 +129,8 @@ function searchEntities(
           uniqueNumber: p.propNumber || p.id || '',
           businessName: p.ownerName || p.propertyName || '',
           owner: p.ownerName || '',
-          category: classLabel,
+          businessClass: classLabel,
+          category: '',
           location: loc || p.ownerAddress || '',
         });
       }
@@ -142,6 +145,7 @@ function searchEntities(
           uniqueNumber: r.rentPropertyNumber || r.id || '',
           businessName: r.occupantName || '',
           owner: r.occupantName || '',
+          businessClass: '',
           category: r.rentPropertyType || '',
           location: r.rentPropertyLocation || '',
         });
@@ -157,6 +161,7 @@ function searchEntities(
           uniqueNumber: b.permitNumber || b.id || '',
           businessName: b.applicantFullName || '',
           owner: b.applicantFullName || '',
+          businessClass: '',
           category: b.typeOfDevelopment || '',
           location: b.siteLocation || '',
         });
@@ -224,6 +229,7 @@ export function BillingPage() {
     uniqueNumber: '',
     businessName: '',
     owner: '',
+    businessClass: '',
     category: '',
     location: '',
     arrears: 0,
@@ -242,7 +248,7 @@ export function BillingPage() {
     return searchEntities(entitySearch, formData.billType, bizData, propData, rentData, bpData);
   }, [entitySearch, formData.billType, bizData, propData, rentData, bpData]);
 
-  const handleSelectEntity = (entity: { businessName: string; owner: string; category: string; location: string; uniqueNumber: string }) => {
+  const handleSelectEntity = (entity: { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string }) => {
     // Calculate arrears: sum of outstanding balances from existing unpaid/partial bills
     // for the same uniqueNumber + billType
     let arrears = 0;
@@ -262,6 +268,7 @@ export function BillingPage() {
       uniqueNumber: entity.uniqueNumber,
       businessName: entity.businessName,
       owner: entity.owner,
+      businessClass: entity.businessClass,
       category: entity.category,
       location: entity.location,
       arrears,
@@ -278,6 +285,7 @@ export function BillingPage() {
       uniqueNumber: '',
       businessName: '',
       owner: '',
+      businessClass: '',
       category: '',
       location: '',
       arrears: 0,
@@ -1322,7 +1330,7 @@ export function BillingPage() {
                       setEntitySearch(e.target.value);
                       setShowEntityDropdown(true);
                       if (!e.target.value.trim()) {
-                        setFormData((p) => ({ ...p, uniqueNumber: '', businessName: '', owner: '', category: '', location: '' }));
+                        setFormData((p) => ({ ...p, uniqueNumber: '', businessName: '', owner: '', businessClass: '', category: '', location: '' }));
                       }
                     }}
                     onFocus={() => {
@@ -1384,7 +1392,19 @@ export function BillingPage() {
                 />
               </div>
 
-              {/* 5. Category (Autofill) */}
+              {/* 5. Business Class (Autofill) */}
+              <div>
+                <label className={labelClass}>Business Class</label>
+                <input
+                  type="text"
+                  value={formData.businessClass}
+                  className={inputClass}
+                  placeholder="Auto-filled from search"
+                  readOnly
+                />
+              </div>
+
+              {/* 6. Category (Autofill) */}
               <div>
                 <label className={labelClass}>Category</label>
                 <input
