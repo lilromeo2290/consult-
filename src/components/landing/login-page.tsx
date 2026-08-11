@@ -47,11 +47,14 @@ function migrateStoredUsers(raw: unknown): StoredUser[] {
       lastName: u.lastName || '',
       role: u.role || 'Revenue Officer',
       status: u.status || 'Active',
-      accessiblePages: u.accessiblePages || [...ALL_PAGES],
+      accessiblePages: u.accessiblePages || [],
     };
-    const missing = ALL_PAGES.filter((p) => !base.accessiblePages.includes(p));
-    if (missing.length > 0) {
+    // Only auto-add new pages for Administrators
+    if (base.role === 'Administrator') {
+      const missing = ALL_PAGES.filter((p) => !base.accessiblePages.includes(p));
+      if (missing.length > 0) {
       base.accessiblePages = [...base.accessiblePages, ...missing];
+      }
     }
     return base;
   });

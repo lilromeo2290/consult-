@@ -99,7 +99,7 @@ export const useAppStore = create<AppState>()(
         const { currentUser } = get();
         if (!currentUser) return false;
         if (currentUser.role === 'Administrator') return true;
-        if (currentUser.accessiblePages.length === 0) return true;
+        if (currentUser.accessiblePages.length === 0) return false;
         return currentUser.accessiblePages.includes(page);
       },
     }),

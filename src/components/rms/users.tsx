@@ -127,9 +127,12 @@ function migrateUsers(raw: unknown): User[] {
       lastLogin: u.lastLogin || 'Never',
       dateCreated: u.dateCreated || new Date().toISOString().split('T')[0],
     } as User;
-    const missing = ALL_PAGES.filter((p) => !base.accessiblePages.includes(p));
-    if (missing.length > 0) {
-      base.accessiblePages = [...base.accessiblePages, ...missing];
+    // Only auto-add new pages for Administrators
+    if (base.role === 'Administrator') {
+      const missing = ALL_PAGES.filter((p) => !base.accessiblePages.includes(p));
+      if (missing.length > 0) {
+        base.accessiblePages = [...base.accessiblePages, ...missing];
+      }
     }
     return base;
   });
