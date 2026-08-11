@@ -366,7 +366,7 @@ export function BuildingPermitPage() {
             {/* Permit Header */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className={`${labelClass} block`}>Permit Number</label>
+                <label className={`${labelClass} block`}>Application Number</label>
                 <input type="text" name="permitNumber" value={form.permitNumber} onChange={handleFormChange} className={inputClass} readOnly />
               </div>
               <div>
