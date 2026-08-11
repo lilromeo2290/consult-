@@ -184,6 +184,8 @@ export function BillingPage() {
   const [propData] = useSyncedStorage<any[]>('rms-properties', []);
   const [rentData] = useSyncedStorage<any[]>('rms-rents', []);
   const [bpData] = useSyncedStorage<any[]>('rms-building-permits', []);
+  // Payments data for arrears calculation
+  const [paymentsData] = useSyncedStorage<any[]>('rms-payments', []);
   // Field officers from user management
   const [usersData] = useSyncedStorage<any[]>('rms-users', []);
   const fieldOfficers = useMemo(() => {
@@ -241,6 +243,20 @@ export function BillingPage() {
   }, [entitySearch, formData.billType, bizData, propData, rentData, bpData]);
 
   const handleSelectEntity = (entity: { businessName: string; owner: string; category: string; location: string; uniqueNumber: string }) => {
+    // Calculate arrears: sum of outstanding balances from existing unpaid/partial bills
+    // for the same uniqueNumber + billType
+    let arrears = 0;
+    const entityBills = bills.filter(
+      (b) => b.uniqueNumber === entity.uniqueNumber && b.billType === formData.billType && b.status !== 'Paid'
+    );
+    entityBills.forEach((b) => {
+      const totalPaid = paymentsData
+        .filter((p: any) => p.billNo === b.billNumber)
+        .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+      const outstanding = Math.max(0, (b.amountDue || 0) - totalPaid);
+      arrears += outstanding;
+    });
+
     setFormData((p) => ({
       ...p,
       uniqueNumber: entity.uniqueNumber,
@@ -248,6 +264,7 @@ export function BillingPage() {
       owner: entity.owner,
       category: entity.category,
       location: entity.location,
+      arrears,
     }));
     setEntitySearch(entity.uniqueNumber);
     setShowEntityDropdown(false);
@@ -263,6 +280,7 @@ export function BillingPage() {
       owner: '',
       category: '',
       location: '',
+      arrears: 0,
     }));
     setEntitySearch('');
     setShowEntityDropdown(false);
