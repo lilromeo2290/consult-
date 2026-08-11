@@ -52,8 +52,8 @@ import {
 import { Combobox } from '@/components/ui/combobox';
 import { exportToExcel, importFromExcel } from '@/lib/import-export';
 
-type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent' | 'Valued Property';
-type SortColumn = 'code' | 'class' | 'category' | 'amount' | 'ceiling' | 'permit';
+type RateTab = 'Business' | 'Property' | 'Valued Property' | 'Fines' | 'Fees' | 'Rent' | 'Permit';
+type SortColumn = 'code' | 'class' | 'category' | 'amount' | 'ceiling';
 type SortDir = 'asc' | 'desc';
 
 interface RateRow {
@@ -69,7 +69,7 @@ interface RateRow {
   selected: boolean;
 }
 
-const TABS: RateTab[] = ['Business', 'Property', 'Valued Property', 'Fines', 'Fees', 'Rent'];
+const TABS: RateTab[] = ['Business', 'Property', 'Valued Property', 'Fines', 'Fees', 'Rent', 'Permit'];
 const PAGE_SIZE = 25;
 
 // ── Per-tab configuration ─────────────────────────────────────────────────
@@ -172,6 +172,14 @@ function getTabConfig(tab: RateTab): TabConfig {
         lookup: rentLookup,
         codeToClass: RENT_CODE_TO_CLASS,
       };
+    case 'Permit':
+      return {
+        dbKey: 'rms-rate-overrides-permit',
+        codes: [] as string[],
+        classLabel: 'Permit Type',
+        lookup: {} as Record<string, { businessClass: string; category: string }>,
+        codeToClass: {} as Record<string, string>,
+      };
     case 'Valued Property':
       return {
         dbKey: 'rms-rate-overrides-valued-property',
@@ -191,7 +199,6 @@ const RATE_FIELDS: { key: string; label: string }[] = [
   { key: 'category', label: 'Category' },
   { key: 'amount', label: 'Amount' },
   { key: 'ceiling', label: 'Ceiling' },
-  { key: 'permit', label: 'Permit' },
 ];
 
 /** Build rows from a code list + lookup + saved DB data. */
@@ -468,7 +475,7 @@ export function RateConfigPage() {
 
   // ── Import / Export ────────────────────────────────────────────────────
   const handleExportRates = () => {
-    const exportData = rows.map((r) => ({ code: r.code, businessClass: r.businessClass, category: r.category, amount: r.amount, ceiling: r.ceiling, permit: r.permit }));
+    const exportData = rows.map((r) => ({ code: r.code, businessClass: r.businessClass, category: r.category, amount: r.amount, ceiling: r.ceiling }));
     exportToExcel(exportData as unknown as Record<string, unknown>[], RATE_FIELDS, `${activeTab}_Rates`);
   };
 
@@ -548,7 +555,6 @@ export function RateConfigPage() {
         case 'category': return a.category.localeCompare(b.category) * dir;
         case 'amount': return (a.amount - b.amount) * dir;
         case 'ceiling': return (a.ceiling - b.ceiling) * dir;
-        case 'permit': return (a.permit - b.permit) * dir;
         default: return 0;
       }
     });
@@ -687,10 +693,6 @@ export function RateConfigPage() {
                     <input type="number" value={newCeiling} onChange={(e) => setNewCeiling(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="0.00 (max limit)" step="0.01" min="0" />
                   </div>
                   )}
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Permit</label>
-                    <input type="number" value={newPermit} onChange={(e) => setNewPermit(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="0.00" step="0.01" min="0" />
-                  </div>
                   <button onClick={handleAddRate} disabled={!newCode.trim() || !newAmount.trim()} className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                     Add Entry
                   </button>
@@ -716,14 +718,13 @@ export function RateConfigPage() {
                 {!isValuedProperty && (
                 <th onClick={() => handleSort('ceiling')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">{activeTab === 'Property' ? 'Minimum Rate' : 'Ceiling'} <SortIcon col="ceiling" /></th>
                 )}
-                <th onClick={() => handleSort('permit')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Permit <SortIcon col="permit" /></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
               {!overridesLoaded ? (
-                <tr><td colSpan={isValuedProperty ? 7 : 8} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading rates...</td></tr>
+                <tr><td colSpan={isValuedProperty ? 6 : 7} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading rates...</td></tr>
               ) : paged.length === 0 ? (
-                <tr><td colSpan={isValuedProperty ? 7 : 8} className="text-center py-16 text-slate-400 dark:text-slate-500">{searchQuery ? 'No rates found matching your search.' : `No rates configured for ${activeTab}. Click "Add Rate" to get started.`}</td></tr>
+                <tr><td colSpan={isValuedProperty ? 6 : 7} className="text-center py-16 text-slate-400 dark:text-slate-500">{searchQuery ? 'No rates found matching your search.' : `No rates configured for ${activeTab}. Click "Add Rate" to get started.`}</td></tr>
               ) : (
                 paged.map((row, idx) => (
                   <tr key={row.code} className={idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/40'}>
@@ -740,9 +741,6 @@ export function RateConfigPage() {
                       <input type="number" inputMode="decimal" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
                     </td>
                     )}
-                    <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
-                      <input type="number" inputMode="decimal" value={row.permit || ''} onChange={(e) => handlePermitEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
-                    </td>
                   </tr>
                 ))
               )}
