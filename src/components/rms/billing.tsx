@@ -357,6 +357,7 @@ export function BillingPage() {
       dueDate: '',
     });
     setCurrentPage(1);
+    handlePrintBill(newBill);
   };
 
   // ── Cancel bill ────────────────────────────────────────────────────────
