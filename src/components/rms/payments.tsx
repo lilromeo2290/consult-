@@ -32,7 +32,7 @@ import { encodeBarcodeData, getVerificationUrl } from '@/lib/barcode-utils';
 
 type PaymentMethod = 'Cash' | 'Mobile Money' | 'Bank' | 'POS' | 'Online';
 type PaymentStatus = 'Full' | 'Partial' | 'Advance';
-type BillType = 'BOP' | 'Property Rate' | 'Rent' | 'BP';
+type BillType = 'BOP' | 'Property Rate' | 'Rent' | 'BP' | 'Fine';
 
 interface Payment {
   id: string;
@@ -94,6 +94,7 @@ const BILL_TYPE_OPTIONS: { value: BillType; label: string }[] = [
   { value: 'Property Rate', label: 'Property Rate' },
   { value: 'Rent', label: 'Rent' },
   { value: 'BP', label: 'BP - Building Permit' },
+  { value: 'Fine', label: 'Fine' },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
