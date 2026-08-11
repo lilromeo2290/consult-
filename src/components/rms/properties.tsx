@@ -450,10 +450,10 @@ export function PropertiesPage() {
       alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
       return;
     }
-    const propNum = form.propNumber || `UPN-${String(properties.length + 1).padStart(4, '0')}`;
+    const propNum = editingPropNumber || form.propNumber || `UPN-${String(properties.length + 1).padStart(4, '0')}`;
     const newProp: Property = {
-      propNumber: propNum,
       ...form,
+      propNumber: propNum,
     };
 
     if (editingPropNumber) {
