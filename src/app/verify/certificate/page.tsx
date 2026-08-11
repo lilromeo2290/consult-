@@ -125,7 +125,9 @@ function CertificateView({ data }: { data: CertData }) {
                 </div>
                 <div style={{ width: '1px', height: '80px', background: '#CCCCCC', flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '24px', fontWeight: 900, textTransform: 'uppercase', color: '#000000', letterSpacing: '-0.5px', lineHeight: 1.2 }}>{asmName.toUpperCase()}</div>
+                  {asmName.toUpperCase().split(' ').map((word, i) => (
+                    <div key={i} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: '28px', fontWeight: 900, textTransform: 'uppercase', color: '#000000', letterSpacing: '-0.5px', lineHeight: 1.15 }}>{word}</div>
+                  ))}
                 </div>
               </div>
 
