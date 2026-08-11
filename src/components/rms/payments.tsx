@@ -32,49 +32,44 @@ import { encodeBarcodeData, getVerificationUrl } from '@/lib/barcode-utils';
 
 type PaymentMethod = 'Cash' | 'Mobile Money' | 'Bank' | 'POS' | 'Online';
 type PaymentStatus = 'Full' | 'Partial' | 'Advance';
+type BillType = 'BOP' | 'Property Rate' | 'Rent' | 'BP';
 
 interface Payment {
   id: string;
   receiptNo: string;
   billNo: string;
+  billType: BillType;
+  uniqueNumber: string;
   business: string;
+  owner: string;
   amount: number;
   balance: number;
   date: string;
-  collector: string;
+  fieldOfficer: string;
   method: PaymentMethod;
   status: PaymentStatus;
   reference: string;
   remarks: string;
 }
 
-interface MockBill {
-  billNo: string;
-  business: string;
-  totalAmount: number;
-  balance: number;
-}
-
-interface RealBill {
+interface SourceBill {
   id: string;
   billNumber: string;
-  date: string;
-  entityName: string;
-  entityType: 'Business' | 'Property';
-  category: string;
-  revenueItem: string;
-  amount: number;
-  previousBalance: number;
-  penalty: number;
-  totalDue: number;
-  status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
-  dueDate: string;
+  billType: BillType;
+  uniqueNumber: string;
+  businessName: string;
+  owner: string;
+  amountDue: number;
+  status: string;
+  fieldOfficer?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const formatCurrency = (amount: number): string =>
-  `GH₵ ${amount.toLocaleString('en-GH')}`;
+const formatCurrency = (amount: number | undefined | null): string => {
+  const safe = amount ?? 0;
+  return `GH₵ ${safe.toLocaleString('en-GH', { minimumFractionDigits: safe % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 })}`;
+};
 
 const methodBadge: Record<PaymentMethod, { bg: string; text: string }> = {
   Cash: { bg: 'bg-amber-100 text-amber-800', text: 'Cash' },
@@ -94,11 +89,18 @@ const statusBadge: Record<PaymentStatus, { bg: string; text: string; dot: string
 
 const mockPayments: Payment[] = [];
 
+const BILL_TYPE_OPTIONS: { value: BillType; label: string }[] = [
+  { value: 'BOP', label: 'BOP - Business Operating Permit' },
+  { value: 'Property Rate', label: 'Property Rate' },
+  { value: 'Rent', label: 'Rent' },
+  { value: 'BP', label: 'BP - Building Permit' },
+];
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function PaymentsPage() {
   const [payments, setPayments] = useSyncedStorage<Payment[]>('rms-payments', mockPayments);
-  const [realBills, setRealBills] = useSyncedStorage<RealBill[]>('rms-bills', []);
+  const [sourceBills, setSourceBills] = useSyncedStorage<SourceBill[]>('rms-bills', []);
   const asmName = useMemo(() => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; } }, []);
   const [search, setSearch] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('All');
@@ -108,34 +110,47 @@ export function PaymentsPage() {
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedBill, setSelectedBill] = useState('');
+  const [payRevenueCategory, setPayRevenueCategory] = useState<BillType | ''>('');
+  const [selectedBillNo, setSelectedBillNo] = useState('');
   const [payAmount, setPayAmount] = useState('');
   const [payMethod, setPayMethod] = useState<PaymentMethod>('Cash');
   const [payReference, setPayReference] = useState('');
-  const [payCollector, setPayCollector] = useState('');
   const [payRemarks, setPayRemarks] = useState('');
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 8;
 
-  // Derive available bills (only unpaid/partial with balance > 0)
+  // Derive available bills filtered by revenue category and with balance > 0
   const availableBills = useMemo(() => {
-    return realBills
-      .filter((b) => b.status !== 'Paid' && b.totalDue > 0)
-      .map((b) => ({
-        billNo: b.billNumber,
-        business: b.entityName,
-        totalAmount: b.totalDue,
-        balance: b.totalDue - (b.status === 'Partial' ? b.amount : 0),
-      }));
-  }, [realBills]);
+    return sourceBills
+      .filter((b) => b.status !== 'Paid' && (b.amountDue ?? 0) > 0)
+      .filter((b) => !payRevenueCategory || b.billType === payRevenueCategory)
+      .map((b) => {
+        // Calculate how much has already been paid for this bill
+        const totalPaid = payments
+          .filter((p) => p.billNo === b.billNumber)
+          .reduce((sum, p) => sum + p.amount, 0);
+        const balance = (b.amountDue ?? 0) - totalPaid;
+        return {
+          billNo: b.billNumber,
+          billType: b.billType,
+          uniqueNumber: b.uniqueNumber || '',
+          business: b.businessName || '',
+          owner: b.owner || '',
+          totalAmount: b.amountDue ?? 0,
+          balance: Math.max(0, balance),
+          fieldOfficer: b.fieldOfficer || '',
+        };
+      })
+      .filter((b) => b.balance > 0);
+  }, [sourceBills, payRevenueCategory, payments]);
 
   const autoFill = useMemo(() => {
-    const bill = availableBills.find((b) => b.billNo === selectedBill);
-    if (!bill) return { business: '', balance: 0, totalAmount: 0 };
-    return { business: bill.business, balance: bill.balance, totalAmount: bill.totalAmount };
-  }, [selectedBill, availableBills]);
+    const bill = availableBills.find((b) => b.billNo === selectedBillNo);
+    if (!bill) return { business: '', owner: '', balance: 0, totalAmount: 0, fieldOfficer: '', uniqueNumber: '', billType: '' as BillType | '' };
+    return { business: bill.business, owner: bill.owner, balance: bill.balance, totalAmount: bill.totalAmount, fieldOfficer: bill.fieldOfficer, uniqueNumber: bill.uniqueNumber, billType: bill.billType };
+  }, [selectedBillNo, availableBills]);
 
   // ─── Filtering ───────────────────────────────────────────────────────────
 
@@ -146,7 +161,7 @@ export function PaymentsPage() {
         p.receiptNo.toLowerCase().includes(search.toLowerCase()) ||
         p.billNo.toLowerCase().includes(search.toLowerCase()) ||
         p.business.toLowerCase().includes(search.toLowerCase()) ||
-        p.collector.toLowerCase().includes(search.toLowerCase());
+        p.fieldOfficer.toLowerCase().includes(search.toLowerCase());
 
       const matchMethod = methodFilter === 'All' || p.method === methodFilter;
       const matchStatus = statusFilter === 'All' || p.status === statusFilter;
@@ -172,11 +187,11 @@ export function PaymentsPage() {
   // ─── Handlers ───────────────────────────────────────────────────────────
 
   const openModal = () => {
-    setSelectedBill('');
+    setPayRevenueCategory('');
+    setSelectedBillNo('');
     setPayAmount('');
     setPayMethod('Cash');
     setPayReference('');
-    setPayCollector('');
     setPayRemarks('');
     setModalOpen(true);
   };
@@ -186,14 +201,15 @@ export function PaymentsPage() {
   const handleSave = () => {
     // Validate compulsory fields
     const missing: string[] = [];
-    if (!selectedBill) missing.push('Bill Number');
+    if (!payRevenueCategory) missing.push('Revenue Category');
+    if (!selectedBillNo) missing.push('Bill Number');
     if (!payAmount || parseFloat(payAmount) <= 0) missing.push('Payment Amount');
     if (missing.length > 0) {
       alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
       return;
     }
 
-    const bill = availableBills.find((b) => b.billNo === selectedBill);
+    const bill = availableBills.find((b) => b.billNo === selectedBillNo);
     if (!bill) return;
     const paidAmount = parseFloat(payAmount) || 0;
     const isFull = paidAmount >= bill.balance;
@@ -202,12 +218,15 @@ export function PaymentsPage() {
     const newPayment: Payment = {
       id: String(Date.now()),
       receiptNo: `RCP-${new Date().getFullYear()}-${String(payments.length + 1).padStart(4, '0')}`,
-      billNo: selectedBill,
+      billNo: selectedBillNo,
+      billType: bill.billType,
+      uniqueNumber: bill.uniqueNumber,
       business: bill.business,
+      owner: bill.owner,
       amount: paidAmount,
       balance: newBalance,
       date: new Date().toISOString().split('T')[0],
-      collector: payCollector || 'System',
+      fieldOfficer: bill.fieldOfficer || 'System',
       method: payMethod,
       status: isFull ? 'Full' : 'Partial',
       reference: payReference,
@@ -215,17 +234,15 @@ export function PaymentsPage() {
     };
 
     setPayments([newPayment, ...payments]);
-    toast.success('Successfully saved');
+    toast.success('Payment recorded successfully');
 
     // Update the bill status in billing
-    setRealBills((prev) =>
+    setSourceBills((prev) =>
       prev.map((b) => {
-        if (b.billNumber !== selectedBill) return b;
-        const newTotalPaid = (b.status === 'Partial' ? b.amount : 0) + paidAmount;
+        if (b.billNumber !== selectedBillNo) return b;
         return {
           ...b,
-          amount: newTotalPaid,
-          status: (isFull ? 'Paid' : 'Partial') as RealBill['status'],
+          status: (isFull ? 'Paid' : 'Partial') as SourceBill['status'],
         };
       })
     );
@@ -353,7 +370,7 @@ export function PaymentsPage() {
           <div class="info-item"><div class="label">Business / Entity</div><div class="value">${p.business}</div></div>
           <div class="info-item"><div class="label">Payment Method</div><div class="value"><span class="method-badge">${p.method}</span></div></div>
           <div class="info-item"><div class="label">Reference #</div><div class="value">${p.reference || 'N/A'}</div></div>
-          <div class="info-item"><div class="label">Collector</div><div class="value">${p.collector}</div></div>
+          <div class="info-item"><div class="label">Field Officer</div><div class="value">${p.fieldOfficer}</div></div>
         </div>
         <div class="section-title">Amount Summary</div>
         <table class="amount-table">
@@ -536,7 +553,7 @@ export function PaymentsPage() {
                         {p.balance > 0 ? formatCurrency(p.balance) : '—'}
                       </td>
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{p.date}</td>
-                      <td className="px-4 py-3 text-gray-700">{p.collector}</td>
+                      <td className="px-4 py-3 text-gray-700">{p.fieldOfficer}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${m.bg}`}>
                           {m.text}
@@ -680,8 +697,8 @@ export function PaymentsPage() {
                 <div className="flex items-center gap-2.5">
                   <FileText className="w-4 h-4 text-gray-400 dark:text-slate-500 shrink-0" />
                   <div>
-                    <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Collector</p>
-                    <p className="font-medium text-gray-700 dark:text-slate-300">{viewingPayment.collector}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Field Officer</p>
+                    <p className="font-medium text-gray-700 dark:text-slate-300">{viewingPayment.fieldOfficer}</p>
                   </div>
                 </div>
               </div>
@@ -780,72 +797,119 @@ export function PaymentsPage() {
 
             {/* Body */}
             <div className="max-h-[70vh] overflow-y-auto px-6 py-5 space-y-4">
-              {/* Bill # Select */}
+              {/* 1. Select Revenue Category */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bill Number <span className="text-red-500">*</span>
+                  Select Revenue Category <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
-                    value={selectedBill}
-                    onChange={(e) => setSelectedBill(e.target.value)}
+                    value={payRevenueCategory}
+                    onChange={(e) => {
+                      setPayRevenueCategory(e.target.value as BillType | '');
+                      setSelectedBillNo('');
+                    }}
                     className="w-full appearance-none rounded-lg border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition cursor-pointer"
                   >
-                    <option value="">Select a bill…</option>
-                    {availableBills.length === 0 ? (
-                      <option value="" disabled>No unpaid bills available</option>
-                    ) : (
-                      availableBills.map((b) => (
-                        <option key={b.billNo} value={b.billNo}>
-                          {b.billNo}
-                        </option>
-                      ))
-                    )}
+                    <option value="">Select revenue category…</option>
+                    {BILL_TYPE_OPTIONS.map((bt) => (
+                      <option key={bt.value} value={bt.value}>{bt.label}</option>
+                    ))}
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 </div>
               </div>
 
-              {/* Auto-filled Business (read-only) */}
+              {/* 2. Select Bill Number */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Business</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Bill Number <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedBillNo}
+                    onChange={(e) => setSelectedBillNo(e.target.value)}
+                    disabled={!payRevenueCategory}
+                    className="w-full appearance-none rounded-lg border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">{payRevenueCategory ? 'Select a bill…' : 'Select a revenue category first'}</option>
+                    {availableBills.map((b) => (
+                      <option key={b.billNo} value={b.billNo}>
+                        {b.billNo} — {b.uniqueNumber}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                </div>
+                {payRevenueCategory && availableBills.length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1 font-medium">No unpaid bills found for this category.</p>
+                )}
+              </div>
+
+              {/* 3. Business Name (Autofill) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
                 <input
                   type="text"
                   readOnly
                   value={autoFill.business}
                   placeholder="Auto-filled from bill"
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-500 cursor-not-allowed"
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
                 />
               </div>
 
-              {/* Amount & Balance row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Amount (GH₵) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={payAmount}
-                    onChange={(e) => setPayAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bill Balance</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={selectedBill ? formatCurrency(autoFill.balance) : '—'}
-                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-500 cursor-not-allowed"
-                  />
-                </div>
+              {/* 4. Owner Name (Autofill) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
+                <input
+                  type="text"
+                  readOnly
+                  value={autoFill.owner}
+                  placeholder="Auto-filled from bill"
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
+                />
               </div>
 
-              {/* Method */}
+              {/* 5. Bill Balance (Autofill) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bill Balance</label>
+                <input
+                  type="text"
+                  readOnly
+                  value={selectedBillNo ? formatCurrency(autoFill.balance) : '—'}
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm font-semibold text-emerald-700 cursor-not-allowed"
+                />
+              </div>
+
+              {/* 6. Field Officer (Autofill) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Field Officer</label>
+                <input
+                  type="text"
+                  readOnly
+                  value={autoFill.fieldOfficer || '—'}
+                  placeholder="Auto-filled from bill"
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
+                />
+              </div>
+
+              {/* 7. Amount */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Amount (GH₵) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
+                />
+              </div>
+
+              {/* 8. Payment Method */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
                 <div className="relative">
@@ -864,33 +928,21 @@ export function PaymentsPage() {
                 </div>
               </div>
 
-              {/* Reference & Collector row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reference #</label>
-                  <input
-                    type="text"
-                    value={payReference}
-                    onChange={(e) => setPayReference(e.target.value)}
-                    placeholder="e.g. MTN-12345"
-                    className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Collector</label>
-                  <input
-                    type="text"
-                    value={payCollector}
-                    onChange={(e) => setPayCollector(e.target.value)}
-                    placeholder="Collector name"
-                    className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
-                  />
-                </div>
+              {/* 9. Reference Number */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+                <input
+                  type="text"
+                  value={payReference}
+                  onChange={(e) => setPayReference(e.target.value)}
+                  placeholder="e.g. MTN-12345"
+                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
+                />
               </div>
 
-              {/* Remarks */}
+              {/* 10. Remarks / Comment */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Remarks / Comment</label>
                 <textarea
                   rows={3}
                   value={payRemarks}
@@ -911,7 +963,7 @@ export function PaymentsPage() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={!selectedBill || !payAmount}
+                disabled={!payRevenueCategory || !selectedBillNo || !payAmount}
                 className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
               >
                 <Download className="h-4 w-4" />
