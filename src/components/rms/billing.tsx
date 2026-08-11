@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 import { encodeBarcodeData, getVerificationUrl } from '@/lib/barcode-utils';
+import { BUSINESS_CLASSES } from '@/lib/fee-schedule';
+import { RENT_CLASS_NAMES } from '@/lib/rent-class-code-map';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -42,6 +44,8 @@ interface Bill {
   amountDue: number;
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   dueDate: string;
+  billClass?: string;
+  fieldOfficer?: string;
 }
 
 interface BillFormData {
@@ -65,6 +69,19 @@ const BILL_TYPES: { value: Bill['billType']; label: string }[] = [
   { value: 'Rent', label: 'Rent' },
   { value: 'BP', label: 'BP - Building Permit' },
 ];
+
+const PROPERTY_CLASSES = ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Mixed Use'];
+const BP_CLASSES = ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Mixed Use'];
+
+function getClassesForBillType(billType: Bill['billType']): string[] {
+  switch (billType) {
+    case 'BOP': return BUSINESS_CLASSES;
+    case 'Property Rate': return PROPERTY_CLASSES;
+    case 'Rent': return RENT_CLASS_NAMES;
+    case 'BP': return BP_CLASSES;
+    default: return [];
+  }
+}
 
 // Lookup an entity by unique number across all data sources
 function lookupEntity(
@@ -120,13 +137,17 @@ export function BillingPage() {
   const [propData] = useSyncedStorage<any[]>('rms-properties', []);
   const [rentData] = useSyncedStorage<any[]>('rms-rents', []);
   const [bpData] = useSyncedStorage<any[]>('rms-building-permits', []);
-  const entities = useMemo(() => {
-    const list: { id: string; name: string; type: string; category?: string }[] = [];
-    for (const b of bizData) { if (b.name) list.push({ id: b.regNumber || '', name: b.name, type: 'Business', category: b.category || b.type || '' }); }
-    for (const p of propData) { if (p.ownerName) list.push({ id: p.propNumber || '', name: p.ownerName, type: 'Property', category: p.category || p.propertyUseType || '' }); }
-    for (const r of rentData) { if (r.rentObjectName) list.push({ id: r.id || '', name: r.rentObjectName, type: 'Rent', category: r.rentClass || r.rentCategory || '' }); }
-    return list;
-  }, [bizData, propData, rentData]);
+  // Field officers from user management
+  const [usersData] = useSyncedStorage<any[]>('rms-users', []);
+  const fieldOfficers = useMemo(() => {
+    return usersData
+      .filter((u: any) => (u.role === 'Field Collector' || u.role === 'Revenue Officer') && u.status === 'Active')
+      .map((u: any) => {
+        const name = `${u.firstName} ${u.lastName}`.trim();
+        const id = u.staffId || u.username;
+        return { value: name, label: `${name} (${id})` };
+      });
+  }, [usersData]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
@@ -137,9 +158,9 @@ export function BillingPage() {
   const [showModal, setShowModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkForm, setBulkForm] = useState({
-    entityType: 'All' as 'All' | 'Business' | 'Property' | 'Rent',
-    category: 'All',
-    revenueItem: '',
+    billType: '' as Bill['billType'] | '',
+    billClass: '',
+    fieldOfficer: '',
     dueDate: '',
   });
   const [viewingBill, setViewingBill] = useState<Bill | null>(null);
@@ -338,19 +359,37 @@ export function BillingPage() {
 
   // ── Bulk eligible count ───────────────────────────────────────────────
 
+  const bulkClasses = useMemo(() => {
+    if (!bulkForm.billType) return [];
+    return getClassesForBillType(bulkForm.billType);
+  }, [bulkForm.billType]);
+
   const bulkEligibleCount = useMemo(() => {
-    if (!bulkForm.revenueItem) return 0;
-    return entities.filter((e) => {
-      if (bulkForm.entityType !== 'All' && e.type !== bulkForm.entityType) return false;
-      if (bulkForm.category !== 'All' && e.category !== bulkForm.category) return false;
-      const billTypeMap: Record<string, Bill['billType']> = { 'Business': 'BOP', 'Property': 'Property Rate', 'Rent': 'Rent' };
-      const bt = billTypeMap[e.type] || 'BOP';
+    if (!bulkForm.billType || !bulkForm.billClass) return 0;
+    const bt = bulkForm.billType;
+    const cls = bulkForm.billClass;
+    let source: any[] = [];
+    if (bt === 'BOP') source = bizData;
+    else if (bt === 'Property Rate') source = propData;
+    else if (bt === 'Rent') source = rentData;
+    else if (bt === 'BP') source = bpData;
+    return source.filter((e: any) => {
+      const entityClass = bt === 'BOP' ? (e.type || e.businessType || '')
+        : bt === 'Property Rate' ? (e.propertyUseType || '').split(':')[1]?.trim() || (e.category || '')
+        : bt === 'Rent' ? (e.rentClass || e.rentPropertyType || '')
+        : (e.typeOfDevelopment || e.developmentType || '');
+      if (!entityClass || !entityClass.includes(cls)) return false;
+      const idField = bt === 'BOP' ? (e.regNumber || e.businessId)
+        : bt === 'Property Rate' ? (e.propNumber || e.propertyId)
+        : bt === 'Rent' ? (e.rentNumber || e.id)
+        : (e.applicationNumber || e.id);
+      if (!idField) return false;
       const exists = bills.find(
-        (b) => b.uniqueNumber === e.id && b.billType === bt,
+        (b) => b.uniqueNumber === idField && b.billType === bt,
       );
       return !exists;
     }).length;
-  }, [bulkForm, bills, entities]);
+  }, [bulkForm.billType, bulkForm.billClass, bills, bizData, propData, rentData, bpData]);
 
   // ── Bulk generate bills ────────────────────────────────────────────────
 
@@ -362,34 +401,68 @@ export function BillingPage() {
     }
 
     setBulkProgress('generating');
-    const billTypeMap: Record<string, Bill['billType']> = { 'Business': 'BOP', 'Property': 'Property Rate', 'Rent': 'Rent' };
+    const bt = bulkForm.billType;
+    const cls = bulkForm.billClass;
+    let source: any[] = [];
+    if (bt === 'BOP') source = bizData;
+    else if (bt === 'Property Rate') source = propData;
+    else if (bt === 'Rent') source = rentData;
+    else if (bt === 'BP') source = bpData;
 
     setTimeout(() => {
-      const eligibleEntities = entities.filter((e) => {
-        if (bulkForm.entityType !== 'All' && e.type !== bulkForm.entityType) return false;
-        if (bulkForm.category !== 'All' && e.category !== bulkForm.category) return false;
-        const bt = billTypeMap[e.type] || 'BOP';
-        const exists = bills.find((b) => b.uniqueNumber === e.id && b.billType === bt);
+      const eligibleEntities = source.filter((e: any) => {
+        const entityClass = bt === 'BOP' ? (e.type || e.businessType || '')
+          : bt === 'Property Rate' ? (e.propertyUseType || '').split(':')[1]?.trim() || (e.category || '')
+          : bt === 'Rent' ? (e.rentClass || e.rentPropertyType || '')
+          : (e.typeOfDevelopment || e.developmentType || '');
+        if (!entityClass || !entityClass.includes(cls)) return false;
+        const idField = bt === 'BOP' ? (e.regNumber || e.businessId)
+          : bt === 'Property Rate' ? (e.propNumber || e.propertyId)
+          : bt === 'Rent' ? (e.rentNumber || e.id)
+          : (e.applicationNumber || e.id);
+        if (!idField) return false;
+        const exists = bills.find((b) => b.uniqueNumber === idField && b.billType === bt);
         return !exists;
       });
 
       const newBills: Bill[] = eligibleEntities.map((entity, idx) => {
-        const bt = billTypeMap[entity.type] || 'BOP';
+        const idField = bt === 'BOP' ? (entity.regNumber || entity.businessId)
+          : bt === 'Property Rate' ? (entity.propNumber || entity.propertyId)
+          : bt === 'Rent' ? (entity.rentNumber || entity.id)
+          : (entity.applicationNumber || entity.id);
+        const nameField = bt === 'BOP' ? (entity.name || entity.businessName || '')
+          : bt === 'Property Rate' ? (entity.ownerName || entity.name || '')
+          : bt === 'Rent' ? (entity.rentObjectName || entity.tenantName || '')
+          : (entity.applicantName || entity.name || '');
+        const ownerField = bt === 'BOP' ? (entity.ownerName || entity.owner || nameField)
+          : bt === 'Property Rate' ? (entity.ownerName || nameField)
+          : bt === 'Rent' ? (entity.tenantName || nameField)
+          : (entity.applicantName || nameField);
+        const catField = bt === 'BOP' ? (entity.type || entity.businessType || '')
+          : bt === 'Property Rate' ? (entity.propertyUseType || '').split(':')[1]?.trim() || (entity.category || '')
+          : bt === 'Rent' ? (entity.rentClass || entity.rentPropertyType || '')
+          : (entity.typeOfDevelopment || entity.developmentType || '');
+        const locField = bt === 'BOP' ? (entity.address || entity.businessAddress || '')
+          : bt === 'Property Rate' ? (entity.location || entity.address || '')
+          : bt === 'Rent' ? (entity.location || '')
+          : (entity.propertyAddress || entity.location || '');
         return {
           id: String(Date.now() + idx),
           billNumber: `BILL-2024-${String(bills.length + 156 + idx).padStart(4, '0')}`,
           date: new Date().toISOString().split('T')[0],
           billType: bt,
-          uniqueNumber: entity.id,
-          businessName: entity.name,
-          owner: entity.name,
-          category: entity.category || '',
-          location: '',
+          uniqueNumber: idField || '',
+          businessName: nameField,
+          owner: ownerField,
+          category: catField,
+          location: locField,
           arrears: 0,
           charge: 0,
           amountDue: 0,
           status: 'Unpaid' as const,
           dueDate: bulkForm.dueDate || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+          billClass: bulkForm.billClass,
+          fieldOfficer: bulkForm.fieldOfficer,
         };
       });
 
@@ -403,8 +476,7 @@ export function BillingPage() {
 
   const handleCloseBulkModal = () => {
     setShowBulkModal(false);
-    setBulkForm({ entityType: 'All', category: 'All', revenueItem: '', dueDate: '' });
-  // Note: bulkForm still uses revenueItem for compatibility with filter; billType not used in bulk yet
+    setBulkForm({ billType: '', billClass: '', fieldOfficer: '', dueDate: '' });
     setBulkProgress('idle');
     setBulkGeneratedCount(0);
   };
@@ -927,37 +999,12 @@ export function BillingPage() {
             ) : (
               <>
                 <div className="px-6 py-5 space-y-4">
+                  {/* 1. Select Bill Type */}
                   <div>
-                    <label className={labelClass}>Entity Type</label>
+                    <label className={labelClass}>Select Bill Type</label>
                     <select
-                      value={bulkForm.entityType}
-                      onChange={(e) => setBulkForm((p) => ({ ...p, entityType: e.target.value as 'All' | 'Business' | 'Property' | 'Rent' }))}
-                      className={inputClass}
-                    >
-                      <option value="All">All Types</option>
-                      <option value="Business">Business Only</option>
-                      <option value="Property">Property Only</option>
-                      <option value="Rent">Rent Only</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Category</label>
-                    <select
-                      value={bulkForm.category}
-                      onChange={(e) => setBulkForm((p) => ({ ...p, category: e.target.value }))}
-                      className={inputClass}
-                    >
-                      <option value="All">All Categories</option>
-                      {['Healthcare', 'Hospitality', 'Food & Beverage', 'Industry', 'Retail', 'Personal Care', 'Energy', 'Residential', 'Commercial', 'Education'].map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Bill Type</label>
-                    <select
-                      value={bulkForm.revenueItem}
-                      onChange={(e) => setBulkForm((p) => ({ ...p, revenueItem: e.target.value }))}
+                      value={bulkForm.billType}
+                      onChange={(e) => setBulkForm((p) => ({ ...p, billType: e.target.value as Bill['billType'], billClass: '' }))}
                       className={inputClass}
                     >
                       <option value="">Select bill type...</option>
@@ -966,6 +1013,42 @@ export function BillingPage() {
                       ))}
                     </select>
                   </div>
+
+                  {/* 2. Select Class */}
+                  <div>
+                    <label className={labelClass}>Select Class</label>
+                    <select
+                      value={bulkForm.billClass}
+                      onChange={(e) => setBulkForm((p) => ({ ...p, billClass: e.target.value }))}
+                      className={inputClass}
+                      disabled={!bulkForm.billType}
+                    >
+                      <option value="">{bulkForm.billType ? 'Select class...' : 'Select a bill type first'}</option>
+                      {bulkClasses.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 3. Field Officer */}
+                  <div>
+                    <label className={labelClass}>Field Officer</label>
+                    <select
+                      value={bulkForm.fieldOfficer}
+                      onChange={(e) => setBulkForm((p) => ({ ...p, fieldOfficer: e.target.value }))}
+                      className={inputClass}
+                    >
+                      <option value="">Select field officer...</option>
+                      {fieldOfficers.map((fo) => (
+                        <option key={fo.value} value={fo.value}>{fo.label}</option>
+                      ))}
+                    </select>
+                    {fieldOfficers.length === 0 && (
+                      <p className="text-xs text-amber-500 dark:text-amber-400 mt-1">No active Field Collectors or Revenue Officers found. Add officers in User Management.</p>
+                    )}
+                  </div>
+
+                  {/* 4. Due Date */}
                   <div>
                     <label className={labelClass}>Due Date</label>
                     <input
@@ -977,14 +1060,14 @@ export function BillingPage() {
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Defaults to 30 days from today if not set.</p>
                   </div>
 
-                  {bulkForm.revenueItem && (
+                  {bulkForm.billType && bulkForm.billClass && (
                     <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-blue-700 dark:text-blue-300 font-medium">Eligible entities (no existing bill):</span>
                         <span className="text-lg font-bold text-blue-700 dark:text-blue-300">{bulkEligibleCount}</span>
                       </div>
-                      {bulkEligibleCount === 0 && bulkForm.revenueItem && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">All eligible entities already have a bill for this type.</p>
+                      {bulkEligibleCount === 0 && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">All eligible entities in this class already have a bill for this type.</p>
                       )}
                     </div>
                   )}
@@ -997,7 +1080,7 @@ export function BillingPage() {
                   </button>
                   <button
                     onClick={handleBulkGenerate}
-                    disabled={!bulkForm.revenueItem || bulkEligibleCount === 0 || bulkProgress === 'generating'}
+                    disabled={!bulkForm.billType || !bulkForm.billClass || bulkEligibleCount === 0 || bulkProgress === 'generating'}
                     className={btnPrimary}
                   >
                     {bulkProgress === 'generating' ? (
