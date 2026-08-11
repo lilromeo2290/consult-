@@ -106,8 +106,9 @@ const initialBills: Bill[] = [];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatCurrency(amount: number): string {
-  return `GH₵ ${amount.toLocaleString(undefined, { minimumFractionDigits: amount % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 })}`;
+function formatCurrency(amount: number | undefined | null): string {
+  const safe = amount ?? 0;
+  return `GH₵ ${safe.toLocaleString(undefined, { minimumFractionDigits: safe % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 })}`;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -261,14 +262,14 @@ export function BillingPage() {
   // ── Stats ──────────────────────────────────────────────────────────────
 
   const stats = useMemo(() => {
-    const totalBilled = bills.reduce((sum, b) => sum + b.amountDue, 0);
+    const totalBilled = bills.reduce((sum, b) => sum + (b.amountDue ?? 0), 0);
     const paid = bills
       .filter((b) => b.status === 'Paid')
-      .reduce((sum, b) => sum + b.amountDue, 0);
+      .reduce((sum, b) => sum + (b.amountDue ?? 0), 0);
     const outstanding = totalBilled - paid;
     const overdue = bills
       .filter((b) => b.status === 'Overdue')
-      .reduce((sum, b) => sum + b.amountDue, 0);
+      .reduce((sum, b) => sum + (b.amountDue ?? 0), 0);
     return {
       total: bills.length,
       totalBilled,
@@ -816,7 +817,7 @@ export function BillingPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                      {bill.arrears > 0 ? formatCurrency(bill.arrears) : '—'}
+                      {(bill.arrears ?? 0) > 0 ? formatCurrency(bill.arrears) : '—'}
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-white whitespace-nowrap">
                       {formatCurrency(bill.charge)}
