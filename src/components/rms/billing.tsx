@@ -26,6 +26,7 @@ import JsBarcode from 'jsbarcode';
 import { encodeBarcodeData, getVerificationUrl } from '@/lib/barcode-utils';
 import { BUSINESS_CLASSES } from '@/lib/fee-schedule';
 import { RENT_CLASS_NAMES } from '@/lib/rent-class-code-map';
+import { FINE_CLASS_NAMES } from '@/lib/fines-class-code-map';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ interface Bill {
   id: string;
   billNumber: string;
   date: string;
-  billType: 'BOP' | 'Property Rate' | 'Rent' | 'BP';
+  billType: 'BOP' | 'Property Rate' | 'Rent' | 'BP' | 'Fine';
   uniqueNumber: string;
   businessName: string;
   owner: string;
@@ -49,7 +50,7 @@ interface Bill {
 }
 
 interface BillFormData {
-  billType: 'BOP' | 'Property Rate' | 'Rent' | 'BP';
+  billType: 'BOP' | 'Property Rate' | 'Rent' | 'BP' | 'Fine';
   uniqueNumber: string;
   businessName: string;
   owner: string;
@@ -68,6 +69,7 @@ const BILL_TYPES: { value: Bill['billType']; label: string }[] = [
   { value: 'Property Rate', label: 'Property Rate' },
   { value: 'Rent', label: 'Rent' },
   { value: 'BP', label: 'BP - Building Permit' },
+  { value: 'Fine', label: 'Fine' },
 ];
 
 const PROPERTY_CLASSES = ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Mixed Use'];
@@ -79,6 +81,7 @@ function getClassesForBillType(billType: Bill['billType']): string[] {
     case 'Property Rate': return PROPERTY_CLASSES;
     case 'Rent': return RENT_CLASS_NAMES;
     case 'BP': return BP_CLASSES;
+    case 'Fine': return FINE_CLASS_NAMES;
     default: return [];
   }
 }
