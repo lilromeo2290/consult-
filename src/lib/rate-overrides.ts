@@ -5,6 +5,7 @@
 export interface RateEntry {
   amount: number;
   ceiling: number;
+  permit?: number;
 }
 
 const overrides: Record<string, RateEntry> = {};
@@ -28,16 +29,16 @@ export function getRateCeiling(code: string): number | undefined {
 
 export function setRateOverride(code: string, amount: number): void {
   const existing = overrides[code];
-  overrides[code] = { amount, ceiling: existing?.ceiling || 0 };
+  overrides[code] = { amount, ceiling: existing?.ceiling || 0, permit: existing?.permit || 0 };
 }
 
 export function setRateCeiling(code: string, ceiling: number): void {
   const existing = overrides[code];
-  overrides[code] = { amount: existing?.amount || 0, ceiling };
+  overrides[code] = { amount: existing?.amount || 0, ceiling, permit: existing?.permit || 0 };
 }
 
-export function setRateEntry(code: string, amount: number, ceiling: number): void {
-  overrides[code] = { amount, ceiling };
+export function setRateEntry(code: string, amount: number, ceiling: number, permit?: number): void {
+  overrides[code] = { amount, ceiling, permit: permit ?? 0 };
 }
 
 export function deleteRateOverride(code: string): void {

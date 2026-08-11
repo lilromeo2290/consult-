@@ -53,7 +53,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { exportToExcel, importFromExcel } from '@/lib/import-export';
 
 type RateTab = 'Business' | 'Property' | 'Fines' | 'Fees' | 'Rent' | 'Valued Property';
-type SortColumn = 'code' | 'class' | 'category' | 'amount' | 'ceiling';
+type SortColumn = 'code' | 'class' | 'category' | 'amount' | 'ceiling' | 'permit';
 type SortDir = 'asc' | 'desc';
 
 interface RateRow {
@@ -62,8 +62,10 @@ interface RateRow {
   category: string;
   amount: number;
   ceiling: number;
+  permit: number;
   originalAmount: number;
   originalCeiling: number;
+  originalPermit: number;
   selected: boolean;
 }
 
@@ -189,6 +191,7 @@ const RATE_FIELDS: { key: string; label: string }[] = [
   { key: 'category', label: 'Category' },
   { key: 'amount', label: 'Amount' },
   { key: 'ceiling', label: 'Ceiling' },
+  { key: 'permit', label: 'Permit' },
 ];
 
 /** Build rows from a code list + lookup + saved DB data. */
@@ -211,14 +214,17 @@ function buildRowsFromData(
     const override = savedData[code];
     const amount = override?.amount ?? defaultRates?.[code] ?? 0;
     const ceiling = override?.ceiling ?? 0;
+    const permit = (override as Record<string, unknown>)?.permit as number ?? 0;
     return {
       code,
       businessClass: entry?.businessClass || override?.businessClass || savedData[code]?.businessClass || '',
       category: entry?.category || override?.category || savedData[code]?.category || '',
       amount,
       ceiling,
+      permit,
       originalAmount: amount,
       originalCeiling: ceiling,
+      originalPermit: permit,
       selected: false,
     };
   });
@@ -239,6 +245,7 @@ export function RateConfigPage() {
   const [newCategory, setNewCategory] = useState('');
   const [newAmount, setNewAmount] = useState('');
   const [newCeiling, setNewCeiling] = useState('');
+  const [newPermit, setNewPermit] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loadError, setLoadError] = useState('');
@@ -254,11 +261,11 @@ export function RateConfigPage() {
 
   // Track unsaved changes
   const hasUnsavedChanges = useMemo(
-    () => rows.some((r) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling),
+    () => rows.some((r) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling || r.permit !== r.originalPermit),
     [rows],
   );
   const changedCount = useMemo(
-    () => rows.filter((r) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling).length,
+    () => rows.filter((r) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling || r.permit !== r.originalPermit).length,
     [rows],
   );
 
@@ -316,6 +323,7 @@ export function RateConfigPage() {
         changed[r.code] = {
           amount: r.amount,
           ceiling: r.ceiling,
+          permit: r.permit,
           ...(r.businessClass ? { businessClass: r.businessClass } : {}),
           ...(r.category ? { category: r.category } : {}),
         };
@@ -341,7 +349,7 @@ export function RateConfigPage() {
         body: JSON.stringify({ key: config.dbKey, data: merged }),
       });
       if (putRes.ok) {
-        setRows((prev) => prev.map((r) => ({ ...r, originalAmount: r.amount, originalCeiling: r.ceiling })));
+        setRows((prev) => prev.map((r) => ({ ...r, originalAmount: r.amount, originalCeiling: r.ceiling, originalPermit: r.permit })));
         setSaveStatus(`Saved ${count} rate(s) to database`);
         toast.success('Successfully saved');
         setTimeout(() => setSaveStatus(''), 3000);
@@ -394,17 +402,25 @@ export function RateConfigPage() {
     setRateEntry(code, capped, num);
   };
 
+  const handlePermitEdit = (code: string, val: string) => {
+    const num = parseFloat(val) || 0;
+    const newRows = rowsRef.current.map((r) => (r.code === code ? { ...r, permit: num } : r));
+    rowsRef.current = newRows;
+    setRows(newRows);
+  };
+
   const handleRadio = (code: string) => setRadioCode(code);
   const handleCheck = (code: string) => {
     setRows((prev) => prev.map((r) => (r.code === code ? { ...r, selected: !r.selected } : r)));
   };
-  const isMod = (r: RateRow) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling;
+  const isMod = (r: RateRow) => r.amount !== r.originalAmount || r.ceiling !== r.originalCeiling || r.permit !== r.originalPermit;
 
   const handleAddRate = async () => {
     const trimmedCode = newCode.trim();
     if (!trimmedCode || !newAmount.trim()) return;
     const amt = parseFloat(newAmount) || 0;
     const ceil = parseFloat(newCeiling) || 0;
+    const perm = parseFloat(newPermit) || 0;
     const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
     const cls = newClass.trim();
     const cat = newCategory.trim();
@@ -413,13 +429,13 @@ export function RateConfigPage() {
     const newRows = [...rowsRef.current];
     const existingIdx = newRows.findIndex((r) => r.code === trimmedCode);
     if (existingIdx >= 0) {
-      newRows[existingIdx] = { ...newRows[existingIdx], amount: capped, ceiling: ceil, businessClass: cls || newRows[existingIdx].businessClass, category: cat || newRows[existingIdx].category };
+      newRows[existingIdx] = { ...newRows[existingIdx], amount: capped, ceiling: ceil, permit: perm, businessClass: cls || newRows[existingIdx].businessClass, category: cat || newRows[existingIdx].category };
     } else {
-      newRows.push({ code: trimmedCode, businessClass: cls, category: cat, amount: capped, ceiling: ceil, originalAmount: 0, originalCeiling: 0, selected: false });
+      newRows.push({ code: trimmedCode, businessClass: cls, category: cat, amount: capped, ceiling: ceil, permit: perm, originalAmount: 0, originalCeiling: 0, originalPermit: 0, selected: false });
     }
     rowsRef.current = newRows;
     setRows(newRows);
-    setRateEntry(trimmedCode, capped, ceil);
+    setRateEntry(trimmedCode, capped, ceil, perm);
 
     // Persist immediately for Add
     const config = getTabConfig(activeTab);
@@ -430,7 +446,7 @@ export function RateConfigPage() {
         const json = await res.json();
         if (json.data && typeof json.data === 'object') existing = json.data as Record<string, RateEntry>;
       }
-      const entry: RateEntry = { amount: capped, ceiling: ceil };
+      const entry: RateEntry = { amount: capped, ceiling: ceil, permit: perm };
       if (cls) (entry as Record<string, unknown>).businessClass = cls;
       if (cat) (entry as Record<string, unknown>).category = cat;
       existing[trimmedCode] = entry;
@@ -440,19 +456,19 @@ export function RateConfigPage() {
         body: JSON.stringify({ key: config.dbKey, data: existing }),
       });
       // Update originals so it's not marked as dirty
-      setRows((prev) => prev.map((r) => r.code === trimmedCode ? { ...r, originalAmount: capped, originalCeiling: ceil } : r));
+      setRows((prev) => prev.map((r) => r.code === trimmedCode ? { ...r, originalAmount: capped, originalCeiling: ceil, originalPermit: perm } : r));
       setSaveStatus('Rate added and saved');
       toast.success('Successfully saved');
       setTimeout(() => setSaveStatus(''), 2000);
     } catch { /* best effort */ }
 
-    setNewCode(''); setNewClass(''); setNewCategory(''); setNewAmount(''); setNewCeiling('');
+    setNewCode(''); setNewClass(''); setNewCategory(''); setNewAmount(''); setNewCeiling(''); setNewPermit('');
     setShowAddForm(false);
   };
 
   // ── Import / Export ────────────────────────────────────────────────────
   const handleExportRates = () => {
-    const exportData = rows.map((r) => ({ code: r.code, businessClass: r.businessClass, category: r.category, amount: r.amount, ceiling: r.ceiling }));
+    const exportData = rows.map((r) => ({ code: r.code, businessClass: r.businessClass, category: r.category, amount: r.amount, ceiling: r.ceiling, permit: r.permit }));
     exportToExcel(exportData as unknown as Record<string, unknown>[], RATE_FIELDS, `${activeTab}_Rates`);
   };
 
@@ -472,20 +488,21 @@ export function RateConfigPage() {
         if (!code) continue;
         const amt = parseFloat(String(item.amount || '0')) || 0;
         const ceil = parseFloat(String(item.ceiling || '0')) || 0;
+        const perm = parseFloat(String(item.permit || '0')) || 0;
         const capped = ceil > 0 ? Math.min(amt, ceil) : amt;
         const cls = String(item.businessClass || '').trim();
         const cat = String(item.category || '').trim();
-        const entry: RateEntry = { amount: capped, ceiling: ceil };
+        const entry: RateEntry = { amount: capped, ceiling: ceil, permit: perm };
         if (cls) (entry as Record<string, unknown>).businessClass = cls;
         if (cat) (entry as Record<string, unknown>).category = cat;
         importedEntries[code] = entry;
-        setRateEntry(code, capped, ceil);
+        setRateEntry(code, capped, ceil, perm);
 
         if (existingMap.has(code)) {
           const idx = newRows.findIndex((r) => r.code === code);
-          newRows[idx] = { ...newRows[idx], amount: capped, ceiling: ceil, businessClass: cls || newRows[idx].businessClass, category: cat || newRows[idx].category };
+          newRows[idx] = { ...newRows[idx], amount: capped, ceiling: ceil, permit: perm, businessClass: cls || newRows[idx].businessClass, category: cat || newRows[idx].category };
         } else {
-          newRows.push({ code, businessClass: cls, category: cat, amount: capped, ceiling: ceil, originalAmount: 0, originalCeiling: 0, selected: false });
+          newRows.push({ code, businessClass: cls, category: cat, amount: capped, ceiling: ceil, permit: perm, originalAmount: 0, originalCeiling: 0, originalPermit: 0, selected: false });
         }
         updated++;
       }
@@ -505,7 +522,7 @@ export function RateConfigPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ key: config.dbKey, data: { ...existing, ...importedEntries } }),
             });
-            setRows((prev) => prev.map((r) => importedEntries[r.code] ? { ...r, originalAmount: r.amount, originalCeiling: r.ceiling } : r));
+            setRows((prev) => prev.map((r) => importedEntries[r.code] ? { ...r, originalAmount: r.amount, originalCeiling: r.ceiling, originalPermit: r.permit } : r));
           }
         } catch { /* best effort */ }
       }
@@ -531,6 +548,7 @@ export function RateConfigPage() {
         case 'category': return a.category.localeCompare(b.category) * dir;
         case 'amount': return (a.amount - b.amount) * dir;
         case 'ceiling': return (a.ceiling - b.ceiling) * dir;
+        case 'permit': return (a.permit - b.permit) * dir;
         default: return 0;
       }
     });
@@ -669,6 +687,10 @@ export function RateConfigPage() {
                     <input type="number" value={newCeiling} onChange={(e) => setNewCeiling(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="0.00 (max limit)" step="0.01" min="0" />
                   </div>
                   )}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">Permit</label>
+                    <input type="number" value={newPermit} onChange={(e) => setNewPermit(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="0.00" step="0.01" min="0" />
+                  </div>
                   <button onClick={handleAddRate} disabled={!newCode.trim() || !newAmount.trim()} className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                     Add Entry
                   </button>
@@ -694,13 +716,14 @@ export function RateConfigPage() {
                 {!isValuedProperty && (
                 <th onClick={() => handleSort('ceiling')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">{activeTab === 'Property' ? 'Minimum Rate' : 'Ceiling'} <SortIcon col="ceiling" /></th>
                 )}
+                <th onClick={() => handleSort('permit')} className="px-3 py-2.5 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap">Permit <SortIcon col="permit" /></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
               {!overridesLoaded ? (
-                <tr><td colSpan={isValuedProperty ? 6 : 7} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading rates...</td></tr>
+                <tr><td colSpan={isValuedProperty ? 7 : 8} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading rates...</td></tr>
               ) : paged.length === 0 ? (
-                <tr><td colSpan={isValuedProperty ? 6 : 7} className="text-center py-16 text-slate-400 dark:text-slate-500">{searchQuery ? 'No rates found matching your search.' : `No rates configured for ${activeTab}. Click "Add Rate" to get started.`}</td></tr>
+                <tr><td colSpan={isValuedProperty ? 7 : 8} className="text-center py-16 text-slate-400 dark:text-slate-500">{searchQuery ? 'No rates found matching your search.' : `No rates configured for ${activeTab}. Click "Add Rate" to get started.`}</td></tr>
               ) : (
                 paged.map((row, idx) => (
                   <tr key={row.code} className={idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/40'}>
@@ -717,6 +740,9 @@ export function RateConfigPage() {
                       <input type="number" inputMode="decimal" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
                     </td>
                     )}
+                    <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
+                      <input type="number" inputMode="decimal" value={row.permit || ''} onChange={(e) => handlePermitEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
+                    </td>
                   </tr>
                 ))
               )}
