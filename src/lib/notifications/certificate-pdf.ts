@@ -1,5 +1,6 @@
 // ─── Business Registration Certificate PDF Generator ────────────────────────
 import PDFDocument from 'pdfkit';
+import path from 'path';
 
 export interface CertificateData {
   businessName: string;
@@ -39,8 +40,17 @@ export function generateCertificatePDF(data: CertificateData): Promise<Buffer> {
     doc.roundedRect(35, 30, doc.page.width - 70, doc.page.height - 60, 6).lineWidth(1).strokeColor('#4CAF50').stroke();
 
     doc.roundedRect(40, 35, doc.page.width - 80, 70, 4).fill('#F9A825');
-    doc.font('Helvetica-Bold').fontSize(16).fillColor('#1B5E20');
-    doc.text(assemblyName.toUpperCase(), 50, 48, { width: pageW, align: 'center' });
+
+    // Embed assembly seal / coat of arms image in the yellow header
+    try {
+      const sealPath = path.join(process.cwd(), 'public/logos/assembly-seal.png');
+      doc.image(sealPath, 55, 42, { width: 55, height: 55 });
+    } catch {
+      // If image fails, skip gracefully
+    }
+
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#1B5E20');
+    doc.text(assemblyName.toUpperCase(), 120, 50, { width: pageW - 80, align: 'center' });
     doc.font('Helvetica').fontSize(10).fillColor('#333333');
     doc.text(assemblyAddr, 50, 70, { width: pageW, align: 'center' });
 

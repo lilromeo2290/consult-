@@ -200,10 +200,10 @@ function SidebarContent({
         )}
       >
         <img
-          src='/logo.png'
+          src='/logo-sidebar.png'
           alt='RMS Logo'
           className={cn(
-            'h-8 w-auto object-contain',
+            'h-8 w-8 object-contain',
             collapsed && 'h-8 w-8'
           )}
         />
