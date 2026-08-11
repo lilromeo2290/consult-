@@ -100,7 +100,7 @@ interface LSPayment {
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-GH').format(n);
 
-const fmtCurrency = (n: number) => `GH\u20a8 ${fmt(n)}`;
+const fmtCurrency = (n: number) => `GH₵ ${fmt(n)}`;
 
 // ---------------------------------------------------------------------------
 // Color palette
