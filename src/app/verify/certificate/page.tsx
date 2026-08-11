@@ -85,18 +85,18 @@ function CertificateView({ data }: { data: CertData }) {
           </button>
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
           >
             <Printer className="w-4 h-4" /> Print Certificate
           </button>
         </div>
 
         {/* Verification Badge */}
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 mb-6 print:hidden">
-          <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-[#0B1D3E]/10 border border-[#0B1D3E]/30 mb-6 print:hidden">
+          <CheckCircle className="w-5 h-5 text-[#0B1D3E] flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-emerald-800">Certificate Verified Successfully</p>
-            <p className="text-xs text-emerald-600">This is a valid Business Operating Permit issued by {asmName}</p>
+            <p className="text-sm font-semibold text-[#0B1D3E]">Certificate Verified Successfully</p>
+            <p className="text-xs text-[#0B1D3E]">This is a valid Business Operating Permit issued by {asmName}</p>
           </div>
         </div>
 
@@ -282,7 +282,7 @@ function VerifyContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 text-[#0B1D3E] animate-spin mx-auto mb-4" />
           <p className="text-sm text-slate-500">Verifying certificate...</p>
         </div>
       </div>
@@ -300,7 +300,7 @@ function VerifyContent() {
           <p className="text-sm text-slate-500">{error || 'This certificate could not be verified. It may be invalid or the barcode may be damaged.'}</p>
           <button
             onClick={() => window.history.back()}
-            className="mt-6 inline-flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+            className="mt-6 inline-flex items-center gap-2 text-sm text-[#0B1D3E] hover:text-[#0B1D3E] font-medium"
           >
             <ArrowLeft className="w-4 h-4" /> Go Back
           </button>
@@ -317,7 +317,7 @@ export default function VerifyCertificatePage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#0B1D3E] animate-spin" />
         </div>
       }
     >

@@ -192,7 +192,7 @@ export function LoginPage() {
   };
 
   const inputCls = (hasError: boolean) =>
-    `w-full rounded-xl border ${hasError ? 'border-red-400 dark:border-red-500' : 'border-slate-300 dark:border-slate-600'} bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200`;
+    `w-full rounded-xl border ${hasError ? 'border-red-400 dark:border-red-500' : 'border-slate-300 dark:border-slate-600'} bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition-all duration-200`;
 
   if (!mounted) return null;
 
@@ -203,8 +203,8 @@ export function LoginPage() {
         className="fixed inset-0 -z-10 transition-colors duration-700"
         style={{
           background: isDark
-            ? 'linear-gradient(160deg, #0b1120 0%, #0f172a 35%, #0c1524 65%, #0a0f1c 100%)'
-            : 'linear-gradient(160deg, #f0fdf9 0%, #f8fafc 35%, #f1f5f9 65%, #ecfdf5 100%)',
+            ? 'linear-gradient(160deg, #060d1f 0%, #0b1d3e 35%, #091733 65%, #050c1a 100%)'
+            : 'linear-gradient(160deg, #f0f4fa 0%, #f8fafc 35%, #eef2f9 65%, #f0f4fa 100%)',
         }}
       />
 
@@ -213,16 +213,16 @@ export function LoginPage() {
         className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none -z-10"
         style={{
           background: isDark
-            ? 'radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 70%)'
-            : 'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)',
+            ? 'radial-gradient(circle, rgba(11,29,62,0.12) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(11,29,62,0.08) 0%, transparent 70%)',
         }}
       />
       <div
         className="fixed bottom-[-15%] right-[-10%] w-[400px] h-[400px] rounded-full pointer-events-none -z-10"
         style={{
           background: isDark
-            ? 'radial-gradient(circle, rgba(45,212,191,0.05) 0%, transparent 70%)'
-            : 'radial-gradient(circle, rgba(45,212,191,0.08) 0%, transparent 70%)',
+            ? 'radial-gradient(circle, rgba(227,30,36,0.04) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(227,30,36,0.06) 0%, transparent 70%)',
         }}
       />
 
@@ -258,24 +258,17 @@ export function LoginPage() {
         >
           {/* Logo */}
           <motion.div
-            className="mx-auto mb-8 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #2dd4bf 100%)',
-              boxShadow: isDark
-                ? '0 8px 32px rgba(16,185,129,0.25)'
-                : '0 8px 32px rgba(16,185,129,0.2)',
-            }}
+            className="mx-auto mb-8 w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <svg width="36" height="36" viewBox="0 0 40 40" fill="none" className="sm:w-10 sm:h-10">
-              <path d="M8 12L20 6L32 12V28L20 34L8 28V12Z" stroke="white" strokeWidth="2" fill="none" />
-              <path d="M20 6V34" stroke="white" strokeWidth="1.5" opacity="0.5" />
-              <path d="M8 12L32 28" stroke="white" strokeWidth="1.5" opacity="0.3" />
-              <path d="M32 12L8 28" stroke="white" strokeWidth="1.5" opacity="0.3" />
-              <circle cx="20" cy="20" r="4" fill="white" opacity="0.9" />
-            </svg>
+            <img
+              src="/logo.png"
+              alt="CLIPE CONSULT Logo"
+              className="w-full h-full object-contain"
+              draggable={false}
+            />
           </motion.div>
 
           {/* Title */}
@@ -395,11 +388,11 @@ export function LoginPage() {
                 disabled={loading}
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
+                  background: 'linear-gradient(135deg, #0B1D3E 0%, #E31E24 100%)',
+                  boxShadow: '0 4px 14px rgba(11,29,62,0.35)',
                 }}
-                whileHover={!loading ? { scale: 1.01, boxShadow: '0 6px 20px rgba(16,185,129,0.45)' } : {}}
-                whileTap={!loading ? { scale: 0.99 } : {}}
+                whileHover={!loading ? { scale: 1.01, boxShadow: '0 6px 20px rgba(11,29,62,0.45)' } : undefined}
+                whileTap={!loading ? { scale: 0.99 } : undefined}
               >
                 {loading ? (
                   <>
@@ -426,7 +419,7 @@ export function LoginPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            Kpando Municipal Assembly Revenue Management System
+            CLIPE CONSULT Revenue Management System
           </motion.p>
         </motion.div>
       </main>

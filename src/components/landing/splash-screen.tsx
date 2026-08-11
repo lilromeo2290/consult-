@@ -63,7 +63,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       <motion.div
         className="fixed inset-0 z-50 flex flex-col items-center justify-center"
         style={{
-          background: 'linear-gradient(135deg, #0a0f1a 0%, #0d1b2a 40%, #1b2838 100%)',
+          background: 'linear-gradient(135deg, #050c1a 0%, #0b1d3e 40%, #0f1c3f 100%)',
         }}
         exit={{ opacity: 0, scale: 1.05 }}
         transition={{ duration: 0.6, ease: 'easeInOut' }}
@@ -73,7 +73,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           <motion.div
             className="absolute w-[600px] h-[600px] rounded-full"
             style={{
-              background: 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(11,29,62,0.2) 0%, transparent 70%)',
               top: '10%',
               left: '20%',
             }}
@@ -86,7 +86,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           <motion.div
             className="absolute w-[500px] h-[500px] rounded-full"
             style={{
-              background: 'radial-gradient(circle, rgba(45,212,191,0.12) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(227,30,36,0.1) 0%, transparent 70%)',
               bottom: '15%',
               right: '15%',
             }}
@@ -109,13 +109,13 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center rounded-3xl overflow-hidden"
             style={{
               boxShadow:
-                '0 0 60px rgba(16,185,129,0.35), 0 0 120px rgba(16,185,129,0.15), 0 25px 50px rgba(0,0,0,0.4)',
+                '0 0 60px rgba(11,29,62,0.35), 0 0 120px rgba(11,29,62,0.15), 0 25px 50px rgba(0,0,0,0.4)',
             }}
             animate={{
               boxShadow: [
-                '0 0 60px rgba(16,185,129,0.35), 0 0 120px rgba(16,185,129,0.15), 0 25px 50px rgba(0,0,0,0.4)',
-                '0 0 80px rgba(16,185,129,0.5), 0 0 160px rgba(16,185,129,0.25), 0 25px 50px rgba(0,0,0,0.4)',
-                '0 0 60px rgba(16,185,129,0.35), 0 0 120px rgba(16,185,129,0.15), 0 25px 50px rgba(0,0,0,0.4)',
+                '0 0 60px rgba(11,29,62,0.35), 0 0 120px rgba(11,29,62,0.15), 0 25px 50px rgba(0,0,0,0.4)',
+                '0 0 80px rgba(11,29,62,0.5), 0 0 160px rgba(11,29,62,0.25), 0 25px 50px rgba(0,0,0,0.4)',
+                '0 0 60px rgba(11,29,62,0.35), 0 0 120px rgba(11,29,62,0.15), 0 25px 50px rgba(0,0,0,0.4)',
               ],
             }}
             transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -130,19 +130,19 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Rotating ring 1 */}
           <motion.div
-            className="absolute inset-[-10px] rounded-3xl border-2 border-emerald-400/25"
+            className="absolute inset-[-10px] rounded-3xl border-2 border-[#4a7ab5]/25"
             animate={{ rotate: 360 }}
             transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
           />
           {/* Rotating ring 2 */}
           <motion.div
-            className="absolute inset-[-22px] rounded-3xl border border-teal-400/12"
+            className="absolute inset-[-22px] rounded-3xl border border-[#E31E24]/12"
             animate={{ rotate: -360 }}
             transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
           />
           {/* Rotating ring 3 */}
           <motion.div
-            className="absolute inset-[-34px] rounded-3xl border border-emerald-300/8"
+            className="absolute inset-[-34px] rounded-3xl border border-[#4a7ab5]/8"
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
           />
@@ -151,7 +151,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         {/* Organization name — very bold */}
         <motion.h1
           className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-3"
-          style={{ textShadow: '0 0 40px rgba(16,185,129,0.3), 0 2px 8px rgba(0,0,0,0.5)' }}
+          style={{ textShadow: '0 0 40px rgba(11,29,62,0.3), 0 2px 8px rgba(0,0,0,0.5)' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
@@ -178,14 +178,14 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           <motion.span
             className="text-5xl sm:text-6xl font-black tabular-nums"
             style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #2dd4bf 50%, #10b981 100%)',
+              background: 'linear-gradient(135deg, #0B1D3E 0%, #E31E24 50%, #0B1D3E 100%)',
               backgroundSize: '200% 100%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               animation: 'shimmer 2s linear infinite',
               textShadow: 'none',
-              filter: 'drop-shadow(0 0 20px rgba(16,185,129,0.4))',
+              filter: 'drop-shadow(0 0 20px rgba(11,29,62,0.4))',
             }}
             key={displayPercent}
             initial={{ scale: 1.1, opacity: 0.7 }}
@@ -200,7 +200,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             <motion.div
               className="h-full rounded-full"
               style={{
-                background: 'linear-gradient(90deg, #10b981, #2dd4bf, #10b981)',
+                background: 'linear-gradient(90deg, #0B1D3E, #E31E24, #0B1D3E)',
                 backgroundSize: '200% 100%',
               }}
               animate={{

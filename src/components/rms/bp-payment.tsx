@@ -44,7 +44,7 @@ const PAYMENT_STATUSES = ['Pending', 'Paid', 'Partial', 'Overdue', 'Waived', 'Re
 
 const STATUS_COLORS: Record<string, string> = {
   'Pending': 'bg-yellow-100 text-yellow-800',
-  'Paid': 'bg-emerald-100 text-emerald-800',
+  'Paid': 'bg-[#0B1D3E]/10 text-[#0B1D3E]',
   'Partial': 'bg-blue-100 text-blue-800',
   'Overdue': 'bg-red-100 text-red-800',
   'Waived': 'bg-gray-100 text-gray-800',
@@ -256,7 +256,7 @@ export function BPPaymentPage() {
         </div>
         <div className="rounded-lg border bg-card p-4">
           <p className="text-xs text-muted-foreground">Paid</p>
-          <p className="text-2xl font-bold mt-1 text-emerald-600">GH₵ {paidAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
+          <p className="text-2xl font-bold mt-1 text-[#0B1D3E]">GH₵ {paidAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
         </div>
       </div>
 

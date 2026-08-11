@@ -26,7 +26,7 @@ const mockAuditLog: AuditEntry[] = [];
 const CATEGORY_CONFIG: Record<ActionCategory, { icon: React.ElementType; label: string; style: string }> = {
   auth: { icon: LogIn, label: 'Authentication', style: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' },
   user: { icon: UserPlus, label: 'User Mgmt', style: 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' },
-  payment: { icon: CreditCard, label: 'Payment', style: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  payment: { icon: CreditCard, label: 'Payment', style: 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]' },
   business: { icon: FileText, label: 'Business', style: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
   property: { icon: Home, label: 'Property', style: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
   system: { icon: Settings, label: 'System', style: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300' },
@@ -77,8 +77,8 @@ export function AuditTrailPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
           <div className="flex items-center gap-3 mb-2">
-            <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/40">
-              <Clock className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20">
+              <Clock className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
             </span>
             <span className="text-sm text-slate-500 dark:text-slate-400">Total Events</span>
           </div>
@@ -86,12 +86,12 @@ export function AuditTrailPage() {
         </div>
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
           <div className="flex items-center gap-3 mb-2">
-            <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/40">
-              <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20">
+              <Shield className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
             </span>
             <span className="text-sm text-slate-500 dark:text-slate-400">Successful</span>
           </div>
-          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{successCount}</p>
+          <p className="text-2xl font-bold text-[#0B1D3E] dark:text-[#4a7ab5]">{successCount}</p>
         </div>
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
           <div className="flex items-center gap-3 mb-2">
@@ -108,17 +108,17 @@ export function AuditTrailPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input type="text" placeholder="Search by user, action, target, details..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white pl-10 pr-4 py-2.5 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition" />
+            <input type="text" placeholder="Search by user, action, target, details..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white pl-10 pr-4 py-2.5 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-transparent transition" />
           </div>
           <div className="flex gap-3">
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }} className="appearance-none rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white pl-9 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition cursor-pointer">
+              <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }} className="appearance-none rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white pl-9 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-transparent transition cursor-pointer">
                 <option value="all">All Categories</option>
                 {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (<option key={key} value={key}>{cfg.label}</option>))}
               </select>
             </div>
-            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="appearance-none rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition cursor-pointer">
+            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="appearance-none rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-transparent transition cursor-pointer">
               <option value="all">All Status</option>
               <option value="Success">Success</option>
               <option value="Failed">Failed</option>
@@ -161,7 +161,7 @@ export function AuditTrailPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <span className={`w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-[10px] font-bold shrink-0`}>
+                        <span className={`w-6 h-6 rounded-full bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center text-[#0B1D3E] dark:text-[#4a7ab5] text-[10px] font-bold shrink-0`}>
                           {entry.user === 'Unknown' ? '?' : entry.user.split(' ').map((n: string) => n[0]).join('')}
                         </span>
                         <span className={`text-sm font-medium truncate max-w-[120px] block ${entry.user === 'Unknown' ? 'text-red-500 dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>{entry.user}</span>
@@ -181,12 +181,12 @@ export function AuditTrailPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${entry.status === 'Success' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                      <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${entry.status === 'Success' ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                         {entry.status}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button onClick={() => setSelectedEntry(entry)} className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="View details">
+                      <button onClick={() => setSelectedEntry(entry)} className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors" title="View details">
                         <Eye className="w-4 h-4" />
                       </button>
                     </td>
@@ -206,7 +206,7 @@ export function AuditTrailPage() {
           <div className="flex items-center gap-1">
             <button disabled={page <= 1} onClick={() => setPage((p: number) => p - 1)} className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"><ChevronLeft className="w-4 h-4" /></button>
             {Array.from({ length: totalPages }, (_: unknown, i: number) => i + 1).map((p: number) => (
-              <button key={p} onClick={() => setPage(p)} className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors ${p === page ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>{p}</button>
+              <button key={p} onClick={() => setPage(p)} className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors ${p === page ? 'bg-[#0B1D3E] text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>{p}</button>
             ))}
             <button disabled={page >= totalPages} onClick={() => setPage((p: number) => p + 1)} className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"><ChevronRight className="w-4 h-4" /></button>
           </div>
@@ -229,7 +229,7 @@ export function AuditTrailPage() {
               <div className="flex items-center justify-between"><span className="text-sm text-slate-500 dark:text-slate-400">Action</span><span className="text-sm font-medium text-slate-900 dark:text-white">{selectedEntry.action}</span></div>
               <div className="flex items-center justify-between"><span className="text-sm text-slate-500 dark:text-slate-400">Target</span><span className="text-sm font-mono text-slate-600 dark:text-slate-300">{selectedEntry.target}</span></div>
               <div className="flex items-center justify-between"><span className="text-sm text-slate-500 dark:text-slate-400">Category</span><span className={`inline-flex text-xs font-medium px-2.5 py-0.5 rounded-full ${CATEGORY_CONFIG[selectedEntry.category].style}`}>{selectedEntry.category}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-slate-500 dark:text-slate-400">Status</span><span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${selectedEntry.status === 'Success' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>{selectedEntry.status}</span></div>
+              <div className="flex items-center justify-between"><span className="text-sm text-slate-500 dark:text-slate-400">Status</span><span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${selectedEntry.status === 'Success' ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>{selectedEntry.status}</span></div>
               <div className="border-t border-slate-100 dark:border-slate-700/60" />
               <div><span className="text-sm text-slate-500 dark:text-slate-400">Details</span><p className="text-sm text-slate-900 dark:text-white mt-1 leading-relaxed">{selectedEntry.details}</p></div>
               <div className="flex items-center justify-between"><span className="text-sm text-slate-500 dark:text-slate-400">IP Address</span><span className="text-sm font-mono text-slate-600 dark:text-slate-300">{selectedEntry.ipAddress}</span></div>

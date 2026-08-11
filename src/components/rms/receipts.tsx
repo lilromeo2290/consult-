@@ -63,14 +63,14 @@ const fmtCurrency = (n: number): string => `GH₵ ${n.toLocaleString('en-GH')}`;
 
 const methodStyle: Record<PaymentMethod, string> = {
   Cash: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  'Mobile Money': 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  'Bank Transfer': 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+  'Mobile Money': 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]',
+  'Bank Transfer': 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]',
   POS: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   Online: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
 };
 
 const statusStyle: Record<ReceiptStatus, { pill: string; icon: string }> = {
-  Valid: { pill: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: 'text-emerald-500' },
+  Valid: { pill: 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]', icon: 'text-[#E31E24]' },
   Voided: { pill: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: 'text-red-500' },
   Duplicate: { pill: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: 'text-amber-500' },
 };
@@ -205,7 +205,7 @@ export function ReceiptsPage() {
           .header { text-align: center; border-bottom: 3px double #1e293b; padding-bottom: 16px; margin-bottom: 24px; }
           .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.05em; }
           .header p { font-size: 12px; color: #64748b; margin-top: 4px; }
-          .receipt-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #059669; }
+          .receipt-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #E31E24; }
           .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
           .info-item { font-size: 13px; }
           .info-item .label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -310,8 +310,8 @@ export function ReceiptsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-            <Receipt className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
+            <Receipt className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
           </div>
           <div>
             <p className="text-sm text-slate-500 dark:text-slate-400">Total Receipts</p>
@@ -319,8 +319,8 @@ export function ReceiptsPage() {
           </div>
         </div>
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-            <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
           </div>
           <div>
             <p className="text-sm text-slate-500 dark:text-slate-400">Total Collected</p>
@@ -328,8 +328,8 @@ export function ReceiptsPage() {
           </div>
         </div>
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-            <FileCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
+            <FileCheck className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
           </div>
           <div>
             <p className="text-sm text-slate-500 dark:text-slate-400">Valid / Voided</p>
@@ -350,7 +350,7 @@ export function ReceiptsPage() {
                 placeholder="Search receipts by number, entity, or issuer..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-shadow"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-transparent transition-shadow"
               />
             </div>
             <button
@@ -368,7 +368,7 @@ export function ReceiptsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value as 'All' | ReceiptStatus); setPage(1); }}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
               >
                 <option value="All">All Statuses</option>
                 <option value="Valid">Valid</option>
@@ -378,7 +378,7 @@ export function ReceiptsPage() {
               <select
                 value={methodFilter}
                 onChange={(e) => { setMethodFilter(e.target.value as 'All' | PaymentMethod); setPage(1); }}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
               >
                 <option value="All">All Methods</option>
                 <option value="Cash">Cash</option>
@@ -421,10 +421,10 @@ export function ReceiptsPage() {
                         <span className="text-sm font-mono text-slate-900 dark:text-white font-medium">{r.receiptNo}</span>
                         <button
                           onClick={() => handleCopy(r.receiptNo, r.id)}
-                          className="text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                          className="text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] transition-colors"
                           aria-label="Copy receipt number"
                         >
-                          {copiedId === r.id ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                          {copiedId === r.id ? <Check className="w-3 h-3 text-[#E31E24]" /> : <Copy className="w-3 h-3" />}
                         </button>
                       </div>
                     </td>
@@ -454,14 +454,14 @@ export function ReceiptsPage() {
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => setSelectedReceipt(r)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors"
                           title="View details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handlePrintReceipt(r)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors"
                           title="Print receipt"
                         >
                           <Printer className="w-4 h-4" />
@@ -494,7 +494,7 @@ export function ReceiptsPage() {
                 onClick={() => setPage(p)}
                 className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                   p === page
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-[#0B1D3E] text-white'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -520,8 +520,8 @@ export function ReceiptsPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-                  <Receipt className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
+                  <Receipt className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Receipt Details</h2>
@@ -544,7 +544,7 @@ export function ReceiptsPage() {
                   {selectedReceipt.status}
                 </span>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handlePrintReceipt(selectedReceipt)} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer">
+                  <button onClick={() => handlePrintReceipt(selectedReceipt)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#0B1D3E] text-white px-3 py-1.5 text-sm font-medium hover:bg-[#E31E24] transition-colors cursor-pointer">
                     <Printer className="w-3.5 h-3.5" />
                     Print
                   </button>
@@ -597,7 +597,7 @@ export function ReceiptsPage() {
                     <tfoot className="bg-slate-50 dark:bg-slate-900/50">
                       <tr className="border-t border-slate-200 dark:border-slate-700">
                         <td colSpan={3} className="px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 text-right">Total Paid</td>
-                        <td className="px-3 py-2.5 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right">{fmtCurrency(selectedReceipt.totalPaid)}</td>
+                        <td className="px-3 py-2.5 text-sm font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-right">{fmtCurrency(selectedReceipt.totalPaid)}</td>
                       </tr>
                     </tfoot>
                   </table>

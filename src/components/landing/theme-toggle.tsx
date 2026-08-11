@@ -12,7 +12,7 @@ export function ThemeToggle() {
   return (
     <motion.button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+      className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B1D3E] focus-visible:ring-offset-2"
       style={{
         background: isDark
           ? 'rgba(30,41,59,0.6)'

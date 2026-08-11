@@ -45,7 +45,7 @@ const APPROVAL_STATUSES = ['In Progress', 'Approved', 'Rejected', 'Deferred', 'R
 
 const STATUS_COLORS: Record<string, string> = {
   'In Progress': 'bg-blue-100 text-blue-800',
-  'Approved': 'bg-emerald-100 text-emerald-800',
+  'Approved': 'bg-[#0B1D3E]/10 text-[#0B1D3E]',
   'Rejected': 'bg-red-100 text-red-800',
   'Deferred': 'bg-orange-100 text-orange-800',
   'Requires Resubmission': 'bg-yellow-100 text-yellow-800',
@@ -337,12 +337,12 @@ export function BPOfficialPage() {
                 <td className="px-4 py-3">{r.applicantFullName || '\u2014'}</td>
                 <td className="px-4 py-3 hidden md:table-cell">
                   <div className="flex items-center gap-1.5">
-                    <span className={`inline-block h-2 w-2 rounded-full ${r.devPlanningRecommendation ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                    <span className={`inline-block h-2 w-2 rounded-full ${r.devPlanningRecommendation ? 'bg-[#0B1D3E]/100' : 'bg-gray-300'}`} />
                     <span className="text-xs">{r.devPlanningOfficerName || 'Pending'}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3 hidden lg:table-cell">
-                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${r.conformsToPlanningScheme === 'Yes' ? 'bg-emerald-100 text-emerald-800' : r.conformsToPlanningScheme === 'No' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${r.conformsToPlanningScheme === 'Yes' ? 'bg-[#0B1D3E]/10 text-[#0B1D3E]' : r.conformsToPlanningScheme === 'No' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
                     {r.conformsToPlanningScheme || 'Pending'}
                   </span>
                 </td>

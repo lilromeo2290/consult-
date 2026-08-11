@@ -103,8 +103,8 @@ export function ParticleBackground() {
         const currentOpacity = p.opacity * pulse;
 
         // Draw particle
-        const baseColor = isDark ? '16,185,129' : '5,150,105';
-        const glowColor = isDark ? '45,212,191' : '20,184,166';
+        const baseColor = isDark ? '74,122,181' : '11,29,62';
+        const glowColor = isDark ? '227,30,36' : '180,50,54';
 
         // Glow
         ctx.beginPath();
@@ -143,7 +143,7 @@ export function ParticleBackground() {
       connectionsRef.current = connections;
 
       // Draw connections
-      const lineColor = isDark ? '16,185,129' : '5,150,105';
+      const lineColor = isDark ? '74,122,181' : '11,29,62';
       for (const conn of connections) {
         ctx.beginPath();
         ctx.moveTo(conn.x1, conn.y1);

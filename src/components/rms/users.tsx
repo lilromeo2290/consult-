@@ -73,15 +73,15 @@ interface UserFormData {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const roleIcon: Record<UserRole, string> = {
-  Administrator: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  'Revenue Officer': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+  Administrator: 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]',
+  'Revenue Officer': 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]',
   'Field Collector': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   Auditor: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   'Finance Manager': 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
 };
 
 const statusConfig: Record<UserStatus, { pill: string; icon: React.ElementType }> = {
-  Active: { pill: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2 },
+  Active: { pill: 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]', icon: CheckCircle2 },
   Inactive: { pill: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400', icon: Clock },
   Suspended: { pill: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: XCircle },
 };
@@ -327,7 +327,7 @@ export function UsersPage() {
         </div>
         <button
           onClick={openAdd}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white px-4 py-2 text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add User
@@ -337,8 +337,8 @@ export function UsersPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-            <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
+            <Users className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
           </div>
           <div>
             <p className="text-sm text-slate-500 dark:text-slate-400">Total Users</p>
@@ -346,8 +346,8 @@ export function UsersPage() {
           </div>
         </div>
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
+            <CheckCircle2 className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
           </div>
           <div>
             <p className="text-sm text-slate-500 dark:text-slate-400">Active</p>
@@ -386,7 +386,7 @@ export function UsersPage() {
                 placeholder="Search by name, staff ID, email, or zone..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-shadow"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-transparent transition-shadow"
               />
             </div>
             <button
@@ -403,7 +403,7 @@ export function UsersPage() {
               <select
                 value={roleFilter}
                 onChange={(e) => { setRoleFilter(e.target.value as 'All' | UserRole); setPage(1); }}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
               >
                 <option value="All">All Roles</option>
                 <option value="Administrator">Administrator</option>
@@ -415,7 +415,7 @@ export function UsersPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value as 'All' | UserStatus); setPage(1); }}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
               >
                 <option value="All">All Statuses</option>
                 <option value="Active">Active</option>
@@ -455,7 +455,7 @@ export function UsersPage() {
                       <td className="px-4 py-3 text-sm font-mono text-slate-900 dark:text-white">{u.username}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center text-[#0B1D3E] dark:text-[#4a7ab5] text-xs font-bold shrink-0">
                             {u.firstName[0]}{u.lastName[0]}
                           </div>
                           <div>
@@ -487,21 +487,21 @@ export function UsersPage() {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => setViewUser(u)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors"
                             title="View user"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => openEdit(u)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors"
                             title="Edit user"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => toggleStatus(u.id)}
-                            className={`p-1.5 rounded-lg transition-colors ${u.status === 'Active' ? 'text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-amber-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'}`}
+                            className={`p-1.5 rounded-lg transition-colors ${u.status === 'Active' ? 'text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-amber-500 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20'}`}
                             title={u.status === 'Active' ? 'Deactivate' : 'Activate'}
                           >
                             <Shield className="w-4 h-4" />
@@ -550,7 +550,7 @@ export function UsersPage() {
                 onClick={() => setPage(p)}
                 className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                   p === page
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-[#0B1D3E] text-white'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -576,8 +576,8 @@ export function UsersPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-                  <UserCog className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
+                  <UserCog className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
                 </div>
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   {editUser ? 'Edit User' : 'Add New User'}
@@ -602,7 +602,7 @@ export function UsersPage() {
                       type="text"
                       value={form.username}
                       onChange={(e) => updateForm('username', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                       placeholder="e.g. kmensah"
                       autoComplete="off"
                     />
@@ -618,7 +618,7 @@ export function UsersPage() {
                       type="text"
                       value={form.password}
                       onChange={(e) => updateForm('password', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                       placeholder={editUser ? '********' : 'Set login password'}
                       autoComplete="new-password"
                     />
@@ -632,7 +632,7 @@ export function UsersPage() {
                     type="text"
                     value={form.firstName}
                     onChange={(e) => updateForm('firstName', e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                     placeholder="Kwame"
                   />
                 </div>
@@ -642,7 +642,7 @@ export function UsersPage() {
                     type="text"
                     value={form.lastName}
                     onChange={(e) => updateForm('lastName', e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                     placeholder="Mensah"
                   />
                 </div>
@@ -653,7 +653,7 @@ export function UsersPage() {
                   type="email"
                   value={form.email}
                   onChange={(e) => updateForm('email', e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                   placeholder="kwame.mensah@kma.gov.gh"
                 />
               </div>
@@ -663,7 +663,7 @@ export function UsersPage() {
                   type="tel"
                   value={form.phone}
                   onChange={(e) => updateForm('phone', e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                   placeholder="+233 24 567 8901"
                 />
               </div>
@@ -673,7 +673,7 @@ export function UsersPage() {
                   <select
                     value={form.role}
                     onChange={(e) => handleRoleChange(e.target.value as UserRole)}
-                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                   >
                     <option value="Field Collector">Field Collector</option>
                     <option value="Revenue Officer">Revenue Officer</option>
@@ -688,7 +688,7 @@ export function UsersPage() {
                     <select
                       value={form.zone}
                       onChange={(e) => updateForm('zone', e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                     >
                       <option value="Zone A">Zone A</option>
                       <option value="Zone B">Zone B</option>
@@ -704,7 +704,7 @@ export function UsersPage() {
                   type="text"
                   value={form.ward}
                   onChange={(e) => updateForm('ward', e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                   placeholder="Bantama"
                 />
               </div>
@@ -714,7 +714,7 @@ export function UsersPage() {
                   type="text"
                   value={form.ghanaCard}
                   onChange={(e) => updateForm('ghanaCard', e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
                   placeholder="GHA-123456789-0"
                 />
               </div>
@@ -723,7 +723,7 @@ export function UsersPage() {
               <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <LayoutGrid className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <LayoutGrid className="w-4 h-4 text-[#0B1D3E] dark:text-[#4a7ab5]" />
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                       Navigation Access
                     </label>
@@ -732,7 +732,7 @@ export function UsersPage() {
                     <button
                       type="button"
                       onClick={selectAllPages}
-                      className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+                      className="text-xs text-[#0B1D3E] dark:text-[#4a7ab5] hover:underline font-medium"
                     >
                       Select All
                     </button>
@@ -759,13 +759,13 @@ export function UsersPage() {
                         onClick={() => togglePage(p.page)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-medium transition-all ${
                           isSelected
-                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700'
+                            ? 'bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 text-[#0B1D3E] dark:text-[#4a7ab5] border border-[#0B1D3E]/40 dark:border-[#0B1D3E]'
                             : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-transparent hover:border-slate-300 dark:hover:border-slate-600'
                         }`}
                       >
                         <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
                           isSelected
-                            ? 'bg-emerald-600 border-emerald-600'
+                            ? 'bg-[#0B1D3E] border-[#0B1D3E]'
                             : 'border-slate-300 dark:border-slate-600'
                         }`}>
                           {isSelected && <Check className="w-3 h-3 text-white" />}
@@ -793,7 +793,7 @@ export function UsersPage() {
               <button
                 onClick={handleSave}
                 disabled={!isValid}
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 text-sm font-medium transition-colors"
               >
                 <Save className="w-4 h-4" />
                 {editUser ? 'Update User' : 'Create User'}
@@ -810,7 +810,7 @@ export function UsersPage() {
           <div className="relative bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl w-full max-w-md">
             <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-sm font-bold">
+                <div className="w-10 h-10 rounded-full bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center text-[#0B1D3E] dark:text-[#4a7ab5] text-sm font-bold">
                   {viewUser.firstName[0]}{viewUser.lastName[0]}
                 </div>
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{viewUser.firstName} {viewUser.lastName}</h2>
@@ -856,7 +856,7 @@ export function UsersPage() {
                         key={p.page}
                         className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${
                           hasAccess
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
                             : 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500 line-through'
                         }`}
                       >

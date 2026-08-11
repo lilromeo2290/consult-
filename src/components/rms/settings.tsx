@@ -210,7 +210,7 @@ export function SettingsPage() {
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#0B1D3E] hover:bg-[#E31E24] text-white rounded-lg text-sm font-medium transition-colors"
         >
           {saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
           {saved ? 'All Settings Saved!' : 'Save Changes'}
@@ -218,8 +218,8 @@ export function SettingsPage() {
       </div>
 
       {/* Info banner */}
-      <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-4 py-3">
-        <p className="text-sm text-emerald-700 dark:text-emerald-300">
+      <div className="bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 border border-[#0B1D3E]/30 dark:border-[#0B1D3E] rounded-lg px-4 py-3">
+        <p className="text-sm text-[#0B1D3E] dark:text-[#4a7ab5]">
           <CheckCircle2 className="w-4 h-4 inline mr-1.5 -mt-0.5" />
           All settings are automatically saved to the server and will persist across deployments.
         </p>
@@ -233,7 +233,7 @@ export function SettingsPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                ? 'bg-white dark:bg-slate-700 text-[#0B1D3E] dark:text-[#4a7ab5] shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -272,8 +272,8 @@ export function SettingsPage() {
 }
 
 // ── Shared input style ──
-const inputCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition';
-const selectCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition';
+const inputCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
+const selectCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
 
 // ── Assembly Tab ──
 function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (field: keyof AssemblyInfo, value: string) => void }) {
@@ -347,11 +347,11 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
         <div className="lg:col-span-2 space-y-2">
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Assembly Logo</label>
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden ${data.logo ? 'border-emerald-400 dark:border-emerald-600' : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700'}`}>
+            <div className={`w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden ${data.logo ? 'border-[#4a7ab5] dark:border-[#0B1D3E]' : 'bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 border-[#0B1D3E]/40 dark:border-[#0B1D3E]'}`}>
               {data.logo ? (
                 <img src={data.logo} alt="Assembly Logo" className="w-full h-full object-contain" />
               ) : (
-                <Building className="w-8 h-8 text-emerald-500" />
+                <Building className="w-8 h-8 text-[#E31E24]" />
               )}
             </div>
             <div className="flex flex-col gap-1.5">
@@ -376,7 +376,7 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
         <div className="lg:col-span-2 space-y-2">
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><Pen className="w-3.5 h-3.5" /> Authorized Signature</label>
           <div className="flex items-start gap-5">
-            <div className={`w-48 h-24 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900/40 ${data.signature ? 'border-emerald-400 dark:border-emerald-600' : 'border-slate-300 dark:border-slate-600'}`}>
+            <div className={`w-48 h-24 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900/40 ${data.signature ? 'border-[#4a7ab5] dark:border-[#0B1D3E]' : 'border-slate-300 dark:border-slate-600'}`}>
               {data.signature ? (
                 <img src={data.signature} alt="Assembly Signature" className="w-full h-full object-contain" />
               ) : (
@@ -547,7 +547,7 @@ function NotificationSettings({ data, onChange }: { data: NotificationInfo; onCh
             <button
               type="button"
               onClick={() => onChange(item.key, !data[item.key])}
-              className={`relative w-11 h-6 rounded-full transition-colors ${data[item.key] ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors ${data[item.key] ? 'bg-[#0B1D3E]' : 'bg-slate-300 dark:bg-slate-600'}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${data[item.key] ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
@@ -572,11 +572,11 @@ function BackupSettings({ data, onChange }: { data: BackupInfo; onChange: (field
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Backup Retention (Days)</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">How long to keep backup files</p>
           </div>
-          <input type="number" value={data.retentionDays} onChange={(e) => onChange('retentionDays', e.target.value)} placeholder="90" className="w-24 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" />
+          <input type="number" value={data.retentionDays} onChange={(e) => onChange('retentionDays', e.target.value)} placeholder="90" className="w-24 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition" />
         </div>
       </div>
       <div className="flex flex-wrap gap-3 mt-4">
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#0B1D3E] hover:bg-[#E31E24] text-white rounded-lg text-sm font-medium transition-colors">
           <Download className="w-4 h-4" /> Manual Backup Now
         </button>
         <button className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
@@ -608,7 +608,7 @@ function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySetti
   };
 
   const colorMap: Record<string, { border: string; bg: string; text: string; badge: string }> = {
-    emerald: { border: 'border-emerald-300 dark:border-emerald-700', bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' },
+    emerald: { border: 'border-[#0B1D3E]/40 dark:border-[#0B1D3E]', bg: 'bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20', text: 'text-[#0B1D3E] dark:text-[#4a7ab5]', badge: 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]' },
     blue: { border: 'border-blue-300 dark:border-blue-700', bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-400', badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' },
     amber: { border: 'border-amber-300 dark:border-amber-700', bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-400', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' },
     red: { border: 'border-red-300 dark:border-red-700', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-400', badge: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' },
@@ -640,7 +640,7 @@ function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySetti
                 <button
                   type="button"
                   onClick={() => updateCategory(cat.key, 'enabled', !config.enabled)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${config.enabled ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${config.enabled ? 'bg-[#0B1D3E]' : 'bg-slate-300 dark:bg-slate-600'}`}
                 >
                   <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${config.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
@@ -707,7 +707,7 @@ function ToggleCard({ label, desc, checked, onToggle }: { label: string; desc: s
       <button
         type="button"
         onClick={onToggle}
-        className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+        className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-[#0B1D3E]' : 'bg-slate-300 dark:bg-slate-600'}`}
       >
         <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>

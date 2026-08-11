@@ -179,7 +179,7 @@ export function AutoSuggestInput({
                   onMouseEnter={() => setHighlighted(idx)}
                   className={`px-4 py-2 text-sm cursor-pointer transition-colors ${
                     suggestion === value
-                      ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium'
+                      ? 'bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 text-[#0B1D3E] dark:text-[#4a7ab5] font-medium'
                       : idx === highlighted
                         ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white'
                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'

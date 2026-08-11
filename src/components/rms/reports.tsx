@@ -98,21 +98,21 @@ export function ReportsPage() {
 
     if (view === 'revenue') {
       const rows = revenueBreakdown.map((r) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.category}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.officer}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(r.budget)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(r.collected)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(r.target)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:600;text-align:right;">${r.percentage}%</td></tr>`).join('');
-      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Category</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Officer</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Budget</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Collected</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Target</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Rate</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td colspan="2" style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(totalBudget)}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#059669;">${fmtCurrency(totalCollected)}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(revenueBreakdown.reduce((s,r)=>s+r.target,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${overallCompliance}%</td></tr></tfoot></table>`;
+      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Category</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Officer</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Budget</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Collected</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Target</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Rate</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td colspan="2" style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(totalBudget)}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">${fmtCurrency(totalCollected)}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(revenueBreakdown.reduce((s,r)=>s+r.target,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${overallCompliance}%</td></tr></tfoot></table>`;
     } else if (view === 'zones') {
       const zoneData = zoneFilter === 'All' ? zoneReports : zoneReports.filter(z => z.zone.includes(zoneFilter));
       const rows = zoneData.map((z) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:500;">${z.zone}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${z.businesses}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${z.properties}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(z.collected)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(z.target)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:600;text-align:right;">${z.compliance}%</td></tr>`).join('');
       bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Zone</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Businesses</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Properties</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Collected</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Target</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Compliance</th></tr></thead><tbody>${rows}</tbody></table>`;
     } else if (view === 'monthly') {
-      const rows = monthlyComparison.map((m) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:500;">${m.month}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(m.currentYear)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(m.previousYear)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;color:${m.change>=0?'#059669':'#dc2626'};font-weight:600;">${m.change>=0?'+':''}${m.change}%</td></tr>`).join('');
-      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Month</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${currentFY}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${previousFY}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Change</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#059669;">${fmtCurrency(monthlyComparison.reduce((s,m)=>s+m.currentYear,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(monthlyComparison.reduce((s,m)=>s+m.previousYear,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#059669;">+9.8%</td></tr></tfoot></table>`;
+      const rows = monthlyComparison.map((m) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:500;">${m.month}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(m.currentYear)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(m.previousYear)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;color:${m.change>=0?'#E31E24':'#dc2626'};font-weight:600;">${m.change>=0?'+':''}${m.change}%</td></tr>`).join('');
+      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Month</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${currentFY}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${previousFY}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Change</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">${fmtCurrency(monthlyComparison.reduce((s,m)=>s+m.currentYear,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(monthlyComparison.reduce((s,m)=>s+m.previousYear,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">+9.8%</td></tr></tfoot></table>`;
     } else {
       bodyContent = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;"><div style="padding:16px;border:1px solid #e2e8f0;border-radius:8px;"><p style="font-size:11px;color:#64748b;text-transform:uppercase;">Total Collected</p><p style="font-size:20px;font-weight:700;margin-top:4px;">${fmtCurrency(totalCollected)}</p><p style="font-size:11px;color:#94a3b8;margin-top:2px;">Budget: ${fmtCurrency(totalBudget)}</p></div><div style="padding:16px;border:1px solid #e2e8f0;border-radius:8px;"><p style="font-size:11px;color:#64748b;text-transform:uppercase;">Collection Rate</p><p style="font-size:20px;font-weight:700;margin-top:4px;">${overallCompliance}%</p><p style="font-size:11px;color:#94a3b8;margin-top:2px;">Target: 95%</p></div><div style="padding:16px;border:1px solid #e2e8f0;border-radius:8px;"><p style="font-size:11px;color:#64748b;text-transform:uppercase;">Registered Entities</p><p style="font-size:20px;font-weight:700;margin-top:4px;">${entityCount}</p><p style="font-size:11px;color:#94a3b8;margin-top:2px;">Businesses + Properties + Rents</p></div><div style="padding:16px;border:1px solid #e2e8f0;border-radius:8px;"><p style="font-size:11px;color:#64748b;text-transform:uppercase;">Receipts Issued</p><p style="font-size:20px;font-weight:700;margin-top:4px;">${receiptCount}</p><p style="font-size:11px;color:#94a3b8;margin-top:2px;">Total recorded</p></div></div><div style="margin-top:24px;"><h3 style="font-size:13px;font-weight:600;margin-bottom:12px;">Top Revenue Categories</h3><table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:1px solid #e2e8f0;"><th style="text-align:left;padding:6px 10px;font-size:11px;color:#64748b;">Category</th><th style="text-align:right;padding:6px 10px;font-size:11px;color:#64748b;">Budget</th><th style="text-align:right;padding:6px 10px;font-size:11px;color:#64748b;">Collected</th><th style="text-align:right;padding:6px 10px;font-size:11px;color:#64748b;">Rate</th></tr></thead><tbody>${revenueBreakdown.slice(0,5).map(r=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;">${r.category}</td><td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;text-align:right;">${fmtCurrency(r.budget)}</td><td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;text-align:right;">${fmtCurrency(r.collected)}</td><td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;text-align:right;font-weight:600;">${r.percentage}%</td></tr>`).join('')}</tbody></table></div>`;
     }
 
     const w = window.open('', '_blank', 'width=794,height=1123');
     if (!w) return;
-    w.document.write(`<!DOCTYPE html><html><head><title>Report - ${title}</title><style>@page{size:A4;margin:15mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:16px;}.header h1{font-size:18px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.report-title{text-align:center;font-size:15px;font-weight:600;margin-bottom:4px;color:#059669;}.report-meta{text-align:center;font-size:11px;color:#94a3b8;margin-bottom:20px;}</style></head><body><div class="header"><h1>KUMASI METROPOLITAN ASSEMBLY</h1><p>Revenue Management System</p></div><div class="report-title">${title}</div><div class="report-meta">Period: ${period} | Generated: ${new Date().toLocaleString()}</div>${bodyContent}<div style="margin-top:40px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`);
+    w.document.write(`<!DOCTYPE html><html><head><title>Report - ${title}</title><style>@page{size:A4;margin:15mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:16px;}.header h1{font-size:18px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.report-title{text-align:center;font-size:15px;font-weight:600;margin-bottom:4px;color:#E31E24;}.report-meta{text-align:center;font-size:11px;color:#94a3b8;margin-bottom:20px;}</style></head><body><div class="header"><h1>KUMASI METROPOLITAN ASSEMBLY</h1><p>Revenue Management System</p></div><div class="report-title">${title}</div><div class="report-meta">Period: ${period} | Generated: ${new Date().toLocaleString()}</div>${bodyContent}<div style="margin-top:40px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`);
     w.document.close();
     w.onload = () => { w.print(); };
   };
@@ -156,7 +156,7 @@ export function ReportsPage() {
                     onClick={() => { setPeriod(p); setShowPeriodDropdown(false); }}
                     className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                       p === period
-                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
+                        ? 'bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 text-[#0B1D3E] dark:text-[#4a7ab5] font-medium'
                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                     }`}
                   >
@@ -166,7 +166,7 @@ export function ReportsPage() {
               </div>
             )}
           </div>
-          <button onClick={handlePrintReport} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white px-3 py-2 text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer">
+          <button onClick={handlePrintReport} className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] text-white px-3 py-2 text-sm font-medium hover:bg-[#E31E24] transition-colors cursor-pointer">
             <Printer className="w-4 h-4" />
             Print Report
           </button>
@@ -184,7 +184,7 @@ export function ReportsPage() {
               onClick={() => setView(tab.key)}
               className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
                 active
-                  ? 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 shadow-sm'
+                  ? 'bg-white dark:bg-slate-800 text-[#0B1D3E] dark:text-[#4a7ab5] shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -201,27 +201,27 @@ export function ReportsPage() {
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KpiCard
-              icon={<DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+              icon={<DollarSign className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
               label="Total Collected"
               value={fmtCurrency(totalCollected)}
               sub={`Budget: ${fmtCurrency(totalBudget)}`}
               trend={14.3}
             />
             <KpiCard
-              icon={<Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+              icon={<Target className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
               label="Collection Rate"
               value={`${overallCompliance}%`}
               sub="Target: 95%"
               trend={2.1}
             />
             <KpiCard
-              icon={<Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+              icon={<Users className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
               label="Registered Entities"
               value={fmtNumber(entityCount)}
               sub="Businesses + Properties + Rents"
             />
             <KpiCard
-              icon={<Receipt className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+              icon={<Receipt className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
               label="Receipts Issued"
               value={fmtNumber(receiptCount)}
               sub="Total recorded"
@@ -251,7 +251,7 @@ export function ReportsPage() {
                       <p className="text-xs text-slate-500 dark:text-slate-400">{fmtCurrency(zone.collected)} of {fmtCurrency(zone.target)}</p>
                     </div>
                     <span className={`inline-flex items-center text-sm font-semibold ${
-                      zone.compliance >= 95 ? 'text-emerald-600 dark:text-emerald-400' : zone.compliance >= 90 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
+                      zone.compliance >= 95 ? 'text-[#0B1D3E] dark:text-[#4a7ab5]' : zone.compliance >= 90 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {zone.compliance}%
                       {zone.compliance >= 95 ? <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" /> : zone.compliance < 90 ? <TrendingDown className="w-3.5 h-3.5 ml-0.5" /> : null}
@@ -290,9 +290,9 @@ export function ReportsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {item.category.includes('Property') ? (
-                          <Home className="w-4 h-4 text-emerald-500" />
+                          <Home className="w-4 h-4 text-[#E31E24]" />
                         ) : (
-                          <Building2 className="w-4 h-4 text-emerald-500" />
+                          <Building2 className="w-4 h-4 text-[#E31E24]" />
                         )}
                         <span className="text-sm font-medium text-slate-900 dark:text-white">{item.category}</span>
                       </div>
@@ -308,7 +308,7 @@ export function ReportsPage() {
                             <div
                               className={`h-2 rounded-full transition-all ${
                                 item.percentage >= 95
-                                  ? 'bg-emerald-500'
+                                  ? 'bg-[#0B1D3E]/100'
                                   : item.percentage >= 90
                                   ? 'bg-amber-500'
                                   : 'bg-red-500'
@@ -322,7 +322,7 @@ export function ReportsPage() {
                     <td className="px-4 py-3 text-right">
                       <span className={`inline-flex items-center gap-0.5 text-sm font-semibold ${
                         item.percentage >= 95
-                          ? 'text-emerald-600 dark:text-emerald-400'
+                          ? 'text-[#0B1D3E] dark:text-[#4a7ab5]'
                           : item.percentage >= 90
                           ? 'text-amber-600 dark:text-amber-400'
                           : 'text-red-600 dark:text-red-400'
@@ -337,7 +337,7 @@ export function ReportsPage() {
                 <tr className="border-t-2 border-slate-200 dark:border-slate-700">
                   <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white" colSpan={2}>Total</td>
                   <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white text-right">{fmtCurrency(totalBudget)}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right">{fmtCurrency(totalCollected)}</td>
+                  <td className="px-4 py-3 text-sm font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-right">{fmtCurrency(totalCollected)}</td>
                   <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white text-right">{fmtCurrency(revenueBreakdown.reduce((s, r) => s + r.target, 0))}</td>
                   <td className="px-4 py-3" colSpan={2} />
                 </tr>
@@ -356,7 +356,7 @@ export function ReportsPage() {
             <select
               value={zoneFilter}
               onChange={(e) => setZoneFilter(e.target.value)}
-              className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
             >
               <option value="All">All Zones</option>
               <option value="Zone A">Zone A</option>
@@ -375,10 +375,10 @@ export function ReportsPage() {
                   <ComplianceBadge percentage={zone.compliance} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <MiniStat icon={<Building2 className="w-4 h-4 text-emerald-500" />} label="Businesses" value={fmtNumber(zone.businesses)} />
-                  <MiniStat icon={<Home className="w-4 h-4 text-emerald-500" />} label="Properties" value={fmtNumber(zone.properties)} />
-                  <MiniStat icon={<DollarSign className="w-4 h-4 text-emerald-500" />} label="Collected" value={fmtCurrency(zone.collected)} />
-                  <MiniStat icon={<Target className="w-4 h-4 text-emerald-500" />} label="Target" value={fmtCurrency(zone.target)} />
+                  <MiniStat icon={<Building2 className="w-4 h-4 text-[#E31E24]" />} label="Businesses" value={fmtNumber(zone.businesses)} />
+                  <MiniStat icon={<Home className="w-4 h-4 text-[#E31E24]" />} label="Properties" value={fmtNumber(zone.properties)} />
+                  <MiniStat icon={<DollarSign className="w-4 h-4 text-[#E31E24]" />} label="Collected" value={fmtCurrency(zone.collected)} />
+                  <MiniStat icon={<Target className="w-4 h-4 text-[#E31E24]" />} label="Target" value={fmtCurrency(zone.target)} />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
@@ -388,7 +388,7 @@ export function ReportsPage() {
                   <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-700">
                     <div
                       className={`h-2.5 rounded-full transition-all ${
-                        zone.compliance >= 95 ? 'bg-emerald-500' : zone.compliance >= 90 ? 'bg-amber-500' : 'bg-red-500'
+                        zone.compliance >= 95 ? 'bg-[#0B1D3E]/100' : zone.compliance >= 90 ? 'bg-amber-500' : 'bg-red-500'
                       }`}
                       style={{ width: `${Math.min((zone.collected / zone.target) * 100, 100)}%` }}
                     />
@@ -426,7 +426,7 @@ export function ReportsPage() {
                     <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 text-right">{fmtCurrency(m.previousYear)}</td>
                     <td className="px-4 py-3 text-right">
                       <span className={`inline-flex items-center gap-0.5 text-sm font-semibold ${
-                        m.change >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                        m.change >= 0 ? 'text-[#0B1D3E] dark:text-[#4a7ab5]' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {m.change >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                         {Math.abs(m.change)}%
@@ -440,7 +440,7 @@ export function ReportsPage() {
                             style={{ width: `${(m.previousYear / 400000) * 100}%` }}
                           />
                           <div
-                            className="absolute inset-y-0 left-0 bg-emerald-500"
+                            className="absolute inset-y-0 left-0 bg-[#0B1D3E]/100"
                             style={{ width: `${(m.currentYear / 400000) * 100}%` }}
                           />
                         </div>
@@ -452,13 +452,13 @@ export function ReportsPage() {
               <tfoot className="bg-slate-50 dark:bg-slate-900/50">
                 <tr className="border-t-2 border-slate-200 dark:border-slate-700">
                   <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white">Total</td>
-                  <td className="px-4 py-3 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right">
+                  <td className="px-4 py-3 text-sm font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-right">
                     {fmtCurrency(monthlyComparison.reduce((s, m) => s + m.currentYear, 0))}
                   </td>
                   <td className="px-4 py-3 text-sm font-bold text-slate-500 dark:text-slate-400 text-right">
                     {fmtCurrency(monthlyComparison.reduce((s, m) => s + m.previousYear, 0))}
                   </td>
-                  <td className="px-4 py-3 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right">
+                  <td className="px-4 py-3 text-sm font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-right">
                     +9.8%
                   </td>
                   <td />
@@ -484,13 +484,13 @@ function KpiCard({ icon, label, value, sub, trend }: {
   return (
     <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-3">
-        <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40">
+        <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20">
           {icon}
         </span>
         {trend !== undefined && (
           <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
             trend >= 0
-              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+              ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
               : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
           }`}>
             {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -515,7 +515,7 @@ function CategoryBar({ item }: { item: RevenueBreakdown }) {
       <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-700">
         <div
           className={`h-2 rounded-full transition-all ${
-            pct >= 95 ? 'bg-emerald-500' : pct >= 90 ? 'bg-amber-500' : 'bg-red-500'
+            pct >= 95 ? 'bg-[#0B1D3E]/100' : pct >= 90 ? 'bg-amber-500' : 'bg-red-500'
           }`}
           style={{ width: `${Math.min(pct, 100)}%` }}
         />
@@ -528,7 +528,7 @@ function CategoryBar({ item }: { item: RevenueBreakdown }) {
 function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="text-emerald-600 dark:text-emerald-400">{icon}</span>
+      <span className="text-[#0B1D3E] dark:text-[#4a7ab5]">{icon}</span>
       <div>
         <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
         <p className="text-sm font-medium text-slate-900 dark:text-white">{value}</p>
@@ -540,7 +540,7 @@ function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string
 function ComplianceBadge({ percentage }: { percentage: number }) {
   if (percentage >= 95) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]">
         <CheckCircle2 className="w-3 h-3" />
         On Track
       </span>

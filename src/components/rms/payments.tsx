@@ -73,7 +73,7 @@ const formatCurrency = (amount: number | undefined | null): string => {
 
 const methodBadge: Record<PaymentMethod, { bg: string; text: string }> = {
   Cash: { bg: 'bg-amber-100 text-amber-800', text: 'Cash' },
-  'Mobile Money': { bg: 'bg-emerald-100 text-emerald-800', text: 'MoMo' },
+  'Mobile Money': { bg: 'bg-[#0B1D3E]/10 text-[#0B1D3E]', text: 'MoMo' },
   Bank: { bg: 'bg-blue-100 text-blue-800', text: 'Bank' },
   POS: { bg: 'bg-purple-100 text-purple-800', text: 'POS' },
   Online: { bg: 'bg-sky-100 text-sky-800', text: 'Online' },
@@ -355,7 +355,7 @@ export function PaymentsPage() {
           .header { text-align: center; border-bottom: 3px double #1e293b; padding-bottom: 16px; margin-bottom: 24px; }
           .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.05em; }
           .header p { font-size: 12px; color: #64748b; margin-top: 4px; }
-          .receipt-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #059669; }
+          .receipt-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #E31E24; }
           .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
           .info-item { font-size: 13px; }
           .info-item .label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -434,7 +434,7 @@ export function PaymentsPage() {
         </div>
         <button
           onClick={openModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#E31E24] transition-colors cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Record Payment
@@ -444,7 +444,7 @@ export function PaymentsPage() {
       {/* ── Stats ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Payments', value: totalPayments.toLocaleString(), icon: Receipt, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Total Payments', value: totalPayments.toLocaleString(), icon: Receipt, color: 'text-[#0B1D3E]', bg: 'bg-[#0B1D3E]/10' },
           { label: 'Total Collected', value: formatCurrency(totalCollected), icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Today', value: formatCurrency(todayPayments), icon: CalendarCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: 'Pending Balance', value: formatCurrency(totalPending), icon: Clock, color: 'text-red-600', bg: 'bg-red-50' },
@@ -479,7 +479,7 @@ export function PaymentsPage() {
               placeholder="Search receipts, bills, business…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
+              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
             />
           </div>
           {/* Date From */}
@@ -488,7 +488,7 @@ export function PaymentsPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
+              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
             />
           </div>
           {/* Date To */}
@@ -497,7 +497,7 @@ export function PaymentsPage() {
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
+              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
             />
           </div>
           {/* Method */}
@@ -505,7 +505,7 @@ export function PaymentsPage() {
             <select
               value={methodFilter}
               onChange={(e) => { setMethodFilter(e.target.value); setCurrentPage(1); }}
-              className="w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition cursor-pointer"
+              className="w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition cursor-pointer"
             >
               <option value="All">All Methods</option>
               <option value="Cash">Cash</option>
@@ -521,7 +521,7 @@ export function PaymentsPage() {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-              className="w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition cursor-pointer"
+              className="w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition cursor-pointer"
             >
               <option value="All">All Statuses</option>
               <option value="Full">Full</option>
@@ -567,7 +567,7 @@ export function PaymentsPage() {
                       key={p.id}
                       className="hover:bg-gray-50/60 transition-colors"
                     >
-                      <td className="px-4 py-3 font-medium text-emerald-700">{p.receiptNo}</td>
+                      <td className="px-4 py-3 font-medium text-[#0B1D3E]">{p.receiptNo}</td>
                       <td className="px-4 py-3 text-gray-600">{p.billNo}</td>
                       <td className="px-4 py-3 text-gray-900 font-medium max-w-[200px] truncate">{p.business}</td>
                       <td className="px-4 py-3 text-right text-gray-900 font-semibold whitespace-nowrap">{formatCurrency(p.amount)}</td>
@@ -591,7 +591,7 @@ export function PaymentsPage() {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleViewPayment(p)}
-                            className="rounded-md p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition cursor-pointer"
+                            className="rounded-md p-1.5 text-gray-400 hover:text-[#0B1D3E] hover:bg-[#0B1D3E]/10 transition cursor-pointer"
                             title="View details"
                           >
                             <Eye className="h-4 w-4" />
@@ -633,7 +633,7 @@ export function PaymentsPage() {
                   onClick={() => setCurrentPage(page)}
                   className={`h-8 w-8 rounded-md text-xs font-semibold transition cursor-pointer ${
                     page === currentPage
-                      ? 'bg-emerald-600 text-white'
+                      ? 'bg-[#0B1D3E] text-white'
                       : 'text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -661,14 +661,14 @@ export function PaymentsPage() {
             <div className="text-center border-b-2 border-dashed border-gray-300 dark:border-slate-600 px-6 py-5">
               <h2 className="text-base font-bold text-gray-900 dark:text-white tracking-wider uppercase">{asmName}</h2>
               <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Revenue Management System</p>
-              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-3 tracking-wide">PAYMENT RECEIPT</p>
+              <p className="text-sm font-semibold text-[#0B1D3E] dark:text-[#4a7ab5] mt-3 tracking-wide">PAYMENT RECEIPT</p>
             </div>
 
             {/* Receipt Info */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-3 px-6 py-4 border-b border-gray-100 dark:border-slate-800">
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium">Receipt #</p>
-                <p className="text-sm font-mono font-semibold text-emerald-700 dark:text-emerald-400 mt-0.5">{viewingPayment.receiptNo}</p>
+                <p className="text-sm font-mono font-semibold text-[#0B1D3E] dark:text-[#4a7ab5] mt-0.5">{viewingPayment.receiptNo}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium">Payment Date</p>
@@ -742,7 +742,7 @@ export function PaymentsPage() {
                 </div>
                 <div className="border-t-2 border-gray-900 dark:border-slate-100 pt-2 mt-2 flex justify-between">
                   <span className="font-bold text-gray-900 dark:text-white">Total Paid</span>
-                  <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatCurrency(viewingPayment.amount)}</span>
+                  <span className="font-bold text-lg text-[#0B1D3E] dark:text-[#4a7ab5]">{formatCurrency(viewingPayment.amount)}</span>
                 </div>
               </div>
             </div>
@@ -781,7 +781,7 @@ export function PaymentsPage() {
                 <button onClick={() => setViewingPayment(null)} className="rounded-lg border border-gray-300 bg-white dark:bg-slate-800 dark:border-slate-600 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition cursor-pointer">
                   Close
                 </button>
-                <button onClick={() => handlePrintPayment(viewingPayment)} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition cursor-pointer">
+                <button onClick={() => handlePrintPayment(viewingPayment)} className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#E31E24] transition cursor-pointer">
                   <Printer className="h-4 w-4" />
                   Print
                 </button>
@@ -804,8 +804,8 @@ export function PaymentsPage() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100">
-                  <Plus className="h-5 w-5 text-emerald-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0B1D3E]/10">
+                  <Plus className="h-5 w-5 text-[#0B1D3E]" />
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">Record Payment</h2>
               </div>
@@ -833,7 +833,7 @@ export function PaymentsPage() {
                       setBillSearchInput('');
                       setShowBillDropdown(false);
                     }}
-                    className="w-full appearance-none rounded-lg border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition cursor-pointer"
+                    className="w-full appearance-none rounded-lg border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition cursor-pointer"
                   >
                     <option value="">Select revenue category…</option>
                     {BILL_TYPE_OPTIONS.map((bt) => (
@@ -867,7 +867,7 @@ export function PaymentsPage() {
                     }}
                     disabled={!payRevenueCategory}
                     placeholder={payRevenueCategory ? 'Search by bill number, business name, or owner...' : 'Select a revenue category first'}
-                    className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 {showBillDropdown && billSearchResults.length > 0 && (
@@ -878,11 +878,11 @@ export function PaymentsPage() {
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleSelectBill(b)}
-                        className={`w-full text-left px-4 py-2.5 hover:bg-emerald-50 border-b border-gray-100 last:border-b-0 transition-colors ${selectedBillNo === b.billNo ? 'bg-emerald-50' : ''}`}
+                        className={`w-full text-left px-4 py-2.5 hover:bg-[#0B1D3E]/10 border-b border-gray-100 last:border-b-0 transition-colors ${selectedBillNo === b.billNo ? 'bg-[#0B1D3E]/10' : ''}`}
                       >
                         <p className="text-sm font-medium text-gray-900 truncate">{b.billNo}{b.uniqueNumber ? ` — ${b.uniqueNumber}` : ''}</p>
                         <p className="text-xs text-gray-500 mt-0.5 truncate">{b.business}{b.owner && b.owner !== b.business ? ` · ${b.owner}` : ''}</p>
-                        <p className="text-xs text-emerald-600 font-medium mt-0.5">Balance: {formatCurrency(b.balance)}</p>
+                        <p className="text-xs text-[#0B1D3E] font-medium mt-0.5">Balance: {formatCurrency(b.balance)}</p>
                       </button>
                     ))}
                   </div>
@@ -928,7 +928,7 @@ export function PaymentsPage() {
                   type="text"
                   readOnly
                   value={selectedBillNo ? formatCurrency(autoFill.balance) : '—'}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm font-semibold text-emerald-700 cursor-not-allowed"
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm font-semibold text-[#0B1D3E] cursor-not-allowed"
                 />
               </div>
 
@@ -956,7 +956,7 @@ export function PaymentsPage() {
                   value={payAmount}
                   onChange={(e) => setPayAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
+                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
                 />
               </div>
 
@@ -967,7 +967,7 @@ export function PaymentsPage() {
                   <select
                     value={payMethod}
                     onChange={(e) => setPayMethod(e.target.value as PaymentMethod)}
-                    className="w-full appearance-none rounded-lg border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition cursor-pointer"
+                    className="w-full appearance-none rounded-lg border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition cursor-pointer"
                   >
                     <option value="Cash">Cash</option>
                     <option value="Mobile Money">Mobile Money</option>
@@ -987,7 +987,7 @@ export function PaymentsPage() {
                   value={payReference}
                   onChange={(e) => setPayReference(e.target.value)}
                   placeholder="e.g. MTN-12345"
-                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition"
+                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
                 />
               </div>
 
@@ -999,7 +999,7 @@ export function PaymentsPage() {
                   value={payRemarks}
                   onChange={(e) => setPayRemarks(e.target.value)}
                   placeholder="Optional notes about this payment…"
-                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition resize-none"
+                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition resize-none"
                 />
               </div>
             </div>
@@ -1015,7 +1015,7 @@ export function PaymentsPage() {
               <button
                 onClick={handleSave}
                 disabled={!payRevenueCategory || !selectedBillNo || !payAmount}
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#E31E24] disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
               >
                 <Download className="h-4 w-4" />
                 Save Payment

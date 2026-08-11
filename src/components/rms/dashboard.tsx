@@ -107,9 +107,9 @@ const fmtCurrency = (n: number) => `GH₵ ${fmt(n)}`;
 // ---------------------------------------------------------------------------
 
 const COLORS = [
-  '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
-  '#14b8a6', '#e11d48',
+  '#0B1D3E', '#E31E24', '#3b82f6', '#f59e0b', '#8b5cf6',
+  '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#1a3a6e',
+  '#4a7ab5', '#b44a4d',
 ];
 
 // ---------------------------------------------------------------------------
@@ -138,7 +138,7 @@ function StatCard({ icon, label, value, change, accent, sub }: StatCardProps) {
           <span
             className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
               change >= 0
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
                 : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
             }`}
           >
@@ -346,7 +346,7 @@ export function DashboardPage() {
     const active = businesses.filter(b => b.status === 'Active').length;
     const inactive = businesses.filter(b => b.status === 'Inactive').length;
     return [
-      { name: 'Active', value: active, color: '#10b981' },
+      { name: 'Active', value: active, color: '#0B1D3E' },
       { name: 'Inactive', value: inactive, color: '#ef4444' },
     ];
   }, [businesses]);
@@ -359,7 +359,7 @@ export function DashboardPage() {
       statusMap.set(s, (statusMap.get(s) || 0) + 1);
     });
     const statusColors: Record<string, string> = {
-      Paid: '#10b981',
+      Paid: '#0B1D3E',
       Unpaid: '#ef4444',
       Partial: '#f59e0b',
       Overdue: '#dc2626',
@@ -414,7 +414,7 @@ export function DashboardPage() {
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-[#0B1D3E] flex items-center justify-center">
               <Landmark className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -429,7 +429,7 @@ export function DashboardPage() {
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-xs text-slate-400 dark:text-slate-500">Collection Rate</p>
-              <p className={`text-lg font-bold ${collectionRate >= 50 ? 'text-emerald-600' : collectionRate > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+              <p className={`text-lg font-bold ${collectionRate >= 50 ? 'text-[#0B1D3E] dark:text-[#4a7ab5]' : collectionRate > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
                 {collectionRate}%
               </p>
             </div>
@@ -444,11 +444,11 @@ export function DashboardPage() {
         {/* ── Stat Cards ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            icon={<Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+            icon={<Building2 className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
             label="Total Businesses"
             value={fmt(totalBusinesses)}
             change={totalBusinesses > 0 ? 12 : 0}
-            accent="bg-emerald-100 dark:bg-emerald-900/40"
+            accent="bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20"
             sub={`${activeBusinesses} active`}
           />
           <StatCard
@@ -458,11 +458,11 @@ export function DashboardPage() {
             accent="bg-blue-100 dark:bg-blue-900/40"
           />
           <StatCard
-            icon={<CircleDollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+            icon={<CircleDollarSign className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
             label="Amount Collected"
             value={fmtCurrency(totalCollected)}
             change={totalCollected > 0 ? 8 : 0}
-            accent="bg-emerald-100 dark:bg-emerald-900/40"
+            accent="bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20"
             sub={`${payments.length} payment(s)`}
           />
           <StatCard
@@ -485,10 +485,10 @@ export function DashboardPage() {
             sub={`Total billed: ${fmtCurrency(totalBilled)}`}
           />
           <StatCard
-            icon={<CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+            icon={<CheckCircle2 className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
             label="Bills Paid"
             value={fmt(bills.filter(b => b.status === 'Paid').length)}
-            accent="bg-emerald-100 dark:bg-emerald-900/40"
+            accent="bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20"
             sub={`Value: ${fmtCurrency(totalPaidBills)}`}
           />
           <StatCard
@@ -520,16 +520,16 @@ export function DashboardPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={monthlyRevenue}>
                     <defs>
-                      <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
+                      <linearGradient id="navyGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0B1D3E" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#0B1D3E" stopOpacity={0.05} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                     <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={{ stroke: '#e2e8f0' }} tickLine={false} />
                     <YAxis tickFormatter={(v) => `${v / 1000}k`} tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} width={48} />
                     <Tooltip content={<RevenueTooltip />} />
-                    <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2.5} fill="url(#emeraldGradient)" dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, fill: '#059669', strokeWidth: 2, stroke: '#fff' }} />
+                    <Area type="monotone" dataKey="revenue" stroke="#0B1D3E" strokeWidth={2.5} fill="url(#navyGradient)" dot={{ r: 4, fill: '#0B1D3E', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6, fill: '#E31E24', strokeWidth: 2, stroke: '#fff' }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -670,7 +670,7 @@ export function DashboardPage() {
                     <tr key={`biz-${i}-${b.regNumber || b.name}`} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                       <td className="text-sm text-slate-900 dark:text-white font-medium px-3 py-3">
                         <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold shrink-0">
+                          <span className="w-7 h-7 rounded-full bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center text-[#0B1D3E] dark:text-[#4a7ab5] text-xs font-bold shrink-0">
                             {(b.name || '?')[0]}
                           </span>
                           <span className="truncate max-w-[140px]">{b.name}</span>
@@ -681,7 +681,7 @@ export function DashboardPage() {
                       <td className="px-3 py-3">
                         <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${
                           b.status === 'Active'
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
                             : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                         }`}>
                           {b.status}
@@ -720,7 +720,7 @@ export function DashboardPage() {
                       <td className="px-3 py-3">
                         <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${
                           p.method === 'Mobile Money' || p.method === 'MoMo'
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
                             : p.method === 'Bank' || p.method === 'Bank Transfer'
                             ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
@@ -752,7 +752,7 @@ export function DashboardPage() {
                 {topCollectors.map((c, i) => (
                   <tr key={`collector-${i}`} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="text-sm text-slate-900 dark:text-white font-medium px-3 py-3 flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold shrink-0">
+                      <span className="w-7 h-7 rounded-full bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center text-[#0B1D3E] dark:text-[#4a7ab5] text-xs font-bold shrink-0">
                         {c.name.split(' ').map((n) => n[0]).join('')}
                       </span>
                       {c.name}

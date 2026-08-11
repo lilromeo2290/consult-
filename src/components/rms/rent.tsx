@@ -469,7 +469,7 @@ export function RentPage() {
   };
 
   // ── Shared classes ──────────────────────────────────────────────────────
-  const inputClass =     'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition';
+  const inputClass =     'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
   const labelClass =     'block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5';
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -491,7 +491,7 @@ export function RentPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setForm({ ...defaultForm, occupantUniqueId: generateUniqueId() }); setEditingId(null); setView('form'); setRevenueSearch(''); setShowRevenueDropdown(false); rentCodeDialogTriggered.current = ''; }}
-              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Add Rent
@@ -577,14 +577,14 @@ export function RentPage() {
                         <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${
                           rent.vacant === 'Yes'
                             ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            : 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
                         }`}>
                           {rent.vacant || 'No'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1">
-                          <button onClick={() => handleEdit(rent)} className="p-1.5 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer" title="Edit"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => handleEdit(rent)} className="p-1.5 rounded-md text-slate-400 hover:text-[#0B1D3E] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer" title="Edit"><Pencil className="w-4 h-4" /></button>
                           <button onClick={() => handleDelete(rent.id)} className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer" title="Delete"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
@@ -635,7 +635,7 @@ export function RentPage() {
           <button type="button" onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors cursor-pointer">
             <X className="w-4 h-4" /> Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>
         </div>
@@ -690,7 +690,7 @@ export function RentPage() {
                 <label className={`${labelClass} block`}>GPS Coordinates (Long)</label>
                 <div className="flex gap-1.5">
                   <input type="text" name="propertyLongitude" value={form.propertyLongitude} onChange={handleFormChange} placeholder="e.g. -0.187028" className={inputClass} />
-                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-medium transition-colors" title="Auto-detect GPS">
+                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] disabled:opacity-50 text-white text-xs font-medium transition-colors" title="Auto-detect GPS">
                     {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
                   </button>
                 </div>
@@ -773,7 +773,7 @@ export function RentPage() {
                     {rentRevenueCodeFiltered.length === 0 ? (
                       <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
                     ) : rentRevenueCodeFiltered.slice(0, 50).map((item) => (
-                      <button key={item.code} type="button" onClick={() => { handleRentRevenueSelect(item); setRentRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
+                      <button key={item.code} type="button" onClick={() => { handleRentRevenueSelect(item); setRentRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
                         <span className="font-mono text-xs text-slate-500 mr-2">{item.code}</span>
                         <span className="text-slate-800 dark:text-white">{item.description}</span>
                       </button>
@@ -803,7 +803,7 @@ export function RentPage() {
                             key={item.code}
                             type="button"
                             onClick={() => selectRevenue(item)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0"
                           >
                             <span className="font-medium text-slate-800 dark:text-white">{item.description}</span>
                             <span className="ml-2 text-xs text-slate-400 font-mono">{item.code}</span>
@@ -909,7 +909,7 @@ export function RentPage() {
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               <label className="flex items-center gap-2 pb-2.5 cursor-pointer select-none">
-                <input type="checkbox" name="excludedFromRenting" checked={form.excludedFromRenting} onChange={handleFormChange} className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                <input type="checkbox" name="excludedFromRenting" checked={form.excludedFromRenting} onChange={handleFormChange} className="w-4 h-4 rounded border-slate-300 text-[#0B1D3E] focus:ring-[#0B1D3E]" />
                 <span className="text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">Excluded from renting</span>
               </label>
             </div>
@@ -925,7 +925,7 @@ export function RentPage() {
             <X className="w-4 h-4" />
             Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>

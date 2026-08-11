@@ -73,12 +73,12 @@ export function NavigationCard({
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     border: active
-      ? '1px solid rgba(16,185,129,0.2)'
+      ? '1px solid rgba(11,29,62,0.2)'
       : isDark
         ? '1px solid rgba(148,163,184,0.1)'
         : '1px solid rgba(203,213,225,0.6)',
     background: active
-      ? 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(45,212,191,0.04) 100%)'
+      ? 'linear-gradient(135deg, rgba(11,29,62,0.08) 0%, rgba(227,30,36,0.03) 100%)'
       : isDark
         ? 'rgba(30, 41, 59, 0.35)'
         : 'rgba(255, 255, 255, 0.7)',
@@ -102,7 +102,7 @@ export function NavigationCard({
         className={
           `relative overflow-hidden rounded-2xl p-6 transition-all duration-300 ` +
           (active
-            ? `group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900`
+            ? `group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B1D3E] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900`
             : 'cursor-not-allowed opacity-70')
         }
         style={cardStyle}
@@ -129,7 +129,7 @@ export function NavigationCard({
             className="pointer-events-none absolute w-40 h-40 rounded-full -translate-x-1/2 -translate-y-1/2"
             style={{
               background:
-                'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)',
+                'radial-gradient(circle, rgba(11,29,62,0.1) 0%, transparent 70%)',
               left: springX,
               top: springY,
             }}
@@ -148,7 +148,7 @@ export function NavigationCard({
               height: 10,
               marginLeft: -5,
               marginTop: -5,
-              background: 'rgba(16,185,129,0.25)',
+              background: 'rgba(11,29,62,0.2)',
             }}
             initial={{ scale: 0, opacity: 0.6 }}
             animate={{ scale: 25, opacity: 0 }}
@@ -162,7 +162,7 @@ export function NavigationCard({
             className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
             style={{
               background:
-                'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, transparent 50%, rgba(45,212,191,0.1) 100%)',
+                'linear-gradient(135deg, rgba(11,29,62,0.12) 0%, transparent 50%, rgba(227,30,36,0.06) 100%)',
               borderRadius: 'inherit',
             }}
           />
@@ -174,7 +174,7 @@ export function NavigationCard({
             className={
               `flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ` +
               (active
-                ? 'bg-emerald-500/10 group-hover:bg-emerald-500/20'
+                ? 'bg-[#0B1D3E]/10 group-hover:bg-[#0B1D3E]/20'
                 : 'bg-slate-200/60 dark:bg-slate-700/40')
             }
             whileHover={active ? { rotate: [0, -10, 10, 0] } : undefined}
@@ -183,7 +183,7 @@ export function NavigationCard({
             <Icon
               className={`w-5 h-5 transition-colors duration-300 ${
                 active
-                  ? 'text-emerald-500 group-hover:text-emerald-400'
+                  ? 'text-[#0B1D3E] dark:text-[#4a7ab5] group-hover:text-[#E31E24]'
                   : 'text-slate-400 dark:text-slate-500'
               }`}
             />
@@ -203,7 +203,7 @@ export function NavigationCard({
               </h3>
               {active && (
                 <motion.span
-                  className="flex-shrink-0 text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1"
+                  className="flex-shrink-0 text-xs font-medium text-[#0B1D3E] dark:text-[#4a7ab5] flex items-center gap-1"
                   initial={{ opacity: 0, x: -5 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + index * 0.1 }}

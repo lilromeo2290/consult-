@@ -101,7 +101,7 @@ export function PaymentHistoryPage() {
         <td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;font-size:11px;text-align:right;">${p.balance > 0 ? fmt(p.balance) : '—'}</td>
       </tr>`).join('');
 
-    return `<!DOCTYPE html><html><head><title>Payment History Report</title><style>@page{size:A4;margin:12mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;padding:0;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:12px;}.header h1{font-size:17px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.rpt-title{text-align:center;font-size:14px;font-weight:600;margin-bottom:2px;color:#059669;}.rpt-meta{text-align:center;font-size:10px;color:#94a3b8;margin-bottom:16px;}table{width:100%;border-collapse:collapse;font-size:11px;}thead th{text-align:left;padding:6px 8px;background:#f8fafc;color:#64748b;font-size:10px;text-transform:uppercase;border-bottom:2px solid #e2e8f0;}tfoot td{padding:6px 8px;font-size:11px;font-weight:700;border-top:2px solid #1e293b;background:#f8fafc;}.footer{margin-top:24px;padding-top:10px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;}</style></head><body><div class="header"><h1>KUMASI METROPOLITAN ASSEMBLY</h1><p>Revenue Management System — Payment History Report</p></div><div class="rpt-title">${reportTitle}</div><div class="rpt-meta">Generated: ${new Date().toLocaleString()} | ${data.length} payment(s)</div><table><thead><tr><th>Receipt #</th><th>Date</th><th>Entity</th><th>Bill No</th><th>Collector</th><th>Method</th><th style="text-align:right;">Amount</th><th style="text-align:right;">Balance</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="6" style="text-align:right;">Total</td><td style="text-align:right;">${fmt(totalAmt)}</td><td style="text-align:right;color:${totalBal>0?'#dc2626':'#059669'};">${totalBal>0?fmt(totalBal):'—'}</td></tr></tfoot></table><div class="footer">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`;
+    return `<!DOCTYPE html><html><head><title>Payment History Report</title><style>@page{size:A4;margin:12mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;padding:0;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:12px;}.header h1{font-size:17px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.rpt-title{text-align:center;font-size:14px;font-weight:600;margin-bottom:2px;color:#E31E24;}.rpt-meta{text-align:center;font-size:10px;color:#94a3b8;margin-bottom:16px;}table{width:100%;border-collapse:collapse;font-size:11px;}thead th{text-align:left;padding:6px 8px;background:#f8fafc;color:#64748b;font-size:10px;text-transform:uppercase;border-bottom:2px solid #e2e8f0;}tfoot td{padding:6px 8px;font-size:11px;font-weight:700;border-top:2px solid #1e293b;background:#f8fafc;}.footer{margin-top:24px;padding-top:10px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;}</style></head><body><div class="header"><h1>KUMASI METROPOLITAN ASSEMBLY</h1><p>Revenue Management System — Payment History Report</p></div><div class="rpt-title">${reportTitle}</div><div class="rpt-meta">Generated: ${new Date().toLocaleString()} | ${data.length} payment(s)</div><table><thead><tr><th>Receipt #</th><th>Date</th><th>Entity</th><th>Bill No</th><th>Collector</th><th>Method</th><th style="text-align:right;">Amount</th><th style="text-align:right;">Balance</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="6" style="text-align:right;">Total</td><td style="text-align:right;">${fmt(totalAmt)}</td><td style="text-align:right;color:${totalBal>0?'#dc2626':'#E31E24'};">${totalBal>0?fmt(totalBal):'—'}</td></tr></tfoot></table><div class="footer">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`;
   };
 
   const handlePrintAll = () => {
@@ -141,7 +141,7 @@ export function PaymentHistoryPage() {
     return Array.from(map.values()).sort((a, b) => b.total - a.total);
   }, [filtered]);
 
-  const inputCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition';
+  const inputCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
 
   return (
     <div className="space-y-6">
@@ -151,7 +151,7 @@ export function PaymentHistoryPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Payment History</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Search and print payment history for any business or property within a date range</p>
         </div>
-        <button onClick={handlePrintAll} disabled={filtered.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer">
+        <button onClick={handlePrintAll} disabled={filtered.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer">
           <Printer className="w-4 h-4" />
           Print All ({filtered.length})
         </button>
@@ -160,7 +160,7 @@ export function PaymentHistoryPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center"><CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /></div>
+          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center"><CreditCard className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" /></div>
           <div><p className="text-xs text-slate-500 dark:text-slate-400">Payments</p><p className="text-lg font-bold text-slate-900 dark:text-white">{stats.count}</p></div>
         </div>
         <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
@@ -186,7 +186,7 @@ export function PaymentHistoryPage() {
               <button
                 key={`entity-${i}`}
                 onClick={() => handlePrintEntity(e.name)}
-                className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer text-left"
+                className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer text-left"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   {e.type === 'Property' ? <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" /> : <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
@@ -195,7 +195,7 @@ export function PaymentHistoryPage() {
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-xs text-slate-500 dark:text-slate-400">{e.count} payment{e.count !== 1 ? 's' : ''}</span>
                   <span className="text-sm font-semibold text-slate-900 dark:text-white">{fmt(e.total)}</span>
-                  <Printer className="w-3.5 h-3.5 text-slate-400 hover:text-emerald-600" />
+                  <Printer className="w-3.5 h-3.5 text-slate-400 hover:text-[#0B1D3E]" />
                 </div>
               </button>
             ))}
@@ -265,7 +265,7 @@ export function PaymentHistoryPage() {
               ) : (
                 paginated.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-emerald-700 dark:text-emerald-400 whitespace-nowrap">{p.receiptNo}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-[#0B1D3E] dark:text-[#4a7ab5] whitespace-nowrap">{p.receiptNo}</td>
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">{p.date}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <p className="text-sm font-medium text-slate-900 dark:text-white">{p.business}</p>
@@ -273,7 +273,7 @@ export function PaymentHistoryPage() {
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-400 whitespace-nowrap hidden lg:table-cell">{p.billNo}</td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-400 whitespace-nowrap hidden md:table-cell">{p.collector}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${p.method === 'Cash' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : p.method === 'Mobile Money' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' : p.method === 'Bank' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : p.method === 'POS' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400'}`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${p.method === 'Cash' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : p.method === 'Mobile Money' ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]' : p.method === 'Bank' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : p.method === 'POS' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400'}`}>
                         {p.method === 'Mobile Money' ? 'MoMo' : p.method}
                       </span>
                     </td>
@@ -287,7 +287,7 @@ export function PaymentHistoryPage() {
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => handlePrintEntity(p.business)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer"
                         title="Print all payments for this entity"
                       >
                         <Printer className="w-4 h-4" />
@@ -306,7 +306,7 @@ export function PaymentHistoryPage() {
             <div className="flex items-center gap-1">
               <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><ChevronLeft className="w-4 h-4" /></button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                <button key={pg} onClick={() => setPage(pg)} className={`w-8 h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${pg === safePage ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>{pg}</button>
+                <button key={pg} onClick={() => setPage(pg)} className={`w-8 h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${pg === safePage ? 'bg-[#0B1D3E] text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>{pg}</button>
               ))}
               <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><ChevronRight className="w-4 h-4" /></button>
             </div>

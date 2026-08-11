@@ -113,21 +113,21 @@ function VerifyContent() {
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
-          <div className="bg-emerald-600 p-6 text-center text-white">
+          <div className="bg-[#0B1D3E] p-6 text-center text-white">
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
               <Shield className="w-7 h-7" />
             </div>
             <h1 className="text-xl font-bold">{docType} Verification</h1>
-            <p className="text-emerald-100 text-sm mt-1">${decodedData.assemblyName} — Revenue Management System</p>
+            <p className="text-[#4a7ab5] text-sm mt-1">${decodedData.assemblyName} — Revenue Management System</p>
           </div>
 
           <div className="p-6 space-y-6">
             {/* Verification Status */}
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-              <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 border border-[#0B1D3E]/20 dark:border-[#4a7ab5]/30">
+              <CheckCircle className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5] flex-shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Verified Successfully</p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400">Barcode integrity confirmed (Checksum: {decodedData.checksum})</p>
+                <p className="text-sm font-semibold text-[#0B1D3E] dark:text-[#4a7ab5]">Verified Successfully</p>
+                <p className="text-xs text-[#0B1D3E]/70 dark:text-[#4a7ab5]/70">Barcode integrity confirmed (Checksum: {decodedData.checksum})</p>
               </div>
             </div>
 
@@ -155,7 +155,7 @@ function VerifyContent() {
                     </tr>
                     <tr className="bg-slate-50 dark:bg-slate-900/40">
                       <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-medium">Amount</td>
-                      <td className="px-4 py-2.5 text-right font-bold text-emerald-600 dark:text-emerald-400 text-base">{fmtGhc(decodedData.amount)}</td>
+                      <td className="px-4 py-2.5 text-right font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-base">{fmtGhc(decodedData.amount)}</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 text-xs uppercase font-medium">Date</td>
@@ -172,7 +172,7 @@ function VerifyContent() {
                       <td className="px-4 py-2.5 text-right">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           decodedData.status === 'Valid' || decodedData.status === 'Paid'
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+                            ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
                             : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
                         }`}>
                           {decodedData.status}
@@ -186,11 +186,11 @@ function VerifyContent() {
 
             {/* Send Summary Form */}
             {sendStatus === 'success' ? (
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 border border-[#0B1D3E]/20 dark:border-[#4a7ab5]/30">
+                <CheckCircle className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5] flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Summary Sent!</p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400">The {docType.toLowerCase()} details have been sent{email ? ' to ' + email : ''}{phone ? ' to ' + phone : ''}.</p>
+                  <p className="text-sm font-semibold text-[#0B1D3E] dark:text-[#4a7ab5]">Summary Sent!</p>
+                  <p className="text-xs text-[#0B1D3E]/70 dark:text-[#4a7ab5]/70">The {docType.toLowerCase()} details have been sent{email ? ' to ' + email : ''}{phone ? ' to ' + phone : ''}.</p>
                 </div>
               </div>
             ) : (
@@ -206,7 +206,7 @@ function VerifyContent() {
                       placeholder="Phone number (e.g. +233 24 567 8901)"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-transparent transition"
                     />
                   </div>
                   <div className="relative">
@@ -216,7 +216,7 @@ function VerifyContent() {
                       placeholder="Email address (e.g. name@example.com)"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-transparent transition"
                     />
                   </div>
 
@@ -229,7 +229,7 @@ function VerifyContent() {
                   <button
                     onClick={handleSend}
                     disabled={sendStatus === 'sending'}
-                    className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#0B1D3E] hover:bg-[#1a3a6e] disabled:bg-[#4a7ab5] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
                   >
                     {sendStatus === 'sending' ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</>
@@ -258,7 +258,7 @@ export default function VerifyPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#0B1D3E] animate-spin" />
       </div>
     }>
       <VerifyContent />

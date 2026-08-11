@@ -356,7 +356,7 @@ export function BillingPage() {
 
   const StatusBadge = ({ status }: { status: Bill['status'] }) => {
     const styles: Record<Bill['status'], string> = {
-      Paid: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+      Paid: 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]',
       Partial: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
       Unpaid: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
       Overdue: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
@@ -671,7 +671,7 @@ export function BillingPage() {
             .header { text-align: center; border-bottom: 3px double #1e293b; padding-bottom: 16px; margin-bottom: 24px; }
             .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.05em; }
             .header p { font-size: 12px; color: #64748b; margin-top: 4px; }
-            .bill-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #059669; }
+            .bill-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #E31E24; }
             .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
             .info-item { font-size: 13px; }
             .info-item .label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -743,11 +743,11 @@ export function BillingPage() {
   // ── CSS classes ──────────────────────────────────────────────────────────
 
   const inputClass =
-    'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition';
+    'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
   const labelClass =
     'block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5';
   const btnPrimary =
-    'inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap';
+    'inline-flex items-center gap-2 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap';
   const btnSecondary =
     'inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap';
 
@@ -783,8 +783,8 @@ export function BillingPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
-              <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20">
+              <FileText className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
             </div>
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Bills Generated</p>
@@ -794,8 +794,8 @@ export function BillingPage() {
         </div>
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
-              <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20">
+              <DollarSign className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
             </div>
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Billed</p>
@@ -1001,14 +1001,14 @@ export function BillingPage() {
                       <div className="inline-flex items-center gap-1">
                         <button
                           onClick={() => handleViewBill(bill)}
-                          className="p-1.5 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                          className="p-1.5 rounded-md text-slate-400 hover:text-[#0B1D3E] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors"
                           title="View Bill"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handlePrintBill(bill)}
-                          className="p-1.5 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                          className="p-1.5 rounded-md text-slate-400 hover:text-[#0B1D3E] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors"
                           title="Print Bill"
                         >
                           <Printer className="w-4 h-4" />
@@ -1051,7 +1051,7 @@ export function BillingPage() {
               onClick={() => setCurrentPage(page)}
               className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
                 page === safeCurrentPage
-                  ? 'bg-emerald-600 text-white'
+                  ? 'bg-[#0B1D3E] text-white'
                   : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700'
               }`}
             >
@@ -1082,8 +1082,8 @@ export function BillingPage() {
 
             {bulkProgress === 'done' ? (
               <div className="px-6 py-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-16 h-16 rounded-full bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-[#0B1D3E] dark:text-[#4a7ab5]" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Bills Generated Successfully</h3>
                 <p className="text-slate-500 dark:text-slate-400 mb-6">
@@ -1209,7 +1209,7 @@ export function BillingPage() {
               <div className="text-center border-b-2 border-dashed border-slate-300 dark:border-slate-600 px-6 py-5">
                 <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-wider uppercase">{_asmName()}</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Revenue Management System</p>
-                <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-3 tracking-wide">OFFICIAL BILL</p>
+                <p className="text-sm font-semibold text-[#0B1D3E] dark:text-[#4a7ab5] mt-3 tracking-wide">OFFICIAL BILL</p>
               </div>
 
               {/* Bill Info Grid */}
@@ -1258,7 +1258,7 @@ export function BillingPage() {
                   </div>
                   <div className="border-t-2 border-slate-900 dark:border-slate-100 pt-2 mt-2 flex justify-between">
                     <span className="font-bold text-slate-900 dark:text-white">Amount Due</span>
-                    <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatCurrency(viewingBill.amountDue)}</span>
+                    <span className="font-bold text-lg text-[#0B1D3E] dark:text-[#4a7ab5]">{formatCurrency(viewingBill.amountDue)}</span>
                   </div>
                 </div>
               </div>
@@ -1376,7 +1376,7 @@ export function BillingPage() {
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleSelectEntity(entity)}
-                        className="w-full text-left px-4 py-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border-b border-slate-100 dark:border-slate-700 last:border-b-0 transition-colors"
+                        className="w-full text-left px-4 py-2.5 hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 border-b border-slate-100 dark:border-slate-700 last:border-b-0 transition-colors"
                       >
                         <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{entity.businessName || entity.uniqueNumber}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
@@ -1480,7 +1480,7 @@ export function BillingPage() {
                   <input
                     type="text"
                     value={formatCurrency(formData.arrears + formData.charge)}
-                    className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-emerald-700 dark:text-emerald-400 font-semibold`}
+                    className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-[#0B1D3E] dark:text-[#4a7ab5] font-semibold`}
                     readOnly
                   />
                 </div>

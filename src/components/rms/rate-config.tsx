@@ -595,7 +595,7 @@ export function RateConfigPage() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Rate Configuration</h1>
           {saveStatus && (
-            <span className={`text-xs font-medium px-2.5 py-1 rounded ${saveStatus.startsWith('Saved') || saveStatus.startsWith('Rate') ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>{saveStatus}</span>
+            <span className={`text-xs font-medium px-2.5 py-1 rounded ${saveStatus.startsWith('Saved') || saveStatus.startsWith('Rate') ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>{saveStatus}</span>
           )}
           {loadInfo && <span className="text-xs font-medium px-2.5 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{loadInfo}</span>}
           {loadError && <span className="text-xs font-medium px-2.5 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{loadError}</span>}
@@ -605,7 +605,7 @@ export function RateConfigPage() {
           disabled={!hasUnsavedChanges || isSaving}
           className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg transition-all shadow-sm ${
             hasUnsavedChanges && !isSaving
-              ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.97] shadow-emerald-200 dark:shadow-emerald-900/40'
+              ? 'bg-[#0B1D3E] text-white hover:bg-[#E31E24] active:scale-[0.97] shadow-[#0B1D3E]/10 dark:shadow-[#4a7ab5]/20'
               : 'bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed'
           }`}
         >
@@ -622,7 +622,7 @@ export function RateConfigPage() {
             onClick={() => setActiveTab(tab)}
             className={`px-6 py-2.5 text-sm font-semibold transition-colors rounded-md ${
               activeTab === tab
-                ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 shadow-sm'
+                ? 'bg-white dark:bg-slate-700 text-[#0B1D3E] dark:text-[#4a7ab5] shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -638,7 +638,7 @@ export function RateConfigPage() {
           <label className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">Search:</label>
           <input
             type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-48 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+            className="w-48 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition"
             placeholder="Search rates..."
           />
           <button onClick={handleExportRates} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm" title="Export to Excel">
@@ -649,7 +649,7 @@ export function RateConfigPage() {
           </button>
           <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleImportRates} className="hidden" />
           <div className="relative ml-2">
-            <button onClick={() => setShowAddForm(!showAddForm)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm">
+            <button onClick={() => setShowAddForm(!showAddForm)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-[#0B1D3E] text-white hover:bg-[#E31E24] transition-colors shadow-sm">
               <Plus className="w-3.5 h-3.5" /> Add Rate
             </button>
             {showAddForm && (
@@ -664,7 +664,7 @@ export function RateConfigPage() {
                     {hasPredefinedCodes ? (
                       <Combobox name="addRateCode" value={newCode} onChange={(e) => handleCodeSelect(e.target.value)} options={tabConfig.codes.map((c) => ({ value: c, label: c }))} placeholder="Select or search code..." />
                     ) : (
-                      <input type="text" value={newCode} onChange={(e) => setNewCode(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Enter code (e.g. FINE-001)" />
+                      <input type="text" value={newCode} onChange={(e) => setNewCode(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition" placeholder="Enter code (e.g. FINE-001)" />
                     )}
                   </div>
                   <div>
@@ -672,7 +672,7 @@ export function RateConfigPage() {
                     {hasPredefinedCodes ? (
                       <input type="text" value={newClass} readOnly className="w-full rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 outline-none" placeholder="Auto-filled from code" />
                     ) : (
-                      <input type="text" value={newClass} onChange={(e) => setNewClass(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Enter class name" />
+                      <input type="text" value={newClass} onChange={(e) => setNewClass(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition" placeholder="Enter class name" />
                     )}
                   </div>
                   <div>
@@ -680,20 +680,20 @@ export function RateConfigPage() {
                     {hasPredefinedCodes ? (
                       <input type="text" value={newCategory} readOnly className="w-full rounded border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 outline-none" placeholder="Auto-filled from code" />
                     ) : (
-                      <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Enter category" />
+                      <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition" placeholder="Enter category" />
                     )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">{activeTab === 'Property' ? 'Unassessed Rate' : isValuedProperty ? 'Rate Impost' : 'Amount'}</label>
-                    <input type="number" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="0.00" step="0.01" min="0" />
+                    <input type="number" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition" placeholder="0.00" step="0.01" min="0" />
                   </div>
                   {!isValuedProperty && (
                   <div>
                     <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-0.5">{activeTab === 'Property' ? 'Minimum Rate' : 'Ceiling'}</label>
-                    <input type="number" value={newCeiling} onChange={(e) => setNewCeiling(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="0.00 (max limit)" step="0.01" min="0" />
+                    <input type="number" value={newCeiling} onChange={(e) => setNewCeiling(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition" placeholder="0.00 (max limit)" step="0.01" min="0" />
                   </div>
                   )}
-                  <button onClick={handleAddRate} disabled={!newCode.trim() || !newAmount.trim()} className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                  <button onClick={handleAddRate} disabled={!newCode.trim() || !newAmount.trim()} className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-[#0B1D3E] text-white hover:bg-[#E31E24] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                     Add Entry
                   </button>
                 </div>
@@ -728,17 +728,17 @@ export function RateConfigPage() {
               ) : (
                 paged.map((row, idx) => (
                   <tr key={row.code} className={idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/40'}>
-                    <td className="px-1 py-1.5 text-center"><input type="radio" name="rateRadio" checked={radioCode === row.code} onChange={() => handleRadio(row.code)} className="accent-emerald-600" /></td>
-                    <td className="px-1 py-1.5 text-center"><input type="checkbox" checked={row.selected} onChange={() => handleCheck(row.code)} className="accent-emerald-600" /></td>
+                    <td className="px-1 py-1.5 text-center"><input type="radio" name="rateRadio" checked={radioCode === row.code} onChange={() => handleRadio(row.code)} className="accent-[#0B1D3E]" /></td>
+                    <td className="px-1 py-1.5 text-center"><input type="checkbox" checked={row.selected} onChange={() => handleCheck(row.code)} className="accent-[#0B1D3E]" /></td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 font-mono whitespace-nowrap">{row.code}</td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[260px] truncate">{row.businessClass}</td>
                     <td className="px-3 py-1.5 text-slate-800 dark:text-slate-200 max-w-[300px] truncate">{row.category}</td>
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
-                      <input type="number" inputMode="decimal" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" />
+                      <input type="number" inputMode="decimal" value={row.amount || ''} onChange={(e) => handleAmountEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-[#0B1D3E] rounded" step="0.01" min="0" />
                     </td>
                     {!isValuedProperty && (
                     <td className={`px-1 py-0.5 ${isMod(row) ? 'bg-red-100 dark:bg-red-900/30' : ''}`}>
-                      <input type="number" inputMode="decimal" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-emerald-500 rounded" step="0.01" min="0" placeholder="0" />
+                      <input type="number" inputMode="decimal" value={row.ceiling || ''} onChange={(e) => handleCeilingEdit(row.code, e.target.value)} className="w-full text-right px-2 py-1.5 bg-transparent border-0 outline-none font-mono text-xs text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-inset focus:ring-[#0B1D3E] rounded" step="0.01" min="0" placeholder="0" />
                     </td>
                     )}
                   </tr>
