@@ -15,7 +15,7 @@ def deploy():
     ssh.connect(HOST, username=USER, password=PASS)
     sftp = ssh.open_sftp()
 
-    # Create tar: standalone + static
+    # Create tar: standalone + static + public (for logos, images, etc.)
     print('Creating tar...')
     buf = io.BytesIO()
     with tarfile.open(fileobj=buf, mode='w:') as tar:
@@ -29,6 +29,12 @@ def deploy():
                 full = os.path.join(root, f)
                 arc = os.path.relpath(full, '/home/z/my-project/.next/static')
                 tar.add(full, arcname='standalone/.next/static/' + arc)
+        # Include public/ directory for logos, images, etc.
+        for root, dirs, files in os.walk('/home/z/my-project/public'):
+            for f in files:
+                full = os.path.join(root, f)
+                arc = os.path.relpath(full, '/home/z/my-project/public')
+                tar.add(full, arcname='standalone/public/' + arc)
 
     buf.seek(0)
     remote_tar = REMOTE_APP + '/deploy.tar'

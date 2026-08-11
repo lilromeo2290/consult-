@@ -271,3 +271,35 @@ Stage Summary:
 - **Your 12 saved rate overrides are intact** in `/home/consult-rms/data/rms.db` and now loading correctly
 - Future deploys will never overwrite the DATABASE_URL thanks to the deploy script fix
 - Server running on port 3000 via PM2 as root, no stale processes remaining
+
+---
+Task ID: 2
+Agent: Main
+Task: Change business certificate to new design template and fix sidebar logo
+
+Work Log:
+- Analyzed uploaded certificate design image (ChatGPT Image Aug 7, 2026, 08_32_06 AM.png) using VLM
+- Extracted detailed layout: ornate gold border, assembly seal + name header, "BUSINESS OPERATING PERMIT" title, business name + red permit number, legal text under Act 936, 4 data fields with dotted lines, dates, NOTE section + signature block
+- Completely rewrote `/home/z/my-project/src/lib/notifications/certificate-pdf.ts` to match new template
+  - Ornate bronze/gold double border with decorative corner brackets and swirls
+  - Assembly seal (assembly-seal.jpg, 1024x1024) as header logo + vertical separator
+  - "KPANDO MUNICIPAL ASSEMBLY" text right of logo
+  - Gold diamond divider with end dots
+  - Red permit number (36pt bold)
+  - Business name in uppercase
+  - Legal text citing Local Governance Act, 2016 (Act 936) Section 87(1)
+  - 4 numbered fields with dotted leader lines
+  - Date of Issue / Expiry Date with ordinal formatting (e.g. "28TH APRIL, 2025")
+  - NOTE section (left) + SIGNATURE block (right) with red "MUNICIPAL CO-ORDINATING DIRECTOR"
+  - Background watermark seal at 4% opacity
+- Diagnosed sidebar logo issue: deploy script was NOT uploading `public/` directory to VPS
+  - Only `.next/standalone/` and `.next/static/` were being deployed
+  - Both `logo-sidebar.png` and `assembly-seal.jpg` were missing on VPS
+- Fixed `scripts/deploy_proper.py` to include `public/` directory in deployment tar
+- Built and deployed successfully (179.1 MB upload, PM2 restarted)
+
+Stage Summary:
+- Business certificate PDF now matches the Kpando Municipal Assembly operating permit template design
+- Sidebar logo will now display correctly (public/ files deployed to VPS)
+- Assembly seal image on certificate will render (assembly-seal.jpg included in deploy)
+- Both issues (logo + certificate image) had the same root cause: missing public/ in deploy
