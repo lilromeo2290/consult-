@@ -1,4 +1,4 @@
-'use client';
+code = r"""'use client';
 
 import { useState, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
@@ -396,3 +396,9 @@ function FormSection({ number, title, icon, children }: { number: string; title:
     </div>
   );
 }
+"""
+
+with open('/home/z/my-project/src/components/rms/bp-official.tsx', 'w') as f:
+    f.write(code)
+
+print('Done!')
