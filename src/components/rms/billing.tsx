@@ -31,78 +31,75 @@ interface Bill {
   id: string;
   billNumber: string;
   date: string;
-  entityName: string;
-  entityType: 'Business' | 'Property' | 'Rent';
+  billType: 'BOP' | 'Property Rate' | 'Rent' | 'BP';
+  uniqueNumber: string;
+  businessName: string;
+  owner: string;
   category: string;
-  revenueItem: string;
-  amount: number;
-  previousBalance: number;
-  penalty: number;
-  totalDue: number;
+  location: string;
+  arrears: number;
+  charge: number;
+  amountDue: number;
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   dueDate: string;
 }
 
 interface BillFormData {
-  entityName: string;
-  entityType: 'Business' | 'Property' | 'Rent';
-  revenueItem: string;
-  amount: number;
-  previousBalance: number;
-  penalty: number;
+  billType: 'BOP' | 'Property Rate' | 'Rent' | 'BP';
+  uniqueNumber: string;
+  businessName: string;
+  owner: string;
+  category: string;
+  location: string;
+  arrears: number;
+  charge: number;
+  amountDue: number;
   dueDate: string;
 }
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
-const REVENUE_ITEMS = [
-  'Business Operating Permit',
-  'Property Rate',
-  'Market Toll',
-  'Signage Fees',
-  'Building Permit Fees',
-  'Environmental Fees',
-  'Liquor License',
-  'Food Vendor Permit',
-  'Advertising Levy',
-  'Development Levy',
-  'Sanitation Fees',
-  'Fire Safety Cert',
+const BILL_TYPES: { value: Bill['billType']; label: string }[] = [
+  { value: 'BOP', label: 'BOP - Business Operating Permit' },
+  { value: 'Property Rate', label: 'Property Rate' },
+  { value: 'Rent', label: 'Rent' },
+  { value: 'BP', label: 'BP - Building Permit' },
 ];
 
-const RATE_AMOUNTS: Record<string, number> = {
-  'Business Operating Permit': 300,
-  'Property Rate': 600,
-  'Market Toll': 50,
-  'Signage Fees': 100,
-  'Building Permit Fees': 500,
-  'Environmental Fees': 75,
-  'Liquor License': 200,
-  'Food Vendor Permit': 80,
-  'Advertising Levy': 300,
-  'Development Levy': 150,
-  'Sanitation Fees': 60,
-  'Fire Safety Cert': 350,
-};
+// Lookup an entity by unique number across all data sources
+function lookupEntity(
+  uniqueNumber: string,
+  billType: Bill['billType'],
+  businesses: any[],
+  properties: any[],
+  rents: any[],
+  buildingPermits: any[],
+): { businessName: string; owner: string; category: string; location: string } | null {
+  const num = uniqueNumber.trim().toLowerCase();
+  if (!num) return null;
 
-function loadEntities(businesses: any[], properties: any[], rents: any[]): { id: string; name: string; type: string; category?: string }[] {
-  try {
-    const list: { id: string; name: string; type: string; category?: string }[] = [];
-
-    for (const b of businesses) {
-      if (b.name) list.push({ id: b.regNumber || String(Date.now()), name: b.name, type: 'Business', category: b.category || b.type || '' });
-    }
-    for (const p of properties) {
-      if (p.ownerName) list.push({ id: p.propNumber || String(Date.now()), name: p.ownerName, type: 'Property', category: p.category || p.propertyUseType || '' });
-    }
-    for (const r of rents) {
-      if (r.rentObjectName) list.push({ id: r.id || String(Date.now()), name: r.rentObjectName, type: 'Rent', category: r.rentClass || r.rentCategory || '' });
-    }
-
-    return list;
-  } catch {
-    return [];
+  if (billType === 'BOP') {
+    const biz = businesses.find(
+      (b) => (b.regNumber || '').toLowerCase() === num || (b.businessId || '').toLowerCase() === num,
+    );
+    if (biz) return { businessName: biz.name || '', owner: biz.ownerName || '', category: biz.category || biz.type || '', location: biz.address || '' };
+  } else if (billType === 'Property Rate') {
+    const prop = properties.find(
+      (p) => (p.propNumber || '').toLowerCase() === num || (p.propertyId || '').toLowerCase() === num,
+    );
+    if (prop) return { businessName: prop.ownerName || '', owner: prop.ownerName || '', category: prop.category || prop.propertyUseType || '', location: prop.location || prop.address || '' };
+  } else if (billType === 'Rent') {
+    const rent = rents.find(
+      (r) => (r.rentNumber || '').toLowerCase() === num || (r.id || '').toLowerCase() === num,
+    );
+    if (rent) return { businessName: rent.rentObjectName || '', owner: rent.tenantName || rent.rentObjectName || '', category: rent.rentClass || rent.rentCategory || '', location: rent.location || '' };
+  } else if (billType === 'BP') {
+    const bp = buildingPermits.find(
+      (b) => (b.applicationNumber || '').toLowerCase() === num || (b.id || '').toLowerCase() === num,
+    );
+    if (bp) return { businessName: bp.applicantName || '', owner: bp.applicantName || '', category: bp.developmentType || '', location: bp.propertyAddress || '' };
   }
+  return null;
 }
 
 const initialBills: Bill[] = [];
@@ -117,11 +114,18 @@ function formatCurrency(amount: number): string {
 
 export function BillingPage() {
   const [bills, setBills] = useSyncedStorage<Bill[]>('rms-bills', initialBills);
-  // Synced entity data for dropdown lookups
+  // Synced entity data for lookups
   const [bizData] = useSyncedStorage<any[]>('rms-businesses', []);
   const [propData] = useSyncedStorage<any[]>('rms-properties', []);
   const [rentData] = useSyncedStorage<any[]>('rms-rents', []);
-  const entities = useMemo(() => loadEntities(bizData, propData, rentData), [bizData, propData, rentData]);
+  const [bpData] = useSyncedStorage<any[]>('rms-building-permits', []);
+  const entities = useMemo(() => {
+    const list: { id: string; name: string; type: string; category?: string }[] = [];
+    for (const b of bizData) { if (b.name) list.push({ id: b.regNumber || '', name: b.name, type: 'Business', category: b.category || b.type || '' }); }
+    for (const p of propData) { if (p.ownerName) list.push({ id: p.propNumber || '', name: p.ownerName, type: 'Property', category: p.category || p.propertyUseType || '' }); }
+    for (const r of rentData) { if (r.rentObjectName) list.push({ id: r.id || '', name: r.rentObjectName, type: 'Rent', category: r.rentClass || r.rentCategory || '' }); }
+    return list;
+  }, [bizData, propData, rentData]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
@@ -145,14 +149,59 @@ export function BillingPage() {
   // ── Form data ───────────────────────────────────────────────────────────
 
   const [formData, setFormData] = useState<BillFormData>({
-    entityName: '',
-    entityType: 'Business',
-    revenueItem: '',
-    amount: 0,
-    previousBalance: 0,
-    penalty: 0,
+    billType: 'BOP',
+    uniqueNumber: '',
+    businessName: '',
+    owner: '',
+    category: '',
+    location: '',
+    arrears: 0,
+    charge: 0,
+    amountDue: 0,
     dueDate: '',
   });
+
+  // Auto-lookup when unique number changes
+  const handleUniqueNumberChange = (value: string) => {
+    setFormData((p) => ({ ...p, uniqueNumber: value }));
+    if (!value.trim()) return;
+    const found = lookupEntity(value, formData.billType, bizData, propData, rentData, bpData);
+    if (found) {
+      setFormData((p) => ({
+        ...p,
+        businessName: found.businessName,
+        owner: found.owner,
+        category: found.category,
+        location: found.location,
+      }));
+    }
+  };
+
+  // Auto-lookup when bill type changes (re-lookup with existing number)
+  const handleBillTypeChange = (value: Bill['billType']) => {
+    setFormData((p) => ({
+      ...p,
+      billType: value,
+      businessName: '',
+      owner: '',
+      category: '',
+      location: '',
+    }));
+    // If unique number already entered, re-lookup for new type
+    if (formData.uniqueNumber.trim()) {
+      const found = lookupEntity(formData.uniqueNumber, value, bizData, propData, rentData, bpData);
+      if (found) {
+        setFormData((p) => ({
+          ...p,
+          billType: value,
+          businessName: found.businessName,
+          owner: found.owner,
+          category: found.category,
+          location: found.location,
+        }));
+      }
+    }
+  };
 
   // ── Filtering ───────────────────────────────────────────────────────────
 
@@ -160,21 +209,21 @@ export function BillingPage() {
     return bills.filter((b) => {
       const matchSearch =
         searchQuery === '' ||
-        b.entityName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         b.billNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.revenueItem.toLowerCase().includes(searchQuery.toLowerCase());
+        b.uniqueNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.owner.toLowerCase().includes(searchQuery.toLowerCase());
       const matchStatus =
         statusFilter === 'All' || b.status === statusFilter;
       const matchCategory =
         categoryFilter === 'All' || b.category === categoryFilter;
-      const matchRevenueArea =
-        revenueAreaFilter === 'All' ||
-        (b.entityType === revenueAreaFilter);
+      const matchBillType =
+        revenueAreaFilter === 'All' || b.billType === revenueAreaFilter;
       const matchDateFrom =
         dateFrom === '' || b.date >= dateFrom;
       const matchDateTo =
         dateTo === '' || b.date <= dateTo;
-      return matchSearch && matchStatus && matchCategory && matchRevenueArea && matchDateFrom && matchDateTo;
+      return matchSearch && matchStatus && matchCategory && matchBillType && matchDateFrom && matchDateTo;
     });
   }, [bills, searchQuery, statusFilter, categoryFilter, revenueAreaFilter, dateFrom, dateTo]);
 
@@ -212,14 +261,14 @@ export function BillingPage() {
   // ── Stats ──────────────────────────────────────────────────────────────
 
   const stats = useMemo(() => {
-    const totalBilled = bills.reduce((sum, b) => sum + b.totalDue, 0);
+    const totalBilled = bills.reduce((sum, b) => sum + b.amountDue, 0);
     const paid = bills
       .filter((b) => b.status === 'Paid')
-      .reduce((sum, b) => sum + b.totalDue, 0);
+      .reduce((sum, b) => sum + b.amountDue, 0);
     const outstanding = totalBilled - paid;
     const overdue = bills
       .filter((b) => b.status === 'Overdue')
-      .reduce((sum, b) => sum + b.totalDue, 0);
+      .reduce((sum, b) => sum + b.amountDue, 0);
     return {
       total: bills.length,
       totalBilled,
@@ -228,61 +277,53 @@ export function BillingPage() {
     };
   }, [bills]);
 
-  // ── Auto-fill amount when revenue item changes ──────────────────────────
-
-  const handleRevenueItemChange = (item: string) => {
-    const amount = RATE_AMOUNTS[item] || 0;
-    const penalty = Math.round(amount * 0.05 * 100) / 100;
-    setFormData((p) => ({
-      ...p,
-      revenueItem: item,
-      amount,
-      penalty,
-    }));
-  };
-
   // ── Generate bill ──────────────────────────────────────────────────────
 
   const handleGenerateBill = () => {
     // Validate compulsory fields
     const missing: string[] = [];
-    if (!formData.entityName?.trim()) missing.push('Entity Name');
-    if (!formData.revenueItem) missing.push('Revenue Item');
-    if (formData.amount <= 0) missing.push('Amount (must be greater than 0)');
+    if (!formData.uniqueNumber?.trim()) missing.push('Unique Number');
+    if (!formData.businessName?.trim()) missing.push('Business Name (enter a valid Unique Number)');
+    if (formData.charge <= 0 && formData.arrears <= 0) missing.push('Charge or Arrears (at least one must be greater than 0)');
+    if (!formData.dueDate) missing.push('Due Date');
     if (missing.length > 0) {
       alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
       return;
     }
 
     const newBillNumber = `BILL-2024-${String(bills.length + 156).padStart(4, '0')}`;
-    const totalDue = formData.amount + formData.previousBalance + formData.penalty;
+    const amountDue = formData.arrears + formData.charge;
 
     const newBill: Bill = {
       id: String(bills.length + 1),
       billNumber: newBillNumber,
       date: new Date().toISOString().split('T')[0],
-      entityName: formData.entityName,
-      entityType: formData.entityType,
-      category: 'General',
-      revenueItem: formData.revenueItem,
-      amount: formData.amount,
-      previousBalance: formData.previousBalance,
-      penalty: formData.penalty,
-      totalDue,
+      billType: formData.billType,
+      uniqueNumber: formData.uniqueNumber,
+      businessName: formData.businessName,
+      owner: formData.owner,
+      category: formData.category,
+      location: formData.location,
+      arrears: formData.arrears,
+      charge: formData.charge,
+      amountDue,
       status: 'Unpaid',
-      dueDate: formData.dueDate || '',
+      dueDate: formData.dueDate,
     };
 
     setBills((prev) => [newBill, ...prev]);
-    toast.success('Successfully saved');
+    toast.success('Bill generated successfully');
     setShowModal(false);
     setFormData({
-      entityName: '',
-      entityType: 'Business',
-      revenueItem: '',
-      amount: 0,
-      previousBalance: 0,
-      penalty: 0,
+      billType: 'BOP',
+      uniqueNumber: '',
+      businessName: '',
+      owner: '',
+      category: '',
+      location: '',
+      arrears: 0,
+      charge: 0,
+      amountDue: 0,
       dueDate: '',
     });
     setCurrentPage(1);
@@ -301,54 +342,51 @@ export function BillingPage() {
     return entities.filter((e) => {
       if (bulkForm.entityType !== 'All' && e.type !== bulkForm.entityType) return false;
       if (bulkForm.category !== 'All' && e.category !== bulkForm.category) return false;
+      const billTypeMap: Record<string, Bill['billType']> = { 'Business': 'BOP', 'Property': 'Property Rate', 'Rent': 'Rent' };
+      const bt = billTypeMap[e.type] || 'BOP';
       const exists = bills.find(
-        (b) => b.entityName === e.name && b.revenueItem === bulkForm.revenueItem,
+        (b) => b.uniqueNumber === e.id && b.billType === bt,
       );
       return !exists;
     }).length;
-  }, [bulkForm, bills]);
+  }, [bulkForm, bills, entities]);
 
   // ── Bulk generate bills ────────────────────────────────────────────────
 
   const handleBulkGenerate = () => {
-    // Validate compulsory fields
-    const missing: string[] = [];
-    if (!bulkForm.revenueItem) missing.push('Revenue Item');
-    if (bulkEligibleCount === 0) missing.push('No eligible entities found for the selected criteria');
-    if (missing.length > 0) {
-      alert('Cannot generate bills:\n\n' + missing.map((f) => '• ' + f).join('\n'));
+    // Validate
+    if (bulkEligibleCount === 0) {
+      alert('No eligible entities found for the selected criteria');
       return;
     }
 
     setBulkProgress('generating');
-
-    const amount = RATE_AMOUNTS[bulkForm.revenueItem] || 0;
-    const penalty = Math.round(amount * 0.05 * 100) / 100;
+    const billTypeMap: Record<string, Bill['billType']> = { 'Business': 'BOP', 'Property': 'Property Rate', 'Rent': 'Rent' };
 
     setTimeout(() => {
       const eligibleEntities = entities.filter((e) => {
         if (bulkForm.entityType !== 'All' && e.type !== bulkForm.entityType) return false;
         if (bulkForm.category !== 'All' && e.category !== bulkForm.category) return false;
-        const exists = bills.find(
-          (b) => b.entityName === e.name && b.revenueItem === bulkForm.revenueItem,
-        );
+        const bt = billTypeMap[e.type] || 'BOP';
+        const exists = bills.find((b) => b.uniqueNumber === e.id && b.billType === bt);
         return !exists;
       });
 
       const newBills: Bill[] = eligibleEntities.map((entity, idx) => {
-        const totalDue = amount + penalty;
+        const bt = billTypeMap[entity.type] || 'BOP';
         return {
           id: String(Date.now() + idx),
           billNumber: `BILL-2024-${String(bills.length + 156 + idx).padStart(4, '0')}`,
           date: new Date().toISOString().split('T')[0],
-          entityName: entity.name,
-          entityType: entity.type as 'Business' | 'Property' | 'Rent',
-          category: entity.category || 'General',
-          revenueItem: bulkForm.revenueItem,
-          amount,
-          previousBalance: 0,
-          penalty,
-          totalDue,
+          billType: bt,
+          uniqueNumber: entity.id,
+          businessName: entity.name,
+          owner: entity.name,
+          category: entity.category || '',
+          location: '',
+          arrears: 0,
+          charge: 0,
+          amountDue: 0,
           status: 'Unpaid' as const,
           dueDate: bulkForm.dueDate || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
         };
@@ -365,6 +403,7 @@ export function BillingPage() {
   const handleCloseBulkModal = () => {
     setShowBulkModal(false);
     setBulkForm({ entityType: 'All', category: 'All', revenueItem: '', dueDate: '' });
+  // Note: bulkForm still uses revenueItem for compatibility with filter; billType not used in bulk yet
     setBulkProgress('idle');
     setBulkGeneratedCount(0);
   };
@@ -381,11 +420,11 @@ export function BillingPage() {
     const encoded = encodeBarcodeData({
       type: 'INVOICE',
       refNo: bill.billNumber,
-      issuedTo: bill.entityName,
-      entityType: bill.entityType,
-      amount: bill.totalDue,
+      issuedTo: bill.businessName,
+      entityType: bill.billType,
+      amount: bill.amountDue,
       date: bill.date,
-      revenueItem: bill.revenueItem,
+      revenueItem: bill.billType,
       status: bill.status,
       assemblyName: _aName,
     });
@@ -410,11 +449,11 @@ export function BillingPage() {
     return encodeBarcodeData({
       type: 'INVOICE',
       refNo: bill.billNumber,
-      issuedTo: bill.entityName,
-      entityType: bill.entityType,
-      amount: bill.totalDue,
+      issuedTo: bill.businessName,
+      entityType: bill.billType,
+      amount: bill.amountDue,
       date: bill.date,
-      revenueItem: bill.revenueItem,
+      revenueItem: bill.billType,
       status: bill.status,
       assemblyName: _aName,
     });
@@ -497,19 +536,20 @@ export function BillingPage() {
           </div>
           <div class="section-title">Billed Entity</div>
           <div class="info-grid">
-            <div class="info-item"><div class="label">Entity Name</div><div class="value">${bill.entityName}</div></div>
-            <div class="info-item"><div class="label">Entity Type</div><div class="value">${bill.entityType}</div></div>
+            <div class="info-item"><div class="label">Unique Number</div><div class="value">${bill.uniqueNumber}</div></div>
+            <div class="info-item"><div class="label">Business Name</div><div class="value">${bill.businessName}</div></div>
+            <div class="info-item"><div class="label">Owner</div><div class="value">${bill.owner}</div></div>
+            <div class="info-item"><div class="label">Bill Type</div><div class="value">${bill.billType}</div></div>
             <div class="info-item"><div class="label">Category</div><div class="value">${bill.category}</div></div>
-            <div class="info-item"><div class="label">Revenue Item</div><div class="value">${bill.revenueItem}</div></div>
+            <div class="info-item"><div class="label">Location</div><div class="value">${bill.location || 'N/A'}</div></div>
           </div>
           <div class="section-title">Amount Breakdown</div>
           <table class="amount-table">
             <thead><tr><th>Description</th><th style="text-align:right">Amount (GH₵)</th></tr></thead>
             <tbody>
-              <tr><td>Current Charge</td><td style="text-align:right">${formatCurrency(bill.amount)}</td></tr>
-              <tr><td>Previous Balance</td><td style="text-align:right">${formatCurrency(bill.previousBalance)}</td></tr>
-              <tr><td>Penalty</td><td style="text-align:right">${formatCurrency(bill.penalty)}</td></tr>
-              <tr class="total-row"><td>Total Due</td><td style="text-align:right">${formatCurrency(bill.totalDue)}</td></tr>
+              <tr><td>Arrears</td><td style="text-align:right">${formatCurrency(bill.arrears)}</td></tr>
+              <tr><td>Charge</td><td style="text-align:right">${formatCurrency(bill.charge)}</td></tr>
+              <tr class="total-row"><td>Amount Due</td><td style="text-align:right">${formatCurrency(bill.amountDue)}</td></tr>
             </tbody>
           </table>
           <div style="text-align:center;margin-top:30px;padding:16px;border:1px solid #e2e8f0;border-radius:8px;">
@@ -674,9 +714,11 @@ export function BillingPage() {
           }}
           className={`${inputClass} w-full sm:w-40`}
         >
-          <option value="All">All Revenue Areas</option>
-          <option value="Business">Business</option>
-          <option value="Property">Property</option>
+          <option value="All">All Bill Types</option>
+          <option value="BOP">BOP</option>
+          <option value="Property Rate">Property Rate</option>
+          <option value="Rent">Rent</option>
+          <option value="BP">BP</option>
         </select>
         <select
           value={categoryFilter}
@@ -713,25 +755,19 @@ export function BillingPage() {
                   Date
                 </th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  Entity
+                  Business Name
                 </th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden lg:table-cell">
-                  Category
-                </th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden md:table-cell">
-                  Revenue Item
+                  Bill Type
                 </th>
                 <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  Amount
-                </th>
-                <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden xl:table-cell">
-                  Prev. Bal.
-                </th>
-                <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden xl:table-cell">
-                  Penalty
+                  Arrears
                 </th>
                 <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  Total Due
+                  Charge
+                </th>
+                <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                  Amount Due
                 </th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
                   Status
@@ -745,7 +781,7 @@ export function BillingPage() {
               {paged.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={8}
                     className="text-center py-12 text-slate-400 dark:text-slate-500"
                   >
                     <FileText className="w-10 h-10 mx-auto mb-3 opacity-40" />
@@ -767,32 +803,26 @@ export function BillingPage() {
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
                         <p className="font-medium text-slate-900 dark:text-white text-sm">
-                          {bill.entityName}
+                          {bill.businessName}
                         </p>
                         <p className="text-xs text-slate-400 dark:text-slate-500">
-                          {bill.entityType}
+                          {bill.uniqueNumber}
                         </p>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap hidden lg:table-cell">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                        {bill.category}
+                        {bill.billType}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap hidden md:table-cell">
-                      {bill.revenueItem}
+                    <td className="px-4 py-3 text-right text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      {bill.arrears > 0 ? formatCurrency(bill.arrears) : '—'}
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                      {formatCurrency(bill.amount)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-slate-500 dark:text-slate-400 whitespace-nowrap hidden xl:table-cell">
-                      {bill.previousBalance > 0 ? formatCurrency(bill.previousBalance) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right text-red-600 dark:text-red-400 whitespace-nowrap hidden xl:table-cell">
-                      {bill.penalty > 0 ? formatCurrency(bill.penalty) : '—'}
+                      {formatCurrency(bill.charge)}
                     </td>
                     <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                      {formatCurrency(bill.totalDue)}
+                      {formatCurrency(bill.amountDue)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <StatusBadge status={bill.status} />
@@ -887,7 +917,7 @@ export function BillingPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Bills Generated Successfully</h3>
                 <p className="text-slate-500 dark:text-slate-400 mb-6">
-                  {bulkGeneratedCount} bill{bulkGeneratedCount !== 1 ? 's were' : ' was'} generated for <span className="font-medium text-slate-700 dark:text-slate-200">{bulkForm.revenueItem}</span>.
+                  {bulkGeneratedCount} bill{bulkGeneratedCount !== 1 ? 's were' : ' was'} generated successfully.
                 </p>
                 <button onClick={handleCloseBulkModal} className={btnPrimary}>
                   Done
@@ -923,15 +953,15 @@ export function BillingPage() {
                     </select>
                   </div>
                   <div>
-                    <label className={labelClass}>Revenue Item <span className="text-red-500">*</span></label>
+                    <label className={labelClass}>Bill Type</label>
                     <select
                       value={bulkForm.revenueItem}
                       onChange={(e) => setBulkForm((p) => ({ ...p, revenueItem: e.target.value }))}
                       className={inputClass}
                     >
-                      <option value="">Select revenue item...</option>
-                      {REVENUE_ITEMS.map((item) => (
-                        <option key={item} value={item}>{item}</option>
+                      <option value="">Select bill type...</option>
+                      {BILL_TYPES.map((bt) => (
+                        <option key={bt.value} value={bt.value}>{bt.label}</option>
                       ))}
                     </select>
                   </div>
@@ -952,16 +982,8 @@ export function BillingPage() {
                         <span className="text-blue-700 dark:text-blue-300 font-medium">Eligible entities (no existing bill):</span>
                         <span className="text-lg font-bold text-blue-700 dark:text-blue-300">{bulkEligibleCount}</span>
                       </div>
-                      <p className="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">
-                        Rate: {formatCurrency(RATE_AMOUNTS[bulkForm.revenueItem])} per entity | Penalty: {formatCurrency(Math.round((RATE_AMOUNTS[bulkForm.revenueItem] || 0) * 0.05 * 100) / 100)} (5%)
-                      </p>
-                      {bulkEligibleCount > 0 && (
-                        <p className="text-xs text-blue-600/70 dark:text-blue-400/70 mt-0.5">
-                          Estimated total: {formatCurrency(bulkEligibleCount * ((RATE_AMOUNTS[bulkForm.revenueItem] || 0) * 1.05))}
-                        </p>
-                      )}
                       {bulkEligibleCount === 0 && bulkForm.revenueItem && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">All eligible entities already have a bill for this revenue item.</p>
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">All eligible entities already have a bill for this type.</p>
                       )}
                     </div>
                   )}
@@ -1032,12 +1054,13 @@ export function BillingPage() {
               {/* Entity Section */}
               <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                 <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-medium mb-2">Billed Entity</p>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingBill.entityName}</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingBill.businessName}</p>
                 <div className="flex items-center gap-3 mt-1.5">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">{viewingBill.entityType}</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">{viewingBill.billType}</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">{viewingBill.category}</span>
                 </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">{viewingBill.revenueItem}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">Owner: {viewingBill.owner}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Location: {viewingBill.location || 'N/A'}</p>
               </div>
 
               {/* Amount Breakdown */}
@@ -1045,20 +1068,16 @@ export function BillingPage() {
                 <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-medium mb-3">Amount Breakdown</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Current Charge</span>
-                    <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(viewingBill.amount)}</span>
+                    <span className="text-slate-600 dark:text-slate-400">Arrears</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(viewingBill.arrears)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Previous Balance</span>
-                    <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(viewingBill.previousBalance)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Penalty</span>
-                    <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(viewingBill.penalty)}</span>
+                    <span className="text-slate-600 dark:text-slate-400">Charge</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(viewingBill.charge)}</span>
                   </div>
                   <div className="border-t-2 border-slate-900 dark:border-slate-100 pt-2 mt-2 flex justify-between">
-                    <span className="font-bold text-slate-900 dark:text-white">Total Due</span>
-                    <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatCurrency(viewingBill.totalDue)}</span>
+                    <span className="font-bold text-slate-900 dark:text-white">Amount Due</span>
+                    <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatCurrency(viewingBill.amountDue)}</span>
                   </div>
                 </div>
               </div>
@@ -1128,149 +1147,125 @@ export function BillingPage() {
 
             {/* Modal Body */}
             <div className="px-6 py-5 space-y-4">
-              {/* Entity Type Selection */}
+              {/* 1. Select Bill Type */}
               <div>
-                <label className={labelClass}>Business / Property / Rent</label>
+                <label className={labelClass}>Select Bill Type</label>
                 <select
-                  value={formData.entityType}
-                  onChange={(e) => setFormData((p) => ({ ...p, entityType: e.target.value as 'Business' | 'Property' | 'Rent' }))}
+                  value={formData.billType}
+                  onChange={(e) => handleBillTypeChange(e.target.value as Bill['billType'])}
                   className={inputClass}
                 >
-                  <option value="">Select type...</option>
-                  <option value="Business">Business</option>
-                  <option value="Property">Property</option>
-                  <option value="Rent">Rent</option>
-                </select>
-              </div>
-
-              {/* Entity Name */}
-              <div>
-                <label className={labelClass}>Entity Name</label>
-                <input
-                  type="text"
-                  value={formData.entityName}
-                  onChange={(e) => setFormData((p) => ({ ...p, entityName: e.target.value }))}
-                  className={inputClass}
-                  placeholder="Enter entity name"
-                />
-              </div>
-
-              {/* Revenue Item */}
-              <div>
-                <label className={labelClass}>Revenue Item</label>
-                <select
-                  value={formData.revenueItem}
-                  onChange={(e) => handleRevenueItemChange(e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">Select revenue item...</option>
-                  {REVENUE_ITEMS.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
+                  {BILL_TYPES.map((bt) => (
+                    <option key={bt.value} value={bt.value}>{bt.label}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Amount (auto-filled) */}
+              {/* 2. Enter Unique Number */}
               <div>
-                <label className={labelClass}>Amount (GH₵)</label>
+                <label className={labelClass}>Unique Number</label>
                 <input
-                  type="number"
-                  min={0}
-                  value={formData.amount || ''}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      amount: Number(e.target.value),
-                    }))
-                  }
+                  type="text"
+                  value={formData.uniqueNumber}
+                  onChange={(e) => handleUniqueNumberChange(e.target.value)}
                   className={inputClass}
+                  placeholder="Enter registration / property / rent number"
                 />
               </div>
 
-              {/* Previous Balance */}
+              {/* 3. Business Name (Autofill) */}
               <div>
-                <label className={labelClass}>Previous Balance (GH₵)</label>
+                <label className={labelClass}>Business Name</label>
                 <input
-                  type="number"
-                  min={0}
-                  value={formData.previousBalance || ''}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      previousBalance: Number(e.target.value),
-                    }))
-                  }
-                  placeholder="0"
+                  type="text"
+                  value={formData.businessName}
                   className={inputClass}
+                  placeholder="Auto-filled from Unique Number"
+                  readOnly
                 />
               </div>
 
-              {/* Penalty (auto-calculated) */}
+              {/* 4. Owner (Autofill) */}
               <div>
-                <label className={labelClass}>Penalty (GH₵)</label>
+                <label className={labelClass}>Owner</label>
                 <input
-                  type="number"
-                  min={0}
-                  value={formData.penalty || ''}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      penalty: Number(e.target.value),
-                    }))
-                  }
+                  type="text"
+                  value={formData.owner}
                   className={inputClass}
+                  placeholder="Auto-filled from Unique Number"
+                  readOnly
                 />
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                  Auto-calculated as 5% of amount. Adjust manually if needed.
-                </p>
               </div>
 
-              {/* Due Date */}
+              {/* 5. Category (Autofill) */}
+              <div>
+                <label className={labelClass}>Category</label>
+                <input
+                  type="text"
+                  value={formData.category}
+                  className={inputClass}
+                  placeholder="Auto-filled from Unique Number"
+                  readOnly
+                />
+              </div>
+
+              {/* 6. Location (Autofill) */}
+              <div>
+                <label className={labelClass}>Location</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  className={inputClass}
+                  placeholder="Auto-filled from Unique Number"
+                  readOnly
+                />
+              </div>
+
+              {/* 7. Amount Fields */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelClass}>Arrears (GH₵)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={formData.arrears || ''}
+                    onChange={(e) => setFormData((p) => ({ ...p, arrears: Number(e.target.value) }))}
+                    className={inputClass}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Charge (GH₵)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={formData.charge || ''}
+                    onChange={(e) => setFormData((p) => ({ ...p, charge: Number(e.target.value) }))}
+                    className={inputClass}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Amount Due (GH₵)</label>
+                  <input
+                    type="text"
+                    value={formatCurrency(formData.arrears + formData.charge)}
+                    className={inputClass}
+                    readOnly
+                  />
+                </div>
+              </div>
+
+              {/* 8. Due Date */}
               <div>
                 <label className={labelClass}>Due Date</label>
                 <input
                   type="date"
                   value={formData.dueDate}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      dueDate: e.target.value,
-                    }))
-                  }
+                  onChange={(e) => setFormData((p) => ({ ...p, dueDate: e.target.value }))}
                   className={inputClass}
                 />
               </div>
-
-              {/* Preview Summary */}
-              {formData.revenueItem && formData.amount > 0 && (
-                <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-3">
-                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 mb-2">
-                    Bill Preview
-                  </p>
-                  <div className="space-y-1 text-sm text-slate-600 dark:text-slate-300">
-                    <div className="flex justify-between">
-                      <span>Amount:</span>
-                      <span className="font-medium">{formatCurrency(formData.amount)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Previous Balance:</span>
-                      <span className="font-medium">{formatCurrency(formData.previousBalance)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Penalty:</span>
-                      <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(formData.penalty)}</span>
-                    </div>
-                    <div className="border-t border-emerald-200 dark:border-emerald-800 pt-1 mt-1 flex justify-between">
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-400">Total Due:</span>
-                      <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                        {formatCurrency(formData.amount + formData.previousBalance + formData.penalty)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Modal Footer */}
@@ -1283,9 +1278,10 @@ export function BillingPage() {
                 onClick={handleGenerateBill}
                 className={btnPrimary}
                 disabled={
-                  !formData.entityName ||
-                  !formData.revenueItem ||
-                  formData.amount <= 0
+                  !formData.uniqueNumber?.trim() ||
+                  !formData.businessName?.trim() ||
+                  (formData.charge <= 0 && formData.arrears <= 0) ||
+                  !formData.dueDate
                 }
               >
                 <Save className="w-4 h-4" />
