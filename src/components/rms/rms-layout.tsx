@@ -18,7 +18,6 @@ import {
   Gavel,
   HardHat,
   Stamp,
-  Wallet,
   PanelLeftClose,
   PanelLeftOpen,
   Menu,
@@ -61,7 +60,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Penalties', page: 'penalties', icon: Gavel },
   { label: 'Building Permit', page: 'building-permit', icon: HardHat },
   { label: 'BP Official', page: 'bp-official', icon: Stamp },
-  { label: 'BP Payment', page: 'bp-payment', icon: Wallet },
   { label: 'Bill Management', page: 'billing', icon: FileText },
   { label: 'Payments', page: 'payments', icon: CreditCard },
   { label: 'Payment History', page: 'payment-history', icon: Clock },
@@ -91,7 +89,6 @@ const PAGE_TITLES: Record<RMSPage, string> = {
   'audit-trail': 'Audit Trail',
   'building-permit': 'Building Permit',
   'bp-official': 'BP Official',
-  'bp-payment': 'BP Payment',
 };
 
 // ---------- Constants ----------
