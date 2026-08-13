@@ -71,7 +71,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Search', page: 'search', icon: Search },
 ];
 
-const PAGE_TITLES: Record<RMSPage, string> = {
+const PAGE_TITLES: Record<string, string> = {
   dashboard: 'Dashboard',
   businesses: 'Businesses',
   properties: 'Property Register',
