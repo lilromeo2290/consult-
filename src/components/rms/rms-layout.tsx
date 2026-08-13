@@ -18,6 +18,7 @@ import {
   Gavel,
   HardHat,
   Stamp,
+  Wallet,
   PanelLeftClose,
   PanelLeftOpen,
   Menu,
@@ -60,7 +61,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Penalties', page: 'penalties', icon: Gavel },
   { label: 'Building Permit', page: 'building-permit', icon: HardHat },
   { label: 'BP Official', page: 'bp-official', icon: Stamp },
-  { label: 'Bill Management', page: 'billing', icon: FileText },
+  { label: 'Billing', page: 'billing', icon: FileText },
   { label: 'Payments', page: 'payments', icon: CreditCard },
   { label: 'Payment History', page: 'payment-history', icon: Clock },
   { label: 'Receipts', page: 'receipts', icon: Receipt },
@@ -69,7 +70,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Settings', page: 'settings', icon: Settings },
   { label: 'Audit Trail', page: 'audit-trail', icon: Shield },
   { label: 'Search', page: 'search', icon: Search },
-];
+].filter((item) => item.page !== 'bp-payment');
 
 const PAGE_TITLES: Record<RMSPage, string> = {
   dashboard: 'Dashboard',
@@ -78,7 +79,7 @@ const PAGE_TITLES: Record<RMSPage, string> = {
   rent: 'Lease Management',
   rates: 'Rate Configuration',
   penalties: 'Penalties',
-  billing: 'Bill Management',
+  billing: 'Billing',
   payments: 'Payments',
   'payment-history': 'Payment History',
   receipts: 'Receipts',
@@ -89,6 +90,7 @@ const PAGE_TITLES: Record<RMSPage, string> = {
   'audit-trail': 'Audit Trail',
   'building-permit': 'Building Permit',
   'bp-official': 'BP Official',
+  'bp-payment': 'BP Payment',
 };
 
 // ---------- Constants ----------
@@ -197,10 +199,10 @@ function SidebarContent({
         )}
       >
         <img
-          src='/logo-sidebar.png'
+          src='/logo.png'
           alt='RMS Logo'
           className={cn(
-            'h-8 w-8 object-contain',
+            'h-8 w-auto object-contain',
             collapsed && 'h-8 w-8'
           )}
         />

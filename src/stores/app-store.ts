@@ -19,7 +19,8 @@ type RMSPage =
   | 'search'
   | 'audit-trail'
   | 'building-permit'
-  | 'bp-official';
+  | 'bp-official'
+  | 'bp-payment';
 
 /** All available RMS pages for the permission picker */
 const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
@@ -31,6 +32,7 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'penalties', label: 'Penalties' },
   { page: 'building-permit', label: 'Building Permit' },
   { page: 'bp-official', label: 'BP Official' },
+  { page: 'bp-payment', label: 'BP Payment' },
   { page: 'billing', label: 'Bill Management' },
   { page: 'payments', label: 'Payments' },
   { page: 'payment-history', label: 'Payment History' },
@@ -97,7 +99,7 @@ export const useAppStore = create<AppState>()(
         const { currentUser } = get();
         if (!currentUser) return false;
         if (currentUser.role === 'Administrator') return true;
-        if (currentUser.accessiblePages.length === 0) return false;
+        if (currentUser.accessiblePages.length === 0) return true;
         return currentUser.accessiblePages.includes(page);
       },
     }),
@@ -112,23 +114,7 @@ export const useAppStore = create<AppState>()(
       // Mark as hydrated after rehydration completes
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Migration: remove any pages that no longer exist
-          const validPages = ALL_RMS_PAGES.map((p) => p.page);
-
-          // Fix rmsPage if it references a removed page
-          if (state.rmsPage && !validPages.includes(state.rmsPage)) {
-            state.rmsPage = 'dashboard';
-          }
-
-          // Fix user accessiblePages to only include valid pages
-          if (state.currentUser && state.currentUser.accessiblePages) {
-            state.currentUser = {
-              ...state.currentUser,
-              accessiblePages: state.currentUser.accessiblePages.filter((p) => validPages.includes(p)),
-            };
-          }
-
-          // Add any newly-added pages to admin's accessiblePages
+          // Migration: add any newly-added pages to admin's accessiblePages
           if (state.currentUser && state.currentUser.role === 'Administrator') {
             const allPages = ALL_RMS_PAGES.map((p) => p.page);
             const current = state.currentUser.accessiblePages || [];
