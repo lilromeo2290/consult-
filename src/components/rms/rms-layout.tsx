@@ -61,7 +61,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Penalties', page: 'penalties', icon: Gavel },
   { label: 'Building Permit', page: 'building-permit', icon: HardHat },
   { label: 'BP Official', page: 'bp-official', icon: Stamp },
-  { label: 'Billing', page: 'billing', icon: FileText },
+  { label: 'BP Payment', page: 'bp-payment', icon: Wallet },
+  { label: 'Bill Management', page: 'billing', icon: FileText },
   { label: 'Payments', page: 'payments', icon: CreditCard },
   { label: 'Payment History', page: 'payment-history', icon: Clock },
   { label: 'Receipts', page: 'receipts', icon: Receipt },
@@ -70,7 +71,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Settings', page: 'settings', icon: Settings },
   { label: 'Audit Trail', page: 'audit-trail', icon: Shield },
   { label: 'Search', page: 'search', icon: Search },
-].filter((item) => item.page !== 'bp-payment');
+];
 
 const PAGE_TITLES: Record<RMSPage, string> = {
   dashboard: 'Dashboard',
@@ -79,7 +80,7 @@ const PAGE_TITLES: Record<RMSPage, string> = {
   rent: 'Lease Management',
   rates: 'Rate Configuration',
   penalties: 'Penalties',
-  billing: 'Billing',
+  billing: 'Bill Management',
   payments: 'Payments',
   'payment-history': 'Payment History',
   receipts: 'Receipts',
@@ -199,10 +200,10 @@ function SidebarContent({
         )}
       >
         <img
-          src='/logo.png'
+          src='/logo-sidebar.png'
           alt='RMS Logo'
           className={cn(
-            'h-8 w-auto object-contain',
+            'h-8 w-8 object-contain',
             collapsed && 'h-8 w-8'
           )}
         />
