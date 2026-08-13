@@ -112,7 +112,23 @@ export const useAppStore = create<AppState>()(
       // Mark as hydrated after rehydration completes
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Migration: add any newly-added pages to admin's accessiblePages
+          // Migration: remove any pages that no longer exist
+          const validPages = ALL_RMS_PAGES.map((p) => p.page);
+
+          // Fix rmsPage if it references a removed page
+          if (state.rmsPage && !validPages.includes(state.rmsPage)) {
+            state.rmsPage = 'dashboard';
+          }
+
+          // Fix user accessiblePages to only include valid pages
+          if (state.currentUser && state.currentUser.accessiblePages) {
+            state.currentUser = {
+              ...state.currentUser,
+              accessiblePages: state.currentUser.accessiblePages.filter((p) => validPages.includes(p)),
+            };
+          }
+
+          // Add any newly-added pages to admin's accessiblePages
           if (state.currentUser && state.currentUser.role === 'Administrator') {
             const allPages = ALL_RMS_PAGES.map((p) => p.page);
             const current = state.currentUser.accessiblePages || [];
