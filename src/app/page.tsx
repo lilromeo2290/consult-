@@ -7,7 +7,7 @@ import { LandingPage } from '@/components/landing/landing-page';
 import { LoginPage } from '@/components/landing/login-page';
 import { RmsLayout } from '@/components/rms/rms-layout';
 import { DashboardPage } from '@/components/rms/dashboard';
-import { BusinessesPage } from '@/components/rms/businesses';
+import { BusinessRegisterPage } from '@/components/rms/business-register';
 import { PropertiesPage } from '@/components/rms/properties';
 import { RentPage } from '@/components/rms/rent';
 
@@ -50,7 +50,7 @@ function RMSView() {
   const renderPage = () => {
     switch (rmsPage) {
       case 'dashboard': return <DashboardPage />;
-      case 'businesses': return <BusinessesPage />;
+      case 'business-register': return <BusinessRegisterPage />;
       case 'properties': return <PropertiesPage />;
       case 'rent': return <RentPage />;
 

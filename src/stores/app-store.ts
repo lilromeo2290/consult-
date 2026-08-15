@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 type AppView = 'landing' | 'login' | 'rms';
 type RMSPage =
   | 'dashboard'
-  | 'businesses'
+  | 'business-register'
   | 'properties'
   | 'rent'
   | 'rates'
@@ -19,12 +19,12 @@ type RMSPage =
   | 'search'
   | 'audit-trail'
   | 'building-permit'
-  | 'bp-official';
+  | 'bp-official'
 
 /** All available RMS pages for the permission picker */
 const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'dashboard', label: 'Dashboard' },
-  { page: 'businesses', label: 'Business Registration' },
+  { page: 'business-register', label: 'Business Register' },
   { page: 'properties', label: 'Property Register' },
   { page: 'rent', label: 'Lease Management' },
   { page: 'rates', label: 'Rate Configuration' },

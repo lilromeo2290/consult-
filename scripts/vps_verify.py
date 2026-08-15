@@ -1,24 +1,31 @@
+#!/usr/bin/env python3
+"""Quick verification after deploy."""
+import sys, time
+sys.path.insert(0, '/home/z/.local/lib/python3.13/site-packages')
 import paramiko
-import time
 
-time.sleep(5)  # Wait for kpma-rms to fully start
+c = paramiko.SSHClient()
+c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+c.connect('153.75.247.4', port=22, username='root', password='Do1_BuZe4_M1-V6v1_S4', timeout=15)
 
-ssh = paramiko.SSHClient()
-ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh.connect('153.75.247.4', username='root', password='Do1_BuZe4_M1-V6v1_S4')
+def vps_run(cmd):
+    i,o,e = c.exec_command(cmd, timeout=15)
+    return o.read().decode().strip(), e.read().decode().strip()
 
-print('>>> kpma-rms status:')
-stdin, stdout, stderr = ssh.exec_command('pm2 show kpma-rms | grep -E "status|uptime|exec cwd|script path"')
-print(stdout.read().decode().strip())
+print('Waiting 3s for app startup...')
+time.sleep(3)
 
-print()
-print('>>> Testing https://kpma.clipeconsult.com ...')
-stdin, stdout, stderr = ssh.exec_command('curl -s -o /dev/null -w "HTTP %{http_code} | SSL %{ssl_verify_result}" https://kpma.clipeconsult.com')
-print(stdout.read().decode().strip())
+print('=== API Test ===')
+out, err = vps_run('curl -s http://127.0.0.1:3001/api/rms-data?key=rms-businesses | head -c 300')
+print(f'API: {out[:300]}')
 
-print()
-print('>>> Testing http://kpma.clipeconsult.com (should redirect to https) ...')
-stdin, stdout, stderr = ssh.exec_command('curl -s -o /dev/null -w "HTTP %{http_code} | Redirect: %{redirect_url}" -L --max-redirs 0 http://kpma.clipeconsult.com 2>&1 || true')
-print(stdout.read().decode().strip())
+print('\n=== PM2 Status ===')
+out, err = vps_run('pm2 jlist | python3 -c "import sys,json; apps=json.load(sys.stdin); [print(f\"  {a[\"name\"]}: status={a[\"pm2_env\"].get(\"status\")}, restarts={a[\"pm2_env\"].get(\"restart_time\",0)}\") for a in apps if a[\"name\"]==\"consult-rms\"]"')
+print(out)
 
-ssh.close()
+print('\n=== Error Logs (last 5) ===')
+out, err = vps_run('pm2 logs consult-rms --nostream --err --lines 5')
+print(out[-500:] if out else 'No errors')
+
+c.close()
+print('\nVerification complete.')
