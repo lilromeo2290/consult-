@@ -140,6 +140,26 @@ export const BP_OFFICIAL_FIELDS: { key: string; label: string }[] = [
   { key: 'status', label: 'Status' },
 ];
 
+export const FINE_MANAGEMENT_FIELDS: { key: string; label: string }[] = [
+  // Fine Identification
+  { key: 'fineNumber', label: 'Fine Number' },
+  { key: 'dateIssued', label: 'Date Issued' },
+  { key: 'status', label: 'Status' },
+  // Offender Information
+  { key: 'nameOfOffender', label: 'Name of Offender' },
+  { key: 'locationAddress', label: 'Location/Address' },
+  // Classification
+  { key: 'fineRevenueCode', label: 'Fine Revenue Code' },
+  { key: 'classDescription', label: 'Class Description' },
+  { key: 'category', label: 'Category' },
+  // Amount Details
+  { key: 'arrears', label: 'Arrears (GHS)' },
+  { key: 'charge', label: 'Charge (GHS)' },
+  { key: 'amountDue', label: 'Amount Due (GHS)' },
+  // Additional
+  { key: 'comments', label: 'Comments' },
+];
+
 // ─── Export ──────────────────────────────────────────────────────────────────
 
 export function exportToExcel<T extends Record<string, unknown>>(

@@ -60,6 +60,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Penalties', page: 'penalties', icon: Gavel },
   { label: 'Building Permit', page: 'building-permit', icon: HardHat },
   { label: 'BP Official', page: 'bp-official', icon: Stamp },
+  { label: 'Fines Management', page: 'fines-management', icon: Gavel },
   { label: 'Bill Management', page: 'billing', icon: FileText },
   { label: 'Payments', page: 'payments', icon: CreditCard },
   { label: 'Payment History', page: 'payment-history', icon: Clock },
@@ -90,6 +91,7 @@ const PAGE_TITLES: Record<RMSPage, string> = {
   'audit-trail': 'Audit Trail',
   'building-permit': 'Building Permit',
   'bp-official': 'BP Official',
+  'fines-management': 'Fines Management',
 };
 
 // ---------- Constants ----------
