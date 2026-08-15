@@ -59,6 +59,12 @@ interface BillFormData {
   businessClass: string;
   category: string;
   location: string;
+  phone: string;
+  gpsCoordinates: string;
+  locality: string;
+  revenueCode: string;
+  businessClassDesc: string;
+  billDate: string;
   arrears: number;
   charge: number;
   amountDue: number;
@@ -89,7 +95,24 @@ function getClassesForBillType(billType: Bill['billType']): string[] {
   }
 }
 
-// Search entities across all data sources by unique number, business name, or owner
+// Search entities across all data sources with type-specific search fields
+interface EntityResult {
+  uniqueNumber: string;
+  businessName: string;
+  owner: string;
+  businessClass: string;
+  businessClassDesc: string;
+  category: string;
+  location: string;
+  phone: string;
+  gpsCoordinates: string;
+  locality: string;
+  revenueCode: string;
+  amount: string;
+  // Raw entity reference for full field mapping
+  _raw: any;
+}
+
 function searchEntities(
   query: string,
   billType: Bill['billType'],
@@ -97,62 +120,85 @@ function searchEntities(
   properties: any[],
   rents: any[],
   buildingPermits: any[],
-): { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string; businessClassCode: string }[] {
+): EntityResult[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
-  const results: { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string; businessClassCode: string }[] = [];
+  const results: EntityResult[] = [];
 
-  if (billType === 'BOP') {
-    businesses.forEach((b) => {
-      const num = (b.regNumber || '').toLowerCase();
-      const name = (b.name || '').toLowerCase();
-      const own = (b.owner || '').toLowerCase();
-      if (num.includes(q) || name.includes(q) || own.includes(q)) {
+  if (billType === 'Property Rate') {
+    // Search by: Unique Number, Business Name (ownerName), Owner Name, Property Number
+    properties.forEach((p) => {
+      const uniqueNum = (p.propertyUniqueNumber || '').toLowerCase();
+      const propNum = (p.propNumber || '').toLowerCase();
+      const ownerName = (p.ownerName || '').toLowerCase();
+      if (uniqueNum.includes(q) || propNum.includes(q) || ownerName.includes(q)) {
+        const gps = [p.latitude, p.longitude].filter(Boolean).join(', ');
+        const loc = [p.streetName, p.houseNo, p.locality].filter(Boolean).join(', ');
         results.push({
-          uniqueNumber: b.regNumber || '',
-          businessName: b.name || '',
-          owner: b.owner || '',
-          businessClass: b.type || '',
-          category: b.category || '',
-          location: b.businessAddress || '',
-          businessClassCode: b.businessClassCode || '',
+          uniqueNumber: p.propertyUniqueNumber || p.propNumber || '',
+          businessName: p.ownerName || '',
+          owner: p.ownerName || '',
+          businessClass: p.businessClassCode || '',
+          businessClassDesc: p.type || p.revenueDescription || '',
+          category: p.category || '',
+          location: loc || '',
+          phone: p.phone || '',
+          gpsCoordinates: gps,
+          locality: p.locality || '',
+          revenueCode: p.revenueCode || '',
+          amount: p.value || '',
+          _raw: p,
         });
       }
     });
-  } else if (billType === 'Property Rate') {
-    properties.forEach((p) => {
-      const num = (p.propNumber || p.id || '').toLowerCase();
-      const name = (p.ownerName || p.propertyName || '').toLowerCase();
-      const own = (p.ownerName || '').toLowerCase();
-      if (num.includes(q) || name.includes(q) || own.includes(q)) {
-        const useType = p.propertyUseType || '';
-        const classLabel = useType.split(':')[1]?.trim() || useType || p.category || '';
-        const loc = [p.streetName, p.houseNo, p.locality].filter(Boolean).join(', ');
+  } else if (billType === 'BOP') {
+    // Search by: Unique Number, Business Name, Owner Name
+    businesses.forEach((b) => {
+      const uniqueNum = (b.businessUniqueNumber || b.regNumber || '').toLowerCase();
+      const bizName = (b.name || '').toLowerCase();
+      const own = (b.owner || '').toLowerCase();
+      if (uniqueNum.includes(q) || bizName.includes(q) || own.includes(q)) {
+        const gps = [b.latitude, b.longitude].filter(Boolean).join(', ');
+        const loc = [b.streetName, b.houseNo, b.locality].filter(Boolean).join(', ');
         results.push({
-          uniqueNumber: p.propNumber || p.id || '',
-          businessName: p.ownerName || p.propertyName || '',
-          owner: p.ownerName || '',
-          businessClass: classLabel,
-          category: '',
-          location: loc || p.ownerAddress || '',
-          businessClassCode: '',
+          uniqueNumber: b.businessUniqueNumber || b.regNumber || '',
+          businessName: b.name || '',
+          owner: b.owner || '',
+          businessClass: b.businessClassCode || '',
+          businessClassDesc: b.businessClassDesc || '',
+          category: b.category || '',
+          location: loc || '',
+          phone: b.phone || '',
+          gpsCoordinates: gps,
+          locality: b.locality || '',
+          revenueCode: b.revenueCode || '',
+          amount: b.amount || '',
+          _raw: b,
         });
       }
     });
   } else if (billType === 'Rent') {
+    // Search by: Occupant Name, Rent Property Number, Rent Property Unique Number
     rents.forEach((r) => {
-      const num = (r.rentPropertyNumber || r.id || '').toLowerCase();
-      const name = (r.occupantName || '').toLowerCase();
-      const own = (r.occupantName || '').toLowerCase();
-      if (num.includes(q) || name.includes(q) || own.includes(q)) {
+      const propNum = (r.rentPropertyNumber || '').toLowerCase();
+      const uniqueNum = (r.rentPropertyUniqueNumber || '').toLowerCase();
+      const occName = (r.occupantName || '').toLowerCase();
+      if (propNum.includes(q) || uniqueNum.includes(q) || occName.includes(q)) {
+        const gps = [r.propertyLatitude, r.propertyLongitude].filter(Boolean).join(', ');
         results.push({
-          uniqueNumber: r.rentPropertyNumber || r.id || '',
+          uniqueNumber: r.rentPropertyUniqueNumber || r.rentPropertyNumber || '',
           businessName: r.occupantName || '',
           owner: r.occupantName || '',
-          businessClass: '',
-          category: r.rentPropertyType || '',
+          businessClass: r.rentPropertyTypeCode || '',
+          businessClassDesc: r.rentPropertyType || '',
+          category: r.rentPropertyTypeCategory || '',
           location: r.rentPropertyLocation || '',
-          businessClassCode: '',
+          phone: r.occupantPhone || '',
+          gpsCoordinates: gps,
+          locality: r.locationCode || '',
+          revenueCode: r.rentRevenueCode || '',
+          amount: r.amount || '',
+          _raw: r,
         });
       }
     });
@@ -167,9 +213,15 @@ function searchEntities(
           businessName: b.applicantFullName || '',
           owner: b.applicantFullName || '',
           businessClass: '',
+          businessClassDesc: '',
           category: b.typeOfDevelopment || '',
           location: b.siteLocation || '',
-          businessClassCode: '',
+          phone: b.telephoneNumber || '',
+          gpsCoordinates: '',
+          locality: '',
+          revenueCode: '',
+          amount: '',
+          _raw: b,
         });
       }
     });
@@ -243,13 +295,19 @@ export function BillingPage() {
   // ── Form data ───────────────────────────────────────────────────────────
 
   const [formData, setFormData] = useState<BillFormData>({
-    billType: 'BOP',
+    billType: 'Property Rate',
     uniqueNumber: '',
     businessName: '',
     owner: '',
     businessClass: '',
+    businessClassDesc: '',
     category: '',
     location: '',
+    phone: '',
+    gpsCoordinates: '',
+    locality: '',
+    revenueCode: '',
+    billDate: new Date().toISOString().split('T')[0],
     arrears: 0,
     charge: 0,
     amountDue: 0,
@@ -260,20 +318,25 @@ export function BillingPage() {
   const [entitySearch, setEntitySearch] = useState('');
   const [showEntityDropdown, setShowEntityDropdown] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [selectedRawEntity, setSelectedRawEntity] = useState<any>(null);
 
   const entitySearchResults = useMemo(() => {
     if (!entitySearch.trim()) return [];
     return searchEntities(entitySearch, formData.billType, bizData, propData, rentData, bpData);
   }, [entitySearch, formData.billType, bizData, propData, rentData, bpData]);
 
-  const handleSelectEntity = (entity: { businessName: string; owner: string; businessClass: string; category: string; location: string; uniqueNumber: string; businessClassCode: string }) => {
+  const handleSelectEntity = (entity: EntityResult) => {
     // Auto-calculate charge from business registration (rate overrides / fee lookup)
     let autoCharge = 0;
-    if (entity.businessClassCode) {
-      autoCharge = rateOverrides[entity.businessClassCode]?.amount ?? getRateOverride(entity.businessClassCode) ?? FEE_CODE_LOOKUP[entity.businessClassCode]?.amount ?? 0;
+    if (entity.businessClass) {
+      autoCharge = rateOverrides[entity.businessClass]?.amount ?? getRateOverride(entity.businessClass) ?? FEE_CODE_LOOKUP[entity.businessClass]?.amount ?? 0;
+    }
+    // Also try the raw amount field
+    if (!autoCharge && entity.amount) {
+      const parsed = parseFloat(String(entity.amount));
+      if (!isNaN(parsed)) autoCharge = parsed;
     }
     // Calculate arrears: sum of outstanding balances from existing unpaid/partial bills
-    // for the same uniqueNumber + billType
     let arrears = 0;
     const entityBills = bills.filter(
       (b) => b.uniqueNumber === entity.uniqueNumber && b.billType === formData.billType && b.status !== 'Paid'
@@ -292,11 +355,17 @@ export function BillingPage() {
       businessName: entity.businessName,
       owner: entity.owner,
       businessClass: entity.businessClass,
+      businessClassDesc: entity.businessClassDesc,
       category: entity.category,
       location: entity.location,
+      phone: entity.phone,
+      gpsCoordinates: entity.gpsCoordinates,
+      locality: entity.locality,
+      revenueCode: entity.revenueCode,
       arrears,
       charge: autoCharge,
     }));
+    setSelectedRawEntity(entity._raw);
     setEntitySearch(entity.uniqueNumber);
     setShowEntityDropdown(false);
   };
@@ -310,12 +379,18 @@ export function BillingPage() {
       businessName: '',
       owner: '',
       businessClass: '',
+      businessClassDesc: '',
       category: '',
       location: '',
+      phone: '',
+      gpsCoordinates: '',
+      locality: '',
+      revenueCode: '',
       arrears: 0,
       charge: 0,
     }));
     setEntitySearch('');
+    setSelectedRawEntity(null);
     setShowEntityDropdown(false);
   };
 
@@ -413,7 +488,7 @@ export function BillingPage() {
     const newBill: Bill = {
       id: String(bills.length + 1),
       billNumber: newBillNumber,
-      date: new Date().toISOString().split('T')[0],
+      date: formData.billDate || new Date().toISOString().split('T')[0],
       billType: formData.billType,
       uniqueNumber: formData.uniqueNumber,
       businessName: formData.businessName,
@@ -425,6 +500,7 @@ export function BillingPage() {
       amountDue,
       status: 'Unpaid',
       dueDate: formData.dueDate,
+      billClass: formData.businessClassDesc || formData.businessClass || undefined,
     };
 
     setBills((prev) => [newBill, ...prev]);
@@ -433,12 +509,19 @@ export function BillingPage() {
     setEntitySearch('');
     setShowEntityDropdown(false);
     setFormData({
-      billType: 'BOP',
+      billType: 'Property Rate',
       uniqueNumber: '',
       businessName: '',
       owner: '',
+      businessClass: '',
+      businessClassDesc: '',
       category: '',
       location: '',
+      phone: '',
+      gpsCoordinates: '',
+      locality: '',
+      revenueCode: '',
+      billDate: new Date().toISOString().split('T')[0],
       arrears: 0,
       charge: 0,
       amountDue: 0,
@@ -1330,7 +1413,7 @@ export function BillingPage() {
             <div className="px-6 py-5 space-y-4">
               {/* 1. Select Bill Type */}
               <div>
-                <label className={labelClass}>Select Bill Type</label>
+                <label className={labelClass}>Bill Type</label>
                 <select
                   value={formData.billType}
                   onChange={(e) => handleBillTypeChange(e.target.value as Bill['billType'])}
@@ -1342,9 +1425,21 @@ export function BillingPage() {
                 </select>
               </div>
 
-              {/* 2. Search (Unique Number / Business Name / Owner) */}
+              {/* 2. Search entity */}
               <div className="relative">
-                <label className={labelClass}>Search <span className="text-xs text-slate-400 font-normal">(Unique Number / Business Name / Owner)</span></label>
+                <label className={labelClass}>
+                  Search Entity{' '}
+                  <span className="text-xs text-slate-400 font-normal">
+                    ({formData.billType === 'Property Rate'
+                      ? 'Unique Number / Owner Name / Property Number'
+                      : formData.billType === 'BOP'
+                        ? 'Unique Number / Business Name / Owner Name'
+                        : formData.billType === 'Rent'
+                          ? 'Occupant Name / Rent Property Number'
+                          : 'Unique Number / Applicant Name'
+                    })
+                  </span>
+                </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -1355,7 +1450,7 @@ export function BillingPage() {
                       setEntitySearch(e.target.value);
                       setShowEntityDropdown(true);
                       if (!e.target.value.trim()) {
-                        setFormData((p) => ({ ...p, uniqueNumber: '', businessName: '', owner: '', businessClass: '', category: '', location: '' }));
+                        setFormData((p) => ({ ...p, uniqueNumber: '', businessName: '', owner: '', businessClass: '', businessClassDesc: '', category: '', location: '', phone: '', gpsCoordinates: '', locality: '', revenueCode: '' }));
                       }
                     }}
                     onFocus={() => {
@@ -1365,7 +1460,14 @@ export function BillingPage() {
                       setTimeout(() => setShowEntityDropdown(false), 200);
                     }}
                     className={`${inputClass} pl-10`}
-                    placeholder="Type to search by unique number, business name, or owner..."
+                    placeholder={formData.billType === 'Property Rate'
+                      ? 'Type unique number, owner name, or property number...'
+                      : formData.billType === 'BOP'
+                        ? 'Type unique number, business name, or owner name...'
+                        : formData.billType === 'Rent'
+                          ? 'Type occupant name or rent property number...'
+                          : 'Type unique number or applicant name...'
+                    }
                   />
                 </div>
                 {showEntityDropdown && entitySearchResults.length > 0 && (
@@ -1378,7 +1480,12 @@ export function BillingPage() {
                         onClick={() => handleSelectEntity(entity)}
                         className="w-full text-left px-4 py-2.5 hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 border-b border-slate-100 dark:border-slate-700 last:border-b-0 transition-colors"
                       >
-                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{entity.businessName || entity.uniqueNumber}</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                          {formData.billType === 'Rent'
+                            ? (entity.businessName || entity.uniqueNumber)
+                            : (entity.businessName || entity.uniqueNumber)
+                          }
+                        </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                           {entity.uniqueNumber}{entity.owner && entity.owner !== entity.businessName ? ` · ${entity.owner}` : ''}{entity.category ? ` · ${entity.category}` : ''}
                         </p>
@@ -1393,67 +1500,93 @@ export function BillingPage() {
                 )}
               </div>
 
-              {/* 3. Business Name (Autofill) */}
-              <div>
-                <label className={labelClass}>Business Name</label>
-                <input
-                  type="text"
-                  value={formData.businessName}
-                  className={inputClass}
-                  placeholder="Auto-filled from search"
-                  readOnly
-                />
+              {/* ── Auto-populated fields (read-only, vary by bill type) ── */}
+              {formData.uniqueNumber && (
+                <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-1">
+                  <p className="text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-semibold px-3 pt-2">
+                    {formData.billType === 'Property Rate' ? 'Property Information' : formData.billType === 'BOP' ? 'Business Information' : formData.billType === 'Rent' ? 'Rent Property Information' : 'Applicant Information'} (Auto-populated)
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 px-3 pb-3">
+                    {/* Unique Number — always shown */}
+                    <ReadOnlyField label="Unique Number" value={formData.uniqueNumber} />
+
+                    {formData.billType === 'Property Rate' && (
+                      <>
+                        <ReadOnlyField label="Locality" value={formData.locality} />
+                        <ReadOnlyField label="Owner Name" value={formData.owner} />
+                        <ReadOnlyField label="Telephone Number" value={formData.phone} />
+                        <ReadOnlyField label="Exact Location" value={formData.location} />
+                        <ReadOnlyField label="GPS Coordinates" value={formData.gpsCoordinates} />
+                        <ReadOnlyField label="Property Revenue Code" value={formData.revenueCode} />
+                        <ReadOnlyField label="Property Class Description" value={formData.businessClassDesc} />
+                        <ReadOnlyField label="Category" value={formData.category} />
+                        <ReadOnlyField label="Amount" value={formData.charge ? formatCurrency(formData.charge) : '—'} />
+                      </>
+                    )}
+
+                    {formData.billType === 'BOP' && (
+                      <>
+                        <ReadOnlyField label="Locality" value={formData.locality} />
+                        <ReadOnlyField label="Business Name" value={formData.businessName} />
+                        <ReadOnlyField label="Owner Name" value={formData.owner} />
+                        <ReadOnlyField label="Telephone Number" value={formData.phone} />
+                        <ReadOnlyField label="Exact Location" value={formData.location} />
+                        <ReadOnlyField label="GPS Coordinates" value={formData.gpsCoordinates} />
+                        <ReadOnlyField label="Business Revenue Code" value={formData.revenueCode} />
+                        <ReadOnlyField label="Business Class Description" value={formData.businessClassDesc} />
+                        <ReadOnlyField label="Category" value={formData.category} />
+                        <ReadOnlyField label="Amount" value={formData.charge ? formatCurrency(formData.charge) : '—'} />
+                      </>
+                    )}
+
+                    {formData.billType === 'Rent' && (
+                      <>
+                        <ReadOnlyField label="Occupant Name" value={formData.businessName} />
+                        <ReadOnlyField label="Telephone Number" value={formData.phone} />
+                        <ReadOnlyField label="Rent Property Location" value={formData.location} />
+                        <ReadOnlyField label="Rent Property Number" value={selectedRawEntity?.rentPropertyNumber || ''} />
+                        <ReadOnlyField label="GPS Coordinates" value={formData.gpsCoordinates} />
+                        <ReadOnlyField label="Rent Revenue Code" value={formData.revenueCode} />
+                        <ReadOnlyField label="Class" value={formData.businessClassDesc} />
+                        <ReadOnlyField label="Category" value={formData.category} />
+                        <ReadOnlyField label="Amount" value={formData.charge ? formatCurrency(formData.charge) : '—'} />
+                      </>
+                    )}
+
+                    {formData.billType === 'BP' && (
+                      <>
+                        <ReadOnlyField label="Applicant Name" value={formData.businessName} />
+                        <ReadOnlyField label="Location" value={formData.location} />
+                        <ReadOnlyField label="Category" value={formData.category} />
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Bill Date & Due Date */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelClass}>Bill Date</label>
+                  <input
+                    type="date"
+                    value={formData.billDate}
+                    onChange={(e) => setFormData((p) => ({ ...p, billDate: e.target.value }))}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Due Date <span className="text-red-500">*</span></label>
+                  <input
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) => setFormData((p) => ({ ...p, dueDate: e.target.value }))}
+                    className={inputClass}
+                  />
+                </div>
               </div>
 
-              {/* 4. Owner (Autofill) */}
-              <div>
-                <label className={labelClass}>Owner</label>
-                <input
-                  type="text"
-                  value={formData.owner}
-                  className={inputClass}
-                  placeholder="Auto-filled from search"
-                  readOnly
-                />
-              </div>
-
-              {/* 5. Business Class (Autofill) */}
-              <div>
-                <label className={labelClass}>Business Class</label>
-                <input
-                  type="text"
-                  value={formData.businessClass}
-                  className={inputClass}
-                  placeholder="Auto-filled from search"
-                  readOnly
-                />
-              </div>
-
-              {/* 6. Category (Autofill) */}
-              <div>
-                <label className={labelClass}>Category</label>
-                <input
-                  type="text"
-                  value={formData.category}
-                  className={inputClass}
-                  placeholder="Auto-filled from search"
-                  readOnly
-                />
-              </div>
-
-              {/* 6. Location (Autofill) */}
-              <div>
-                <label className={labelClass}>Location</label>
-                <input
-                  type="text"
-                  value={formData.location}
-                  className={inputClass}
-                  placeholder="Auto-filled from search"
-                  readOnly
-                />
-              </div>
-
-              {/* 7. Amount Fields */}
+              {/* Amount Fields */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className={labelClass}>Arrears (GH₵)</label>
@@ -1461,18 +1594,18 @@ export function BillingPage() {
                     type="text"
                     value={formData.arrears ? formatCurrency(formData.arrears) : ''}
                     className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`}
-                    placeholder="Auto-filled"
+                    placeholder="Auto"
                     readOnly
                   />
                 </div>
                 <div>
                   <label className={labelClass}>Charge (GH₵)</label>
                   <input
-                    type="text"
-                    value={formData.charge ? formatCurrency(formData.charge) : ''}
-                    className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`}
-                    placeholder="Auto-filled from registration"
-                    readOnly
+                    type="number"
+                    value={formData.charge || ''}
+                    onChange={(e) => setFormData((p) => ({ ...p, charge: parseFloat(e.target.value) || 0 }))}
+                    className={inputClass}
+                    placeholder="From rate or manual"
                   />
                 </div>
                 <div>
@@ -1484,17 +1617,6 @@ export function BillingPage() {
                     readOnly
                   />
                 </div>
-              </div>
-
-              {/* 8. Due Date */}
-              <div>
-                <label className={labelClass}>Due Date</label>
-                <input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData((p) => ({ ...p, dueDate: e.target.value }))}
-                  className={inputClass}
-                />
               </div>
             </div>
 
@@ -1521,6 +1643,17 @@ export function BillingPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Sub-component ────────────────────────────────────────────────────────────
+
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline gap-1.5 py-1">
+      <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap min-w-[100px]">{label}</span>
+      <span className="text-sm text-slate-700 dark:text-slate-200 font-medium truncate">{value || '—'}</span>
     </div>
   );
 }
