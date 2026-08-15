@@ -1,8 +1,8 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+/// ─── Clipe RMS — Normalized Schema ────────────────────────────────
+/// Phase 1: Business → Invoice → Payment → AuditLog
+/// Designed for SQLite today, PostgreSQL migration-ready.
+/// RmsData is retained during migration; remove once all entities are migrated.
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider      = "prisma-client-js"
@@ -14,18 +14,554 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NOTE: On the VPS, DATABASE_URL MUST be set to an absolute path
-// outside the project directory so the database survives deploys.
-// Example: DATABASE_URL=file:/home/consult-rms/data/rms.db
-// This is set automatically by deploy.sh and ecosystem.config.cjs.
+// ═══════════════════════════════════════════════════════════════════════════
+// ENUMS  (stored as String in SQLite, native ENUM in PostgreSQL)
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum InvoiceStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  MOMO
+  CARD
+  BANK
+  CHEQUE
+}
+
+enum FineStatus {
+  OUTSTANDING
+  PARTIALLY_PAID
+  PAID
+  WAIVED
+  UNDER_APPEAL
+  WRITTEN_OFF
+}
+
+enum EntityStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 1. MULTI-ASSEMBLY FOUNDATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Assembly {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  region    String?
+  district  String?
+
+  businesses  Business[]
+  properties  Property[]
+  leases      Lease[]
+  users       User[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2. SECURITY — RBAC
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+
+  users       User[]
+  permissions RolePermission[]
+
+  createdAt   DateTime @default(now())
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  code        String   @unique   // e.g. "business:read", "invoice:create"
+  description String?
+  module      String?              // e.g. "business", "billing"
+
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String       @id @default(cuid())
+  username     String       @unique
+  passwordHash String
+  fullName     String
+  email        String?
+  phone        String?
+  staffId      String?      @unique
+  active       Boolean      @default(true)
+
+  roleId       String
+  role         Role         @relation(fields: [roleId], references: [id])
+
+  assemblyId   String?
+  assembly     Assembly?    @relation(fields: [assemblyId], references: [id])
+
+  // Collector relation — a user can collect payments
+  collectedPayments Payment[] @relation("CollectorPayments")
+
+  // Audit trail
+  auditLogs    AuditLog[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 3. BUSINESS REGISTRATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+model BusinessCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+
+  businesses  Business[]
+
+  createdAt   DateTime @default(now())
+}
+
+model Business {
+  id                    String        @id @default(cuid())
+
+  // Identification
+  registrationNo        String?       @unique
+  businessUniqueNumber  String?       @unique
+  businessCertNo        String?
+  daAssignmentNo        String?
+
+  // Business Info
+  businessName          String
+  revenueCode           String?
+  revenueDescription    String?
+  businessClassCode     String?
+  businessClassDesc     String?
+  category              String?
+  amount                Float?
+  employees             Int?
+  yearEstablished       Int?
+  status                String        @default("Active")
+  dateRegistered        DateTime?
+
+  // Location
+  locality              String?
+  areaCode              String?
+  streetName            String?
+  houseNo               String?
+  ghanaPostGPS          String?
+  latitude              Float?
+  longitude             Float?
+  landmark              String?
+
+  // Owner Info
+  ownerName             String?
+  ghanaCard             String?
+  phone                 String?
+  email                 String?
+  ownerTin              String?
+
+  // Relations
+  categoryId            String?
+  categoryRel           BusinessCategory? @relation(fields: [categoryId], references: [id])
+  assemblyId            String
+  assembly              Assembly        @relation(fields: [assemblyId], references: [id])
+
+  // Downstream
+  invoices              Invoice[]
+  fines                 Fine[]
+  bpApplications         BPOfficial[] @relation("BPApplication")
+
+  comments              String?
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([assemblyId])
+  @@index([businessName])
+  @@index([ownerName])
+  @@index([locality])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 4. PROPERTY RATES
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Property {
+  id                    String   @id @default(cuid())
+
+  // Identification
+  propertyNumber        String?  @unique
+  propertyUniqueNumber  String?  @unique
+  daAssignmentNo        String?
+  permitNumber          String?
+
+  // Property Info
+  revenueCode           String?
+  revenueDescription    String?
+  classCode             String?
+  classDescription      String?
+  propertyCategory      String?
+  value                 Float?
+  rooms                 Int?
+  status                String  @default("Active")
+
+  // Location
+  streetName            String?
+  houseNo               String?
+  streetCode            String?
+  ghanaPostGPS          String?
+  latitude              Float?
+  longitude             Float?
+  locality              String?
+  areaCode              String?
+
+  // Owner Info
+  ownerName             String?
+  ownerAddress          String?
+  ownerLatitude         Float?
+  ownerLongitude        Float?
+  phone                 String?
+  email                 String?
+  tin                   String?
+  nationalId            String?
+  ownerTin              String?
+  ownershipType         String?
+
+  // Relations
+  assemblyId            String
+  assembly              Assembly @relation(fields: [assemblyId], references: [id])
+
+  // Downstream
+  invoices              Invoice[]
+  fines                 Fine[]
+
+  comments              String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([assemblyId])
+  @@index([propertyNumber])
+  @@index([ownerName])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 5. LEASE / RENT MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Lease {
+  id                        String   @id @default(cuid())
+
+  // Identification
+  rentPropertyNumber        String?  @unique
+  rentPropertyUniqueNumber  String?  @unique
+  tenancyAgreementNumber    String?
+
+  // Rent Property Info
+  rentRevenueCode           String?
+  rentRevenueDescription    String?
+  classCode                 String?
+  classDescription          String?
+  rentCategory              String?
+  amount                    Float?
+  vacant                    Boolean @default(false)
+
+  // Location
+  rentPropertyLocation      String?
+  locationCode              String?
+  exactLocation             String?
+  ghanaPostGPS              String?
+  latitude                  Float?
+  longitude                 Float?
+
+  // Contract
+  startDate                 DateTime?
+  endDate                   DateTime?
+  contractId                String?
+  contractValue             Float?
+  area                      String?
+
+  // Occupant
+  occupantName              String?
+  occupantAddress           String?
+  occupantPhone             String?
+  occupantEmail             String?
+  occupantNationalId        String?
+  occupantUniqueId          String?
+  excludedFromRenting       Boolean @default(false)
+
+  // Relations
+  assemblyId                String
+  assembly                  Assembly @relation(fields: [assemblyId], references: [id])
+
+  invoices                  Invoice[]
+
+  comments                  String?
+
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  @@index([assemblyId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 6. BILLING ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Invoice {
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique
+  billType        String        // BOP, Property Rate, Rent, BP, Fine
+
+  // Entity references (one will be set based on billType)
+  businessId      String?
+  propertyId      String?
+  leaseId         String?
+
+  business        Business?     @relation(fields: [businessId], references: [id])
+  property        Property?     @relation(fields: [propertyId], references: [id])
+  lease           Lease?        @relation(fields: [leaseId], references: [id])
+
+  // Financial
+  amount          Float
+  arrears         Float         @default(0)
+  charge          Float         @default(0)
+  amountDue       Float
+  amountPaid      Float         @default(0)
+
+  // Classification
+  revenueCode     String?
+  classDescription String?
+  category        String?
+
+  // Location snapshot (denormalized for bill stability)
+  location        String?
+  locality        String?
+  gpsCoordinates  String?
+
+  // Status
+  status          InvoiceStatus  @default(PENDING)
+  dueDate         DateTime?
+  billDate        DateTime?
+
+  // Field officer
+  fieldOfficer    String?
+
+  // Downstream
+  items           InvoiceItem[]
+  payments        Payment[]
+  fines           Fine[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([billType])
+  @@index([status])
+  @@index([businessId])
+  @@index([propertyId])
+  @@index([leaseId])
+  @@index([invoiceNumber])
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Float
+  total       Float
+
+  @@index([invoiceId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 7. PAYMENTS & RECEIPTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Payment {
+  id              String        @id @default(cuid())
+
+  invoiceId       String
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id])
+
+  amount          Float
+  paymentMethod   PaymentMethod  @default(CASH)
+  transactionRef  String?
+  receiptNumber   String        @unique
+
+  // Who collected
+  collectorId     String?
+  collector       User?         @relation("CollectorPayments", fields: [collectorId], references: [id])
+
+  // Payer info snapshot
+  payerName       String?
+  payerPhone      String?
+
+  createdAt       DateTime      @default(now())
+
+  @@index([invoiceId])
+  @@index([collectorId])
+  @@index([receiptNumber])
+  @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 8. FINES & PENALTIES
+// ═══════════════════════════════════════════════════════════════════════════
+
+model Fine {
+  id                String      @id @default(cuid())
+
+  fineNumber        String      @unique
+  dateIssued        DateTime?
+
+  // Offender
+  nameOfOffender    String
+  locationAddress   String?
+
+  // Classification
+  fineRevenueCode   String?
+  classDescription  String?
+  category          String?
+
+  // Amounts
+  arrears           Float       @default(0)
+  charge            Float       @default(0)
+  amountDue         Float       @default(0)
+
+  status            FineStatus   @default(OUTSTANDING)
+
+  // Entity reference (optional — fine may not be tied to a specific entity)
+  businessId        String?
+  propertyId        String?
+
+  business          Business?   @relation(fields: [businessId], references: [id])
+  property          Property?   @relation(fields: [propertyId], references: [id])
+
+  // Linked invoice (if a bill was generated for this fine)
+  invoiceId         String?
+  invoice           Invoice?    @relation(fields: [invoiceId], references: [id])
+
+  comments          String?
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([fineNumber])
+  @@index([nameOfOffender])
+  @@index([status])
+  @@index([fineRevenueCode])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 9. BP OFFICIAL (Building Permit Applications)
+// ═══════════════════════════════════════════════════════════════════════════
+
+model BPOfficial {
+  id                        String   @id @default(cuid())
+
+  // Application Header
+  applicationNumber          String   @unique
+  applicationDate            DateTime?
+
+  // Applicant Information
+  applicantFullName          String?
+  applicantAddress           String?
+  applicantPhone             String?
+  applicantEmail             String?
+  applicantNationalId        String?
+  applicantTin               String?
+  businessName               String?
+  businessRegNumber          String?
+  businessLocation           String?
+
+  // Physical Planning
+  routingStatus              String   @default("Pending Submission")
+  physicalPlanningComments   String?
+  physicalPlanningDate       DateTime?
+
+  // EPA
+  epaRecommendation          String?
+  epaComments                String?
+  epaRecommendationDate      DateTime?
+
+  // GNFS
+  gnfsRecommendation         String?
+  gnfsComments               String?
+  gnfsRecommendationDate     DateTime?
+
+  // General
+  generalComments            String?
+  status                     String   @default("In Progress")
+
+  // Linked business (auto-fill source)
+ businessId                 String?
+  business                   Business? @relation("BPApplication", fields: [businessId], references: [id])
+
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@index([applicationNumber])
+  @@index([routingStatus])
+  @@index([status])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 10. AUDIT TRAIL
+// ═══════════════════════════════════════════════════════════════════════════
+
+model AuditLog {
+  id          String   @id @default(cuid())
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  action      String               // CREATE, UPDATE, DELETE, LOGIN, LOGOUT
+  entity      String               // Business, Invoice, Payment, etc.
+  entityId    String?
+
+  oldValues   String?              // JSON string of previous state
+  newValues   String?              // JSON string of new state
+
+  ipAddress   String?
+  userAgent   String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEGACY — RmsData key-value store
+// Retained during migration. Remove once all entities are migrated.
+// ═══════════════════════════════════════════════════════════════════════════
 
 model RmsData {
   id        String   @id @default(cuid())
