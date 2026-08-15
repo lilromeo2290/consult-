@@ -10,6 +10,7 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  ArrowLeft,
   Building2,
   MapPin,
   User,
@@ -37,52 +38,37 @@ import { AutoSuggestInput } from '@/components/ui/auto-suggest-input';
 
 interface Business {
   regNumber: string;
-  name: string;
-  owner: string;
-  type: string;
-  category: string;
-  tin: string;
-  status: string;
-  dateRegistered: string;
-  ghanaCard: string;
-  phone: string;
-  email: string;
+  // A. Business Location
+  locality: string;
+  areaCode: string;
+  streetName: string;
+  houseNo: string;
   ghanaPostGPS: string;
   latitude: string;
   longitude: string;
-  digitalAddress: string;
-  residentialAddress: string;
-  businessAddress: string;
-  ward: string;
-  electoralArea: string;
-  zone: string;
-  revenueArea: string;
-  licenseNumber: string;
-  subCategory: string;
-  streetName: string;
-  houseNo: string;
-  streetCode: string;
-  locality: string;
-  areaCode: string;
-  code: string;
+  landmark: string;
+  // B. Business Information
   daAssignmentNo: string;
-  businessCertNo: string;
   businessUniqueNumber: string;
-  revenueDescription: string;
-  revenueDescription2: string;
+  businessCertNo: string;
+  name: string;
   revenueCode: string;
+  revenueDescription: string;
   businessClassCode: string;
+  businessClassDesc: string;
+  category: string;
+  amount: string;
   employees: string;
+  dateRegistered: string;
+  status: string;
   yearEstablished: string;
-  excludedFromFees: boolean;
-  ownerAddress: string;
-  ownerLatitude: string;
-  ownerLongitude: string;
+  // C. Owner Information
+  owner: string;
+  ghanaCard: string;
+  phone: string;
+  email: string;
   ownerTin: string;
   comments: string;
-  landmark: string;
-  businessClassDesc: string;
-  amount: string;
 }
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
@@ -154,54 +140,39 @@ export function BusinessRegisterPage() {
   };
 
   // ── Form State ───────────────────────────────────────────────────────────
-  const defaultForm = {
+  const defaultForm: Omit<Business, 'regNumber'> & { regNumber?: string } = {
     regNumber: '',
-    name: '',
-    owner: '',
-    type: '',
-    category: '',
-    tin: '',
-    status: 'Active',
-    dateRegistered: '',
-    ghanaCard: '',
-    phone: '',
-    email: '',
+    // A. Business Location
+    locality: '',
+    areaCode: '',
+    streetName: '',
+    houseNo: '',
     ghanaPostGPS: '',
     latitude: '',
     longitude: '',
-    digitalAddress: '',
-    residentialAddress: '',
-    businessAddress: '',
-    ward: '',
-    electoralArea: '',
-    zone: '',
-    revenueArea: '',
-    licenseNumber: '',
-    subCategory: '',
-    streetName: '',
-    houseNo: '',
-    streetCode: '',
-    locality: '',
-    areaCode: '',
-    code: '',
+    landmark: '',
+    // B. Business Information
     daAssignmentNo: '',
-    businessCertNo: '',
     businessUniqueNumber: '',
-    revenueDescription: '',
-    revenueDescription2: '',
+    businessCertNo: '',
+    name: '',
     revenueCode: '',
+    revenueDescription: '',
     businessClassCode: '',
+    businessClassDesc: '',
+    category: '',
+    amount: '',
     employees: '',
+    dateRegistered: '',
+    status: 'Active',
     yearEstablished: '',
-    excludedFromFees: false,
-    ownerAddress: '',
-    ownerLatitude: '',
-    ownerLongitude: '',
+    // C. Owner Information
+    owner: '',
+    ghanaCard: '',
+    phone: '',
+    email: '',
     ownerTin: '',
     comments: '',
-    landmark: '',
-    businessClassDesc: '',
-    amount: '',
   };
 
   const [form, setForm] = useState({ ...defaultForm });
@@ -277,9 +248,8 @@ export function BusinessRegisterPage() {
     handleFormChange(e as unknown as React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>);
   };
 
-  // Cascading: when Class is selected, filter codes
-  const classNames = [...new Set(Object.values(CODE_TO_CLASS))].sort();
-  const classCodes = form.type ? (CLASS_TO_CODES[form.type] || []) : BUSINESS_CLASS_CODES;
+  // Cascading: when Class Description is set, filter codes
+  const classCodes = form.businessClassDesc ? (CLASS_TO_CODES[form.businessClassDesc] || []) : BUSINESS_CLASS_CODES;
 
   // ── Fetch GPS ───────────────────────────────────────────────────────────
   const fetchGps = () => {
@@ -344,14 +314,10 @@ export function BusinessRegisterPage() {
       if (name === 'revenueCode' && BIZ_CODE_TO_DESC[updated.revenueCode]) {
         updated.revenueDescription = BIZ_CODE_TO_DESC[updated.revenueCode];
       }
-      // Link Business Class <-> Business Class Code
-      if (name === 'type' && CLASS_TO_FIRST_CODE[updated.type]) {
-        updated.businessClassCode = CLASS_TO_FIRST_CODE[updated.type];
-      }
+      // Link Business Class Code <-> Business Class Description
       if (name === 'businessClassCode') {
         const code = updated.businessClassCode;
         if (CODE_TO_CLASS[code]) {
-          updated.type = CODE_TO_CLASS[code];
           updated.businessClassDesc = CODE_TO_CLASS[code];
         }
         // Fetch amount from rate config when code changes
@@ -365,7 +331,6 @@ export function BusinessRegisterPage() {
     const missing: string[] = [];
     if (!form.name?.trim()) missing.push('Business Name');
     if (!form.owner?.trim()) missing.push('Owner Name');
-    if (!form.businessAddress?.trim()) missing.push('Business Address');
     if (missing.length > 0) {
       alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
       return;
@@ -395,52 +360,37 @@ export function BusinessRegisterPage() {
     setEditingRegNumber(biz.regNumber);
     setForm({
       regNumber: biz.regNumber,
-      name: biz.name,
-      owner: biz.owner,
-      type: biz.type || '',
-      category: biz.category || '',
-      tin: biz.tin || '',
-      status: biz.status || 'Active',
-      dateRegistered: biz.dateRegistered || '',
-      ghanaCard: biz.ghanaCard || '',
-      phone: biz.phone || '',
-      email: biz.email || '',
+      // A. Business Location
+      locality: biz.locality || '',
+      areaCode: biz.areaCode || '',
+      streetName: biz.streetName || '',
+      houseNo: biz.houseNo || '',
       ghanaPostGPS: biz.ghanaPostGPS || '',
       latitude: biz.latitude || '',
       longitude: biz.longitude || '',
-      digitalAddress: biz.digitalAddress || '',
-      residentialAddress: biz.residentialAddress || '',
-      businessAddress: biz.businessAddress || '',
-      ward: biz.ward || '',
-      electoralArea: biz.electoralArea || '',
-      zone: biz.zone || '',
-      revenueArea: biz.revenueArea || '',
-      licenseNumber: biz.licenseNumber || '',
-      subCategory: biz.subCategory || '',
-      streetName: biz.streetName || '',
-      houseNo: biz.houseNo || '',
-      streetCode: biz.streetCode || '',
-      locality: biz.locality || '',
-      areaCode: (biz as any).areaCode || '',
-      code: biz.code || '',
+      landmark: biz.landmark || '',
+      // B. Business Information
       daAssignmentNo: biz.daAssignmentNo || '',
-      businessCertNo: biz.businessCertNo || '',
       businessUniqueNumber: biz.businessUniqueNumber || '',
-      revenueDescription: biz.revenueDescription || '',
-      revenueDescription2: biz.revenueDescription2 || '',
+      businessCertNo: biz.businessCertNo || '',
+      name: biz.name || '',
       revenueCode: biz.revenueCode || '',
+      revenueDescription: biz.revenueDescription || '',
       businessClassCode: biz.businessClassCode || '',
+      businessClassDesc: biz.businessClassDesc || (biz.businessClassCode ? CODE_TO_CLASS[biz.businessClassCode] || '' : ''),
+      category: biz.category || '',
+      amount: biz.amount || '',
       employees: biz.employees || '',
+      dateRegistered: biz.dateRegistered || '',
+      status: biz.status || 'Active',
       yearEstablished: biz.yearEstablished || '',
-      excludedFromFees: biz.excludedFromFees || false,
-      ownerAddress: biz.ownerAddress || '',
-      ownerLatitude: biz.ownerLatitude || '',
-      ownerLongitude: biz.ownerLongitude || '',
+      // C. Owner Information
+      owner: biz.owner || '',
+      ghanaCard: biz.ghanaCard || '',
+      phone: biz.phone || '',
+      email: biz.email || '',
       ownerTin: biz.ownerTin || '',
       comments: biz.comments || '',
-      landmark: (biz as any).landmark || '',
-      businessClassDesc: (biz as any).businessClassDesc || (biz.businessClassCode && CODE_TO_CLASS[biz.businessClassCode]) || '',
-      amount: (biz as any).amount || '',
     });
     setView('form');
   };
