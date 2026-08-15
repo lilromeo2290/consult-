@@ -763,9 +763,9 @@ export function PropertiesPage() {
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
-              {/* DA Assignment No. / Property Permit */}
+              {/* 1. DA Assessment Number */}
               <div>
-                <label className={`${labelClass} block`}>DA Assignment No. / Property Permit</label>
+                <label className={`${labelClass} block`}>DA Assessment Number</label>
                 <AutoSuggestInput
                   name="daAssignmentNo"
                   value={form.daAssignmentNo}
@@ -775,7 +775,7 @@ export function PropertiesPage() {
                   className={inputClass}
                 />
               </div>
-              {/* Property Unique Number */}
+              {/* 2. Property Unique Number */}
               <div>
                 <label className={`${labelClass} block`}>Property Unique Number</label>
                 <AutoSuggestInput
@@ -787,7 +787,12 @@ export function PropertiesPage() {
                   className={inputClass}
                 />
               </div>
-              {/* Property Revenue Code */}
+              {/* 3. Property Permit Number */}
+              <div>
+                <label className={`${labelClass} block`}>Property Permit Number</label>
+                <input type="text" name="permitNumber" value={form.permitNumber} onChange={handleFormChange} placeholder="Enter permit number" className={inputClass} />
+              </div>
+              {/* 4. Property Revenue Code */}
               <div>
                 <label className={`${labelClass} block`}>Property Revenue Code</label>
                 <div className="relative" ref={propRevenueCodeRef}>
@@ -812,7 +817,7 @@ export function PropertiesPage() {
                   )}
                 </div>
               </div>
-              {/* Property Revenue Description */}
+              {/* 5. Property Revenue Description */}
               <div className="sm:col-span-2">
                 <label className={`${labelClass} block`}>Property Revenue Description</label>
                 <div className="relative" ref={propRevenueDescRef}>
@@ -837,9 +842,9 @@ export function PropertiesPage() {
                   )}
                 </div>
               </div>
-              {/* Code */}
+              {/* 6. Property Class Code */}
               <div>
-                <label className={`${labelClass} block`}>Code</label>
+                <label className={`${labelClass} block`}>Property Class Code</label>
                 <Combobox
                   name="businessClassCode"
                   value={form.businessClassCode}
@@ -850,9 +855,9 @@ export function PropertiesPage() {
                   className={inputClass}
                 />
               </div>
-              {/* Class */}
+              {/* 7. Property Class Description */}
               <div>
-                <label className={`${labelClass} block`}>Class</label>
+                <label className={`${labelClass} block`}>Property Class Description</label>
                 <Combobox
                   name="type"
                   value={form.type}
@@ -863,9 +868,9 @@ export function PropertiesPage() {
                   className={inputClass}
                 />
               </div>
-              {/* Category */}
+              {/* 8. Property Category */}
               <div>
-                <label className={`${labelClass} block`}>Category</label>
+                <label className={`${labelClass} block`}>Property Category</label>
                 <Combobox
                   name="category"
                   value={form.category}
@@ -876,52 +881,15 @@ export function PropertiesPage() {
                   className={inputClass}
                 />
               </div>
-              {/* Valued Property */}
+              {/* 9. Value/Amount (GHS) */}
               <div>
-                <label className={`${labelClass} block`}>Valued Property Amount</label>
-                <input
-                  type="text"
-                  value={form.valuedProperty === 'No' ? 'N/A (Flat Rate)' : form.valuedProperty ? `GHS ${form.valuedProperty}` : ''}
-                  readOnly
-                  placeholder="Auto-populated after selection"
-                  className={`${inputClass} bg-slate-100 dark:bg-slate-900/60 cursor-not-allowed`}
-                />
-              </div>
-              {/* Value */}
-              <div>
-                <label className={`${labelClass} block`}>Value (GHS)</label>
+                <label className={`${labelClass} block`}>Value/Amount (GHS)</label>
                 <input type="number" name="value" value={form.value} onChange={handleFormChange} placeholder="0.00" min="0" className={inputClass} />
               </div>
-              {/* Rooms */}
+              {/* 10. Number of Rooms */}
               <div>
-                <label className={`${labelClass} block`}>Rooms</label>
+                <label className={`${labelClass} block`}>Number of Rooms</label>
                 <input type="number" name="rooms" value={form.rooms} onChange={handleFormChange} placeholder="e.g. 3" min="0" className={inputClass} />
-              </div>
-              {/* Building Permit */}
-              <div>
-                <label className={`${labelClass} block`}>Building Permit</label>
-                <div className="flex items-center gap-6 mt-1">
-                  <label className="inline-flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="hasBuildingPermit" value="Yes" checked={form.hasBuildingPermit === 'Yes'} onChange={handleFormChange} className="accent-[#0B1D3E] w-4 h-4" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">Yes</span>
-                  </label>
-                  <label className="inline-flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="hasBuildingPermit" value="No" checked={form.hasBuildingPermit === 'No'} onChange={handleFormChange} className="accent-[#0B1D3E] w-4 h-4" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">No</span>
-                  </label>
-                </div>
-              </div>
-              {/* Permit Number */}
-              <div>
-                <label className={`${labelClass} block`}>Permit Number</label>
-                <input type="text" name="permitNumber" value={form.permitNumber} onChange={handleFormChange} placeholder="Enter permit number" disabled={form.hasBuildingPermit === 'No'} className={`${inputClass} ${form.hasBuildingPermit === 'No' ? 'opacity-50 cursor-not-allowed' : ''}`} />
-              </div>
-              {/* Excluded from rating */}
-              <div className="flex items-end">
-                <label className="flex items-center gap-2 pb-2.5 cursor-pointer select-none">
-                  <input type="checkbox" name="excludedFromRating" checked={form.excludedFromRating} onChange={handleFormChange} className="w-4 h-4 rounded border-slate-300 text-[#0B1D3E] focus:ring-[#0B1D3E]" />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">Excluded from rating</span>
-                </label>
               </div>
             </div>
           </div>

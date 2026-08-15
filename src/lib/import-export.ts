@@ -39,6 +39,18 @@ export const BUSINESS_FIELDS: { key: string; label: string }[] = [
 
 export const PROPERTY_FIELDS: { key: string; label: string }[] = [
   { key: 'propNumber', label: 'Property Number' },
+  // Property Information
+  { key: 'daAssignmentNo', label: 'DA Assessment Number' },
+  { key: 'propertyUniqueNumber', label: 'Property Unique Number' },
+  { key: 'permitNumber', label: 'Property Permit Number' },
+  { key: 'revenueCode', label: 'Property Revenue Code' },
+  { key: 'revenueDescription', label: 'Property Revenue Description' },
+  { key: 'businessClassCode', label: 'Property Class Code' },
+  { key: 'type', label: 'Property Class Description' },
+  { key: 'category', label: 'Property Category' },
+  { key: 'value', label: 'Value/Amount (GHS)' },
+  { key: 'rooms', label: 'Number of Rooms' },
+  // Property Location
   { key: 'streetName', label: 'Street Name' },
   { key: 'houseNo', label: 'House No' },
   { key: 'streetCode', label: 'Street Code' },
@@ -46,7 +58,8 @@ export const PROPERTY_FIELDS: { key: string; label: string }[] = [
   { key: 'latitude', label: 'Latitude' },
   { key: 'longitude', label: 'Longitude' },
   { key: 'locality', label: 'Locality' },
-  { key: 'code', label: 'Revenue Code' },
+  { key: 'areaCode', label: 'Area Code' },
+  // Owner Information
   { key: 'ownerName', label: 'Owner Name' },
   { key: 'ownerAddress', label: 'Owner Address' },
   { key: 'ownerLatitude', label: 'Owner Latitude' },
@@ -55,14 +68,8 @@ export const PROPERTY_FIELDS: { key: string; label: string }[] = [
   { key: 'email', label: 'Email' },
   { key: 'tin', label: 'TIN' },
   { key: 'nationalId', label: 'National ID' },
+  { key: 'ownerTin', label: 'Owner TIN' },
   { key: 'ownershipType', label: 'Ownership Type' },
-  { key: 'propertyUseType', label: 'Property Use Type (Class)' },
-  { key: 'category', label: 'Category' },
-  { key: 'value', label: 'Value' },
-  { key: 'rooms', label: 'Rooms' },
-  { key: 'hasBuildingPermit', label: 'Has Building Permit' },
-  { key: 'permitNumber', label: 'Permit Number' },
-  { key: 'excludedFromRating', label: 'Excluded From Rating' },
   { key: 'comments', label: 'Comments' },
 ];
 
