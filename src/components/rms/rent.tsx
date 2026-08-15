@@ -43,8 +43,7 @@ import { Combobox } from '@/components/ui/combobox';
 
 interface Rent {
   id: string;
-  upn: string;
-  // Location
+  // Location Information
   rentPropertyLocation: string;
   locationCode: string;
   exactLocation: string;
@@ -53,6 +52,8 @@ interface Rent {
   propertyLongitude: string;
   // Rent Property Information
   rentPropertyNumber: string;
+  rentPropertyUniqueNumber: string;
+  tenancyAgreementNumber: string;
   rentPropertyTypeCode: string;
   rentPropertyType: string;
   rentPropertyTypeCategory: string;
@@ -179,14 +180,17 @@ export function RentPage() {
 
   // ── Form State ───────────────────────────────────────────────────────────
   const defaultForm = {
-    upn: '',
+    // Location Information
     rentPropertyLocation: '',
     locationCode: '',
     exactLocation: '',
     propertyGhanaPostGPS: '',
     propertyLatitude: '',
     propertyLongitude: '',
+    // Rent Property Information
     rentPropertyNumber: '',
+    rentPropertyUniqueNumber: '',
+    tenancyAgreementNumber: '',
     rentPropertyTypeCode: '',
     rentPropertyType: '',
     rentPropertyTypeCategory: '',
@@ -194,17 +198,20 @@ export function RentPage() {
     rentRevenueDescription: '',
     amount: '',
     vacant: 'No',
+    // Contract
     startDate: '',
     endDate: '',
     contractId: '',
     contractValue: '',
     area: '',
+    // Occupant's Information
     occupantUniqueId: '',
     occupantName: '',
     occupantNationalId: '',
     occupantAddress: '',
     occupantPhone: '',
     occupantEmail: '',
+    // Other
     excludedFromRenting: false,
     comments: '',
   };
@@ -419,31 +426,38 @@ export function RentPage() {
 
   const handleEdit = (rent: Rent) => {
     setForm({
-      upn: rent.upn,
+      // Location Information
       rentPropertyLocation: rent.rentPropertyLocation,
       locationCode: rent.locationCode,
       exactLocation: rent.exactLocation,
       propertyGhanaPostGPS: rent.propertyGhanaPostGPS,
       propertyLatitude: rent.propertyLatitude,
       propertyLongitude: rent.propertyLongitude,
+      // Rent Property Information
       rentPropertyNumber: rent.rentPropertyNumber,
+      rentPropertyUniqueNumber: (rent as any).rentPropertyUniqueNumber || '',
+      tenancyAgreementNumber: (rent as any).tenancyAgreementNumber || '',
       rentPropertyTypeCode: rent.rentPropertyTypeCode || '',
       rentPropertyType: rent.rentPropertyType,
       rentPropertyTypeCategory: rent.rentPropertyTypeCategory || '',
+      rentRevenueCode: rent.rentRevenueCode,
+      rentRevenueDescription: rent.rentRevenueDescription,
       amount: rent.amount,
       vacant: rent.vacant,
+      // Contract
       startDate: rent.startDate,
       endDate: rent.endDate,
       contractId: rent.contractId,
       contractValue: rent.contractValue,
       area: rent.area,
-      renterName: rent.occupantName,
+      // Occupant's Information
       occupantUniqueId: rent.occupantUniqueId || '',
       occupantName: rent.occupantName,
       occupantNationalId: rent.occupantNationalId,
       occupantAddress: rent.occupantAddress,
       occupantPhone: rent.occupantPhone,
       occupantEmail: rent.occupantEmail,
+      // Other
       excludedFromRenting: rent.excludedFromRenting,
       comments: rent.comments,
     });
@@ -643,15 +657,16 @@ export function RentPage() {
 
       <div className="space-y-6">
         {/* ════════════════════════════════════════════════════════════════════
-            CARD 1: LOCATION
+            CARD 1: LOCATION INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
             <MapPin className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Location</h2>
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Location Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
+              {/* 1. Rent Property Location */}
               <div className="sm:col-span-2 lg:col-span-3">
                 <label className={`${labelClass} block`}>Rent Property Location</label>
                 <select name="rentPropertyLocation" value={form.rentPropertyLocation} onChange={handleFormChange} className={inputClass}>
@@ -668,30 +683,30 @@ export function RentPage() {
                   <option value="Assembly Office (Old)">Assembly Office (Old)</option>
                 </select>
               </div>
+              {/* 2. Location Code */}
               <div>
                 <label className={`${labelClass} block`}>Location Code</label>
                 <input type="text" name="locationCode" value={form.locationCode} onChange={handleFormChange} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
               </div>
+              {/* 3. Exact Location */}
               <div className="sm:col-span-2">
                 <label className={`${labelClass} block`}>Exact Location</label>
                 <input type="text" name="exactLocation" value={form.exactLocation} onChange={handleFormChange} placeholder="Enter exact location description" className={inputClass} />
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4 mt-1">
+              {/* 4. Ghana Post GPS Address */}
               <div>
-                <label className={`${labelClass} block`}>Ghana Post GPS / Digital Address</label>
+                <label className={`${labelClass} block`}>Ghana Post GPS Address</label>
                 <input type="text" name="propertyGhanaPostGPS" value={form.propertyGhanaPostGPS} onChange={handleFormChange} placeholder="e.g. GA-123-4567" className={inputClass} />
               </div>
-              <div>
-                <label className={`${labelClass} block`}>GPS Coordinates (Lat)</label>
-                <input type="text" name="propertyLatitude" value={form.propertyLatitude} onChange={handleFormChange} placeholder="e.g. 5.603717" className={inputClass} />
-              </div>
-              <div>
-                <label className={`${labelClass} block`}>GPS Coordinates (Long)</label>
-                <div className="flex gap-1.5">
-                  <input type="text" name="propertyLongitude" value={form.propertyLongitude} onChange={handleFormChange} placeholder="e.g. -0.187028" className={inputClass} />
-                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] disabled:opacity-50 text-white text-xs font-medium transition-colors" title="Auto-detect GPS">
+              {/* 5. GPS Coordinates (Latitude/Longitude) */}
+              <div className="sm:col-span-2">
+                <label className={`${labelClass} block`}>GPS Coordinates (Latitude/Longitude)</label>
+                <div className="flex gap-2">
+                  <input type="text" name="propertyLatitude" value={form.propertyLatitude} onChange={handleFormChange} placeholder="Latitude" className={`${inputClass} flex-1`} />
+                  <input type="text" name="propertyLongitude" value={form.propertyLongitude} onChange={handleFormChange} placeholder="Longitude" className={`${inputClass} flex-1`} />
+                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border border-[#0B1D3E]/40 dark:border-[#0B1D3E] text-[#0B1D3E] dark:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap cursor-pointer">
                     {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
+                    {locating ? '...' : 'GPS'}
                   </button>
                 </div>
               </div>
@@ -709,53 +724,22 @@ export function RentPage() {
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
-              <div>
-                <label className={`${labelClass} block`}>Unique ID</label>
-                <input type="text" name="occupantUniqueId" value={form.occupantUniqueId} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
-              </div>
+              {/* 1. Rent Property Number */}
               <div>
                 <label className={`${labelClass} block`}>Rent Property Number</label>
                 <input type="text" name="rentPropertyNumber" value={form.rentPropertyNumber} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
               </div>
-              {/* Code */}
+              {/* 2. Rent Property Unique Number */}
               <div>
-                <label className={`${labelClass} block`}>Code</label>
-                <Combobox
-                  name="rentPropertyTypeCode"
-                  value={form.rentPropertyTypeCode}
-                  onChange={handleFormChange}
-                  options={rentClassCodes.map((c) => ({ value: c, label: `${c} – ${RENT_CODE_TO_CLASS[c] || ''} – ${RENT_CODE_TO_CATEGORY[c] || ''}` }))}
-                  placeholder="Select code..."
-                  emptyMessage="No matching code"
-                  className={inputClass}
-                />
+                <label className={`${labelClass} block`}>Rent Property Unique Number</label>
+                <input type="text" name="rentPropertyUniqueNumber" value={form.rentPropertyUniqueNumber} onChange={handleFormChange} placeholder="Enter unique number" className={inputClass} />
               </div>
-              {/* Class */}
+              {/* 3. Tenancy Agreement Number */}
               <div>
-                <label className={`${labelClass} block`}>Class</label>
-                <Combobox
-                  name="rentPropertyType"
-                  value={form.rentPropertyType}
-                  onChange={handleFormChange}
-                  options={RENT_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
-                  placeholder="Select class..."
-                  emptyMessage="No matching class"
-                  className={inputClass}
-                />
+                <label className={`${labelClass} block`}>Tenancy Agreement Number</label>
+                <input type="text" name="tenancyAgreementNumber" value={form.tenancyAgreementNumber} onChange={handleFormChange} placeholder="Enter agreement number" className={inputClass} />
               </div>
-              {/* Category */}
-              <div>
-                <label className={`${labelClass} block`}>Category</label>
-                <Combobox
-                  name="rentPropertyTypeCategory"
-                  value={form.rentPropertyTypeCategory}
-                  onChange={handleFormChange}
-                  options={rentClassCategories.map((c) => ({ value: c, label: c }))}
-                  placeholder="Select category..."
-                  emptyMessage={form.rentPropertyType ? 'No categories' : 'Select class or code first'}
-                  className={inputClass}
-                />
-              </div>
+              {/* 4. Rent Revenue Code */}
               <div>
                 <label className={`${labelClass} block`}>Rent Revenue Code</label>
                 <div className="relative" ref={rentRevenueCodeRef}>
@@ -774,14 +758,14 @@ export function RentPage() {
                       <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
                     ) : rentRevenueCodeFiltered.slice(0, 50).map((item) => (
                       <button key={item.code} type="button" onClick={() => { handleRentRevenueSelect(item); setRentRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                        <span className="font-mono text-xs text-slate-500 mr-2">{item.code}</span>
-                        <span className="text-slate-800 dark:text-white">{item.description}</span>
+                        <span className="font-mono text-slate-800 dark:text-white">{item.code}</span>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
               </div>
+              {/* 5. Rent Revenue Description */}
               <div className="sm:col-span-2 relative" ref={revenueDropdownRef}>
                 <label className={`${labelClass} block`}>Rent Revenue Description</label>
                 <div className="relative">
@@ -814,16 +798,56 @@ export function RentPage() {
                   )}
                 </div>
               </div>
+              {/* 6. Rent Class Code */}
               <div>
-                <label className={`${labelClass} block`}>Amount (GHS)</label>
+                <label className={`${labelClass} block`}>Rent Class Code</label>
+                <Combobox
+                  name="rentPropertyTypeCode"
+                  value={form.rentPropertyTypeCode}
+                  onChange={handleFormChange}
+                  options={rentClassCodes.map((c) => ({ value: c, label: `${c} – ${RENT_CODE_TO_CLASS[c] || ''} – ${RENT_CODE_TO_CATEGORY[c] || ''}` }))}
+                  placeholder="Select code..."
+                  emptyMessage="No matching code"
+                  className={inputClass}
+                />
+              </div>
+              {/* 7. Rent Class Description */}
+              <div>
+                <label className={`${labelClass} block`}>Rent Class Description</label>
+                <Combobox
+                  name="rentPropertyType"
+                  value={form.rentPropertyType}
+                  onChange={handleFormChange}
+                  options={RENT_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
+                  placeholder="Select class..."
+                  emptyMessage="No matching class"
+                  className={inputClass}
+                />
+              </div>
+              {/* 8. Category */}
+              <div>
+                <label className={`${labelClass} block`}>Category</label>
+                <Combobox
+                  name="rentPropertyTypeCategory"
+                  value={form.rentPropertyTypeCategory}
+                  onChange={handleFormChange}
+                  options={rentClassCategories.map((c) => ({ value: c, label: c }))}
+                  placeholder="Select category..."
+                  emptyMessage={form.rentPropertyType ? 'No categories' : 'Select class or code first'}
+                  className={inputClass}
+                />
+              </div>
+              {/* 9. Amount */}
+              <div>
+                <label className={`${labelClass} block`}>Amount</label>
                 <input type="number" name="amount" value={form.amount} onChange={handleFormChange} placeholder="0.00" min="0" className={inputClass} />
               </div>
+              {/* 10. Vacant Status */}
               <div>
-                <label className={`${labelClass} block`}>Vacant</label>
+                <label className={`${labelClass} block`}>Vacant Status</label>
                 <select name="vacant" value={form.vacant} onChange={handleFormChange} className={inputClass}>
-                  {VACANT_OPTIONS.map((v) => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
+                  <option value="Yes">Vacant</option>
+                  <option value="No">Occupied</option>
                 </select>
               </div>
             </div>
