@@ -109,6 +109,37 @@ export const RENT_FIELDS: { key: string; label: string }[] = [
   { key: 'comments', label: 'Comments' },
 ];
 
+export const BP_OFFICIAL_FIELDS: { key: string; label: string }[] = [
+  // Application Header
+  { key: 'applicationNumber', label: 'Application Number' },
+  { key: 'applicationDate', label: 'Application Date' },
+  // Applicant Information
+  { key: 'applicantFullName', label: 'Applicant Full Name' },
+  { key: 'applicantAddress', label: 'Applicant Address' },
+  { key: 'applicantPhone', label: 'Applicant Phone' },
+  { key: 'applicantEmail', label: 'Applicant Email' },
+  { key: 'applicantNationalId', label: 'Applicant National ID (Ghana Card)' },
+  { key: 'applicantTin', label: 'Applicant TIN' },
+  { key: 'businessName', label: 'Business Name' },
+  { key: 'businessRegNumber', label: 'Business Registration Number' },
+  { key: 'businessLocation', label: 'Business Location' },
+  // Physical Planning Department
+  { key: 'routingStatus', label: 'Routing Status' },
+  { key: 'physicalPlanningComments', label: 'Physical Planning Comments' },
+  { key: 'physicalPlanningDate', label: 'Physical Planning Recommendation Date' },
+  // EPA Recommendation
+  { key: 'epaRecommendation', label: 'EPA Recommendation' },
+  { key: 'epaComments', label: 'EPA Comments' },
+  { key: 'epaRecommendationDate', label: 'EPA Recommendation Date' },
+  // GNFS Recommendation
+  { key: 'gnfsRecommendation', label: 'GNFS Recommendation' },
+  { key: 'gnfsComments', label: 'GNFS Comments' },
+  { key: 'gnfsRecommendationDate', label: 'GNFS Recommendation Date' },
+  // General
+  { key: 'generalComments', label: 'General Comments' },
+  { key: 'status', label: 'Status' },
+];
+
 // ─── Export ──────────────────────────────────────────────────────────────────
 
 export function exportToExcel<T extends Record<string, unknown>>(
