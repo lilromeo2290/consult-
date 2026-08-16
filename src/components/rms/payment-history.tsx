@@ -141,17 +141,17 @@ export function PaymentHistoryPage() {
     return Array.from(map.values()).sort((a, b) => b.total - a.total);
   }, [filtered]);
 
-  const inputCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
+  const inputCls = 'w-full rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Payment History</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Search and print payment history for any business or property within a date range</p>
+          <h1 className="text-2xl font-bold text-foreground">Payment History</h1>
+          <p className="text-sm text-muted-foreground mt-1">Search and print payment history for any business or property within a date range</p>
         </div>
-        <button onClick={handlePrintAll} disabled={filtered.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer">
+        <button onClick={handlePrintAll} disabled={filtered.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-primary hover:bg-destructive disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer">
           <Printer className="w-4 h-4" />
           Print All ({filtered.length})
         </button>
@@ -159,43 +159,43 @@ export function PaymentHistoryPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center"><CreditCard className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" /></div>
-          <div><p className="text-xs text-slate-500 dark:text-slate-400">Payments</p><p className="text-lg font-bold text-slate-900 dark:text-white">{stats.count}</p></div>
+        <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center"><CreditCard className="w-5 h-5 text-primary dark:text-primary" /></div>
+          <div><p className="text-xs text-muted-foreground">Payments</p><p className="text-lg font-bold text-foreground">{stats.count}</p></div>
         </div>
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
+        <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center"><DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" /></div>
-          <div><p className="text-xs text-slate-500 dark:text-slate-400">Total Collected</p><p className="text-lg font-bold text-slate-900 dark:text-white">{fmt(stats.totalAmount)}</p></div>
+          <div><p className="text-xs text-muted-foreground">Total Collected</p><p className="text-lg font-bold text-foreground">{fmt(stats.totalAmount)}</p></div>
         </div>
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
+        <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center"><Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" /></div>
-          <div><p className="text-xs text-slate-500 dark:text-slate-400">Outstanding</p><p className="text-lg font-bold text-amber-700 dark:text-amber-400">{fmt(stats.totalBalance)}</p></div>
+          <div><p className="text-xs text-muted-foreground">Outstanding</p><p className="text-lg font-bold text-amber-700 dark:text-amber-400">{fmt(stats.totalBalance)}</p></div>
         </div>
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
+        <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center"><Building2 className="w-5 h-5 text-purple-600 dark:text-purple-400" /></div>
-          <div><p className="text-xs text-slate-500 dark:text-slate-400">Entities</p><p className="text-lg font-bold text-slate-900 dark:text-white">{stats.entities}</p></div>
+          <div><p className="text-xs text-muted-foreground">Entities</p><p className="text-lg font-bold text-foreground">{stats.entities}</p></div>
         </div>
       </div>
 
       {/* Entity Grouping Summary */}
       {entitySearch && uniqueEntities.length > 0 && (
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4">
-          <div className="flex items-center gap-2 mb-3"><TrendingUp className="w-4 h-4 text-slate-400" /><h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Entity Summary</h2></div>
+        <div className="rounded-xl bg-white dark:bg-muted border border-border p-4">
+          <div className="flex items-center gap-2 mb-3"><TrendingUp className="w-4 h-4 text-muted-foreground" /><h2 className="text-sm font-semibold text-foreground">Entity Summary</h2></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {uniqueEntities.slice(0, 6).map((e, i) => (
               <button
                 key={`entity-${i}`}
                 onClick={() => handlePrintEntity(e.name)}
-                className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer text-left"
+                className="flex items-center justify-between rounded-lg border-border px-3 py-2 hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer text-left"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  {e.type === 'Property' ? <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" /> : <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
-                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{e.name}</span>
+                  {e.type === 'Property' ? <Home className="w-3.5 h-3.5 text-muted-foreground shrink-0" /> : <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
+                  <span className="text-sm font-medium text-foreground truncate">{e.name}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{e.count} payment{e.count !== 1 ? 's' : ''}</span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">{fmt(e.total)}</span>
-                  <Printer className="w-3.5 h-3.5 text-slate-400 hover:text-[#0B1D3E]" />
+                  <span className="text-xs text-muted-foreground">{e.count} payment{e.count !== 1 ? 's' : ''}</span>
+                  <span className="text-sm font-semibold text-foreground">{fmt(e.total)}</span>
+                  <Printer className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
                 </div>
               </button>
             ))}
@@ -204,11 +204,11 @@ export function PaymentHistoryPage() {
       )}
 
       {/* Filters */}
-      <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 space-y-3">
-        <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-slate-400" /><span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Filters</span></div>
+      <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 space-y-3">
+        <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-semibold text-foreground">Filters</span></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search entity, receipt #..."
@@ -242,38 +242,38 @@ export function PaymentHistoryPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Receipt #</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Date</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Entity</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden lg:table-cell">Bill No</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden md:table-cell">Collector</th>
-                <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Method</th>
-                <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Status</th>
-                <th className="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Amount</th>
-                <th className="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Balance</th>
-                <th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Action</th>
+              <tr className="bg-card/50 border-b border-border">
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Receipt #</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Date</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Entity</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap hidden lg:table-cell">Bill No</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap hidden md:table-cell">Collector</th>
+                <th className="px-4 py-3 text-center font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Method</th>
+                <th className="px-4 py-3 text-center font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Status</th>
+                <th className="px-4 py-3 text-right font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Amount</th>
+                <th className="px-4 py-3 text-right font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Balance</th>
+                <th className="px-4 py-3 text-center font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            <tbody className="divide-y divide-border">
               {paginated.length === 0 ? (
-                <tr><td colSpan={11} className="text-center py-12 text-slate-400 dark:text-slate-500">No payment history found for the selected criteria.</td></tr>
+                <tr><td colSpan={11} className="text-center py-12 text-muted-foreground dark:text-muted-foreground">No payment history found for the selected criteria.</td></tr>
               ) : (
                 paginated.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-[#0B1D3E] dark:text-[#4a7ab5] whitespace-nowrap">{p.receiptNo}</td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">{p.date}</td>
+                  <tr key={p.id} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
+                    <td className="px-4 py-3 font-mono text-xs text-primary dark:text-primary whitespace-nowrap">{p.receiptNo}</td>
+                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{p.date}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">{p.business}</p>
+                      <p className="text-sm font-medium text-foreground">{p.business}</p>
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400 whitespace-nowrap hidden lg:table-cell">{p.billNo}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400 whitespace-nowrap hidden md:table-cell">{p.collector}</td>
+                    <td className="px-4 py-3 text-muted-foreground dark:text-muted-foreground whitespace-nowrap hidden lg:table-cell">{p.billNo}</td>
+                    <td className="px-4 py-3 text-muted-foreground dark:text-muted-foreground whitespace-nowrap hidden md:table-cell">{p.collector}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${p.method === 'Cash' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : p.method === 'Mobile Money' ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]' : p.method === 'Bank' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : p.method === 'POS' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400'}`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${p.method === 'Cash' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : p.method === 'Mobile Money' ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary' : p.method === 'Bank' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : p.method === 'POS' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400'}`}>
                         {p.method === 'Mobile Money' ? 'MoMo' : p.method}
                       </span>
                     </td>
@@ -282,12 +282,12 @@ export function PaymentHistoryPage() {
                         {p.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-white whitespace-nowrap">{fmt(p.amount)}</td>
+                    <td className="px-4 py-3 text-right font-medium text-foreground whitespace-nowrap">{fmt(p.amount)}</td>
                     <td className={`px-4 py-3 text-right font-medium whitespace-nowrap ${p.balance > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>{p.balance > 0 ? fmt(p.balance) : '—'}</td>
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => handlePrintEntity(p.business)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary dark:hover:dark:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer"
                         title="Print all payments for this entity"
                       >
                         <Printer className="w-4 h-4" />
@@ -301,14 +301,14 @@ export function PaymentHistoryPage() {
         </div>
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 px-4 py-3 bg-slate-50/50">
-            <p className="text-xs text-slate-500 dark:text-slate-400">Showing {showingFrom}–{showingTo} of {filtered.length}</p>
+          <div className="flex items-center justify-between border-t border-border px-4 py-3 bg-card/50">
+            <p className="text-xs text-muted-foreground">Showing {showingFrom}–{showingTo} of {filtered.length}</p>
             <div className="flex items-center gap-1">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} className="p-1.5 rounded-lg text-muted-foreground hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><ChevronLeft className="w-4 h-4" /></button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                <button key={pg} onClick={() => setPage(pg)} className={`w-8 h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${pg === safePage ? 'bg-[#0B1D3E] text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>{pg}</button>
+                <button key={pg} onClick={() => setPage(pg)} className={`w-8 h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${pg === safePage ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted dark:hover:bg-slate-700'}`}>{pg}</button>
               ))}
-              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><ChevronRight className="w-4 h-4" /></button>
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="p-1.5 rounded-lg text-muted-foreground hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><ChevronRight className="w-4 h-4" /></button>
             </div>
           </div>
         )}

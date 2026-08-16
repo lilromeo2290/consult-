@@ -116,7 +116,7 @@ const APPROVAL_STATUSES = [
 
 const STATUS_COLORS: Record<string, string> = {
   'In Progress': 'bg-blue-100 text-blue-800',
-  'Approved': 'bg-[#0B1D3E]/10 text-[#0B1D3E]',
+  'Approved': 'bg-primary/10 text-primary',
   'Approved with Conditions': 'bg-amber-100 text-amber-800',
   'Rejected': 'bg-red-100 text-red-800',
   'Deferred': 'bg-orange-100 text-orange-800',
@@ -394,7 +394,7 @@ export function BPOfficialPage() {
           <ArrowLeft size={16} /> Back to list
         </button>
 
-        <div className="rounded-xl border bg-card shadow-sm">
+        <div className="rounded-xl border-border bg-card shadow-sm">
           {/* Card Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b px-6 py-4">
             <div className="flex items-center gap-3">
@@ -867,7 +867,7 @@ export function BPOfficialPage() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border bg-card">
+      <div className="overflow-x-auto rounded-lg border-border bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -896,7 +896,7 @@ export function BPOfficialPage() {
             {paginated.map((r) => (
               <tr
                 key={r.id}
-                className="border-b last:border-0 hover:bg-muted/30 transition-colors"
+                className="border-b last:border-0 hover:bg-background transition-colors"
               >
                 <td className="px-4 py-3 font-mono text-xs font-medium">{r.businessUniqueNumber || '—'}</td>
                 <td className="px-4 py-3 font-medium">{r.businessName || '—'}</td>
@@ -928,7 +928,7 @@ export function BPOfficialPage() {
                     ) : (
                       <button
                         onClick={() => setDeleteConfirm(r.id)}
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-red-50 hover:text-destructive transition-colors"
                         title="Delete"
                       >
                         <Trash2 size={15} />

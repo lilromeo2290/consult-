@@ -559,9 +559,9 @@ export function PropertiesPage() {
 
   // ── Form Helpers ─────────────────────────────────────────────────────────
   const inputClass =
-    'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
+    'w-full rounded-lg border-border bg-white dark:bg-muted px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
   const labelClass =
-    'text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5';
+    'text-sm font-medium text-foreground mb-1.5';
 
   const formatVal = (v: string) => {
     const n = parseFloat(v);
@@ -578,23 +578,23 @@ export function PropertiesPage() {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Property Registration</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold text-foreground">Property Registration</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Manage and register properties within the assembly.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setEditingPropNumber(null); setForm({ ...defaultForm, propertyUniqueNumber: generatePropertyUniqueNumber(), propertyCertNo: generatePropertyCertNo(), daAssignmentNo: generateDaAssignmentNo() }); valuedDialogTriggered.current = ''; setView('form'); }}
-              className="inline-flex items-center gap-2 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-destructive text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Register New Property
             </button>
-            <button onClick={handleExport} className="inline-flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
+            <button onClick={handleExport} className="inline-flex items-center gap-2 border border-border bg-white dark:bg-muted text-foreground text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-card dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
               <Download className="w-4 h-4" /> Export
             </button>
-            <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
+            <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 border border-border bg-white dark:bg-muted text-foreground text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-card dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
               <Upload className="w-4 h-4" /> Import
             </button>
             <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
@@ -604,7 +604,7 @@ export function PropertiesPage() {
         {/* ── Search & Filters ────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search by Property Unique Number, owner, or street..."
@@ -634,41 +634,41 @@ export function PropertiesPage() {
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="rounded-xl border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Property Unique Number</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Owner</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Property Class Description</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Property Class Category</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Use / Amount</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Details</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Action</th>
+                <tr className="bg-card dark:bg-muted/60 border-b border-border">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Property Unique Number</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Owner</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Property Class Description</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Property Class Category</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Use / Amount</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Details</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              <tbody className="divide-y divide-border">
                 {paged.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <td colSpan={7} className="text-center py-12 text-muted-foreground dark:text-muted-foreground">
                       <Home className="w-10 h-10 mx-auto mb-3 opacity-40" />
                       No properties found.
                     </td>
                   </tr>
                 ) : (
                   paged.map((prop) => (
-                    <tr key={prop.propNumber} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap font-medium">{(prop as any).propertyUniqueNumber || prop.propNumber || '—'}</td>
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{prop.ownerName || '—'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{(prop as any).type || (prop as any).revenueDescription || '—'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{prop.category || '—'}</td>
+                    <tr key={prop.propNumber} className="hover:bg-card dark:hover:bg-muted/40 transition-colors">
+                      <td className="px-4 py-3 font-mono text-xs text-foreground whitespace-nowrap font-medium">{(prop as any).propertyUniqueNumber || prop.propNumber || '—'}</td>
+                      <td className="px-4 py-3 font-medium text-foreground whitespace-nowrap">{prop.ownerName || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-foreground whitespace-nowrap">{(prop as any).type || (prop as any).revenueDescription || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-foreground whitespace-nowrap">{prop.category || '—'}</td>
                       <td className="px-4 py-3 text-right font-semibold whitespace-nowrap">{formatVal(prop.value)}</td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap max-w-[200px] truncate" title={prop.streetName ? `${prop.streetName}, ${prop.locality || ''}` : prop.comments || ''}>{prop.streetName ? `${prop.streetName}, ${prop.locality || ''}` : (prop.comments || '—')}</td>
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap max-w-[200px] truncate" title={prop.streetName ? `${prop.streetName}, ${prop.locality || ''}` : prop.comments || ''}>{prop.streetName ? `${prop.streetName}, ${prop.locality || ''}` : (prop.comments || '—')}</td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1">
-                          <button onClick={() => handleEdit(prop)} className="p-1.5 rounded-md text-slate-400 hover:text-[#0B1D3E] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer" title="Edit"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => handleDelete(prop.propNumber)} className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => handleEdit(prop)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer" title="Edit"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => handleDelete(prop.propNumber)} className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer" title="Delete"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
@@ -681,13 +681,13 @@ export function PropertiesPage() {
 
         {/* ── Pagination ──────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-          <p className="text-slate-500 dark:text-slate-400">Showing {showingFrom}-{showingTo} of {filtered.length}</p>
+          <p className="text-muted-foreground">Showing {showingFrom}-{showingTo} of {filtered.length}</p>
           <div className="flex items-center gap-2">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={safeCurrentPage <= 1} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={safeCurrentPage <= 1} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-card dark:hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
               <ChevronLeft className="w-4 h-4" /> Previous
             </button>
-            <span className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">{safeCurrentPage} / {totalPages}</span>
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={safeCurrentPage >= totalPages} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+            <span className="px-3 py-1.5 rounded-lg bg-muted text-foreground font-medium">{safeCurrentPage} / {totalPages}</span>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={safeCurrentPage >= totalPages} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-card dark:hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
               Next <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -703,14 +703,14 @@ export function PropertiesPage() {
     <div className="space-y-6">
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
-        <button onClick={handleCancel} className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <button onClick={handleCancel} className="p-2 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted transition-colors cursor-pointer">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-foreground">
             {editingPropNumber ? 'Edit Property' : 'Register New Property'}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             {editingPropNumber ? 'Update the property details below.' : 'Fill in the details below to register a new property.'}
           </p>
         </div>
@@ -720,10 +720,10 @@ export function PropertiesPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 1: LOCATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <MapPin className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Location</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <MapPin className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Location</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -758,7 +758,7 @@ export function PropertiesPage() {
                 <div className="flex gap-2">
                   <input type="text" name="latitude" value={form.latitude} onChange={handleFormChange} placeholder="Latitude" className={`${inputClass} flex-1`} />
                   <input type="text" name="longitude" value={form.longitude} onChange={handleFormChange} placeholder="Longitude" className={`${inputClass} flex-1`} />
-                  <button type="button" onClick={fetchGps} disabled={locating} className="inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border border-[#0B1D3E]/40 dark:border-[#0B1D3E] text-[#0B1D3E] dark:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap">
+                  <button type="button" onClick={fetchGps} disabled={locating} className="inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border-border border-primary/40 dark:border-primary text-primary dark:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap">
                     {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
                     {locating ? '...' : 'GPS'}
                   </button>
@@ -777,7 +777,7 @@ export function PropertiesPage() {
               {/* Code (auto from locality) */}
               <div>
                 <label className={`${labelClass} block`}>Code</label>
-                <input type="text" name="code" value={form.code} readOnly placeholder="Auto-generated from locality" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
+                <input type="text" name="code" value={form.code} readOnly placeholder="Auto-generated from locality" className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground`} />
               </div>
             </div>
           </div>
@@ -786,10 +786,10 @@ export function PropertiesPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 2: PROPERTY INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <Briefcase className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Property Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <Briefcase className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Property Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -835,12 +835,12 @@ export function PropertiesPage() {
                     className={inputClass}
                   />
                   {propRevenueCodeShowDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
                       {propRevenueCodeFiltered.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
                       ) : propRevenueCodeFiltered.slice(0, 50).map((item) => (
-                        <button key={item.code} type="button" onClick={() => { handlePropRevenueSelect(item); setPropRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                          <span className="font-mono text-slate-800 dark:text-white">{item.code}</span>
+                        <button key={item.code} type="button" onClick={() => { handlePropRevenueSelect(item); setPropRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
+                          <span className="font-mono text-foreground dark:text-foreground">{item.code}</span>
                         </button>
                       ))}
                     </div>
@@ -860,12 +860,12 @@ export function PropertiesPage() {
                     className={inputClass}
                   />
                   {propRevenueDescShowDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
                       {propRevenueDescFiltered.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
                       ) : propRevenueDescFiltered.slice(0, 50).map((item) => (
-                        <button key={item.code} type="button" onClick={() => { handlePropRevenueSelect(item); setPropRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                          <span className="text-slate-800 dark:text-white">{item.description}</span>
+                        <button key={item.code} type="button" onClick={() => { handlePropRevenueSelect(item); setPropRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
+                          <span className="text-foreground dark:text-foreground">{item.description}</span>
                         </button>
                       ))}
                     </div>
@@ -928,10 +928,10 @@ export function PropertiesPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 3: OWNER INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <User className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Owner Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <User className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Owner Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -976,11 +976,11 @@ export function PropertiesPage() {
 
         {/* ─── Action Buttons ──────────────────────────────────────────── */}
         <div className="flex items-center justify-end gap-3 pt-2">
-          <button onClick={handleCancel} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-500 hover:bg-slate-600 text-white text-sm font-medium transition-colors cursor-pointer">
+          <button onClick={handleCancel} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-card0 hover:bg-slate-600 text-white text-sm font-medium transition-colors cursor-pointer">
             <X className="w-4 h-4" />
             Cancel
           </button>
-          <button onClick={handleSave} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors cursor-pointer">
+          <button onClick={handleSave} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-destructive text-white text-sm font-medium transition-colors cursor-pointer">
             <Save className="w-4 h-4" />
             {editingPropNumber ? 'Update' : 'Save'}
           </button>
@@ -1007,7 +1007,7 @@ export function PropertiesPage() {
             </button>
             <button
               onClick={handleValuedYes}
-              className="flex-1 px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors cursor-pointer"
+              className="flex-1 px-5 py-2.5 rounded-lg bg-primary hover:bg-destructive text-white text-sm font-medium transition-colors cursor-pointer"
             >
               Yes — Enter Amount
             </button>
@@ -1027,7 +1027,7 @@ export function PropertiesPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">
-            <label className={`${'text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide'} block mb-1.5`}>Amount (GHS)</label>
+            <label className={`${'text-xs font-medium text-muted-foreground uppercase tracking-wide'} block mb-1.5`}>Amount (GHS)</label>
             <input
               type="number"
               value={valuedAmountInput}
@@ -1042,13 +1042,13 @@ export function PropertiesPage() {
           <DialogFooter>
             <button
               onClick={() => setShowAmountDialog(false)}
-              className="px-5 py-2.5 rounded-lg bg-slate-500 hover:bg-slate-600 text-white text-sm font-medium transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-lg bg-card0 hover:bg-slate-600 text-white text-sm font-medium transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleValuedAmountSubmit}
-              className="px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-lg bg-primary hover:bg-destructive text-white text-sm font-medium transition-colors cursor-pointer"
             >
               Calculate Value
             </button>

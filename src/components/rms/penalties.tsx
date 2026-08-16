@@ -136,9 +136,9 @@ const FINE_SECTION_TO_CLASSES: Record<string, string[]> = {
 };
 
 const inputClass =
-  'w-full h-[42px] px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] transition-colors';
+  'w-full h-[42px] px-3 text-sm border border-border rounded-lg bg-card text-foreground dark:text-slate-100 placeholder:text-muted-foreground dark:placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors';
 const labelClass =
-  'text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5';
+  'text-xs font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-1.5';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -147,17 +147,17 @@ const ITEMS_PER_PAGE = 10;
 const statusColor = (s: string) => {
   switch (s) {
     case 'Paid':
-      return 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]';
+      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
     case 'Pending':
       return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
     case 'Overdue':
       return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
     case 'Waived':
-      return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+      return 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground';
     case 'Appealed':
       return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
     default:
-      return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+      return 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground';
   }
 };
 
@@ -596,31 +596,31 @@ export function PenaltiesPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               Fines Management
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Record and manage offence fines, penalties, and violations
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={openNew}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-destructive text-white text-sm font-medium rounded-lg transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Fine
             </button>
             <button
               onClick={exportCSV}
-              className="inline-flex items-center gap-2 px-3 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2.5 border border-border text-foreground text-sm font-medium rounded-lg hover:bg-card dark:hover:bg-muted transition-colors"
             >
               <Download className="w-4 h-4" />
               Export CSV
             </button>
             <button
               onClick={handleImportClick}
-              className="inline-flex items-center gap-2 px-3 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2.5 border border-border text-foreground text-sm font-medium rounded-lg hover:bg-card dark:hover:bg-muted transition-colors"
             >
               <Upload className="w-4 h-4" />
               Import CSV
@@ -638,7 +638,7 @@ export function PenaltiesPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search by fine number, offender, section, code..."
@@ -674,49 +674,49 @@ export function PenaltiesPage() {
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="rounded-xl border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                <tr className="bg-card dark:bg-muted/50 border-b border-border">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Fine Number
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Offender
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Section
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Code
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Class
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Category
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Amount (GH₵)
                   </th>
-                  <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Status
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Fine Date
                   </th>
-                  <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-border dark:divide-slate-800">
                 {paginatedFines.length === 0 ? (
                   <tr>
                     <td
                       colSpan={10}
-                      className="text-center py-12 text-slate-400 dark:text-slate-500"
+                      className="text-center py-12 text-muted-foreground dark:text-muted-foreground"
                     >
                       <FileText className="w-10 h-10 mx-auto mb-2 opacity-40" />
                       <p>No fines found</p>
@@ -734,27 +734,27 @@ export function PenaltiesPage() {
                   paginatedFines.map((fine) => (
                     <tr
                       key={fine.id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                      className="hover:bg-card dark:hover:bg-muted/30 transition-colors"
                     >
-                      <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                      <td className="px-4 py-3 font-mono text-xs text-foreground whitespace-nowrap">
                         {fine.fineNumber}
                       </td>
-                      <td className="px-4 py-3 text-slate-900 dark:text-slate-100 font-medium whitespace-nowrap">
+                      <td className="px-4 py-3 text-foreground dark:text-slate-100 font-medium whitespace-nowrap">
                         {fine.offenderName || '—'}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-xs whitespace-nowrap max-w-[160px] truncate">
+                      <td className="px-4 py-3 text-muted-foreground dark:text-muted-foreground text-xs whitespace-nowrap max-w-[160px] truncate">
                         {fine.section || '—'}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                         {fine.code || '—'}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-xs whitespace-nowrap max-w-[140px] truncate">
+                      <td className="px-4 py-3 text-muted-foreground dark:text-muted-foreground text-xs whitespace-nowrap max-w-[140px] truncate">
                         {fine.fineClass || '—'}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-xs whitespace-nowrap max-w-[140px] truncate">
+                      <td className="px-4 py-3 text-muted-foreground dark:text-muted-foreground text-xs whitespace-nowrap max-w-[140px] truncate">
                         {fine.category || '—'}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                      <td className="px-4 py-3 text-right font-semibold text-foreground whitespace-nowrap">
                         {fine.fineAmount ? `GH₵ ${parseFloat(fine.fineAmount).toLocaleString()}` : '—'}
                       </td>
                       <td className="px-4 py-3 text-center whitespace-nowrap">
@@ -764,14 +764,14 @@ export function PenaltiesPage() {
                           {fine.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs whitespace-nowrap">
+                      <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
                         {fine.fineDate || '—'}
                       </td>
                       <td className="px-4 py-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => openEdit(fine)}
-                            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-[#0B1D3E] transition-colors"
+                            className="p-1.5 rounded-md hover:bg-muted dark:hover:bg-slate-700 text-muted-foreground hover:text-primary transition-colors"
                             title="Edit"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -781,7 +781,7 @@ export function PenaltiesPage() {
                             className={`p-1.5 rounded-md transition-colors ${
                               confirmDelete === fine.id
                                 ? 'bg-red-100 dark:bg-red-900/30 text-red-600 hover:bg-red-200 dark:hover:bg-red-900/50'
-                                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-red-600'
+                                : 'hover:bg-muted dark:hover:bg-slate-700 text-muted-foreground hover:text-destructive'
                             }`}
                             title={confirmDelete === fine.id ? 'Click again to confirm' : 'Delete'}
                           >
@@ -798,8 +798,8 @@ export function PenaltiesPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-card dark:bg-muted/30">
+              <p className="text-xs text-muted-foreground">
                 Showing {(page - 1) * ITEMS_PER_PAGE + 1}–
                 {Math.min(page * ITEMS_PER_PAGE, filtered.length)} of {filtered.length} fines
               </p>
@@ -807,7 +807,7 @@ export function PenaltiesPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 rounded-md border border-border text-muted-foreground hover:bg-muted dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -817,8 +817,8 @@ export function PenaltiesPage() {
                     onClick={() => setPage(p)}
                     className={`min-w-[32px] h-8 px-2 rounded-md text-xs font-medium transition-colors ${
                       p === page
-                        ? 'bg-[#0B1D3E] text-white'
-                        : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        ? 'bg-primary text-white'
+                        : 'border border-border text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-slate-700'
                     }`}
                   >
                     {p}
@@ -827,7 +827,7 @@ export function PenaltiesPage() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="p-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 rounded-md border border-border text-muted-foreground hover:bg-muted dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -849,27 +849,27 @@ export function PenaltiesPage() {
             setView('list');
             setEditingId(null);
           }}
-          className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-lg border-border text-muted-foreground hover:bg-muted dark:hover:bg-muted transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-foreground">
             {editingId ? 'Edit Fine' : 'New Fine'}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground">
             {editingId ? 'Update fine record details' : 'Create a new offence fine record'}
           </p>
         </div>
       </div>
 
       {/* Section 1: Fine Details */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+      <div className="rounded-xl border-border bg-card p-6">
         <div className="flex items-center gap-2.5 mb-6">
-          <div className="p-2 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20">
-            <Gavel className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
+          <div className="p-2 rounded-lg bg-primary/10 dark:bg-primary/20">
+            <Gavel className="w-5 h-5 text-primary dark:text-primary" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-foreground">
             Fine Details
           </h2>
         </div>
@@ -883,7 +883,7 @@ export function PenaltiesPage() {
               name="fineNumber"
               value={form.fineNumber}
               readOnly
-              className={`${inputClass} bg-slate-50 dark:bg-slate-800 cursor-not-allowed`}
+              className={`${inputClass} bg-card dark:bg-muted cursor-not-allowed`}
             />
           </div>
 
@@ -1040,12 +1040,12 @@ export function PenaltiesPage() {
       </div>
 
       {/* Section 2: Offender Information */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+      <div className="rounded-xl border-border bg-card p-6">
         <div className="flex items-center gap-2.5 mb-6">
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
             <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-foreground">
             Offender Information
           </h2>
         </div>
@@ -1134,12 +1134,12 @@ export function PenaltiesPage() {
       </div>
 
       {/* Section 3: Violation Details */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+      <div className="rounded-xl border-border bg-card p-6">
         <div className="flex items-center gap-2.5 mb-6">
           <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
             <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-foreground">
             Violation Details
           </h2>
         </div>
@@ -1200,7 +1200,7 @@ export function PenaltiesPage() {
             <label className={`block ${labelClass}`}>Evidence File</label>
             <div className="flex items-center gap-3">
               <label
-                className={`inline-flex items-center gap-2 px-4 py-2.5 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm text-slate-600 dark:text-slate-400 ${inputClass} w-auto h-auto`}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 border border-dashed border-border rounded-lg cursor-pointer hover:bg-card dark:hover:bg-muted transition-colors text-sm text-muted-foreground dark:text-muted-foreground ${inputClass} w-auto h-auto`}
               >
                 <Camera className="w-4 h-4" />
                 <span>Choose File</span>
@@ -1219,7 +1219,7 @@ export function PenaltiesPage() {
                 />
               </label>
               {form.evidenceFileName && (
-                <span className="text-sm text-slate-500 dark:text-slate-400 truncate max-w-[200px]">
+                <span className="text-sm text-muted-foreground truncate max-w-[200px]">
                   {form.evidenceFileName}
                 </span>
               )}
@@ -1235,13 +1235,13 @@ export function PenaltiesPage() {
             setView('list');
             setEditingId(null);
           }}
-          className="px-6 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          className="px-6 py-2.5 border border-border text-foreground text-sm font-medium rounded-lg hover:bg-card dark:hover:bg-muted transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
-          className="px-6 py-2.5 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-6 py-2.5 bg-primary hover:bg-destructive text-white text-sm font-medium rounded-lg transition-colors"
         >
           {editingId ? 'Update Fine' : 'Save Fine'}
         </button>

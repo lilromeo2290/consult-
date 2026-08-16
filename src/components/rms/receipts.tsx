@@ -63,14 +63,14 @@ const fmtCurrency = (n: number): string => `GH₵ ${n.toLocaleString('en-GH')}`;
 
 const methodStyle: Record<PaymentMethod, string> = {
   Cash: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  'Mobile Money': 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]',
-  'Bank Transfer': 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]',
+  'Mobile Money': 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
+  'Bank Transfer': 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
   POS: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   Online: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
 };
 
 const statusStyle: Record<ReceiptStatus, { pill: string; icon: string }> = {
-  Valid: { pill: 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]', icon: 'text-[#E31E24]' },
+  Valid: { pill: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary', icon: 'text-destructive' },
   Voided: { pill: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: 'text-red-500' },
   Duplicate: { pill: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: 'text-amber-500' },
 };
@@ -205,7 +205,7 @@ export function ReceiptsPage() {
           .header { text-align: center; border-bottom: 3px double #1e293b; padding-bottom: 16px; margin-bottom: 24px; }
           .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.05em; }
           .header p { font-size: 12px; color: #64748b; margin-top: 4px; }
-          .receipt-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #E31E24; }
+          .receipt-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: var(--destructive); }
           .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
           .info-item { font-size: 13px; }
           .info-item .label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -300,8 +300,8 @@ export function ReceiptsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Receipts</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Receipts</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             View and manage all issued payment receipts
           </p>
         </div>
@@ -309,53 +309,53 @@ export function ReceiptsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
-            <Receipt className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
+        <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+            <Receipt className="w-5 h-5 text-primary dark:text-primary" />
           </div>
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Total Receipts</p>
-            <p className="text-xl font-bold text-slate-900 dark:text-white">{filtered.length}</p>
+            <p className="text-sm text-muted-foreground">Total Receipts</p>
+            <p className="text-xl font-bold text-foreground">{filtered.length}</p>
           </div>
         </div>
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
-            <DollarSign className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
+        <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-primary dark:text-primary" />
           </div>
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Total Collected</p>
-            <p className="text-xl font-bold text-slate-900 dark:text-white">{fmtCurrency(totalAmount)}</p>
+            <p className="text-sm text-muted-foreground">Total Collected</p>
+            <p className="text-xl font-bold text-foreground">{fmtCurrency(totalAmount)}</p>
           </div>
         </div>
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
-            <FileCheck className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
+        <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+            <FileCheck className="w-5 h-5 text-primary dark:text-primary" />
           </div>
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Valid / Voided</p>
-            <p className="text-xl font-bold text-slate-900 dark:text-white">{validCount} / {voidedCount}</p>
+            <p className="text-sm text-muted-foreground">Valid / Voided</p>
+            <p className="text-xl font-bold text-foreground">{validCount} / {voidedCount}</p>
           </div>
         </div>
       </div>
 
       {/* Table Card */}
-      <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 space-y-3">
+        <div className="p-4 border-b border-border space-y-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search receipts by number, entity, or issuer..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E] focus:border-transparent transition-shadow"
+                className="w-full rounded-lg border-border bg-card pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
               />
             </div>
             <button
               onClick={() => setShowFilters((v) => !v)}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-card dark:hover:bg-muted transition-colors"
             >
               <Filter className="w-4 h-4" />
               Filters
@@ -368,7 +368,7 @@ export function ReceiptsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value as 'All' | ReceiptStatus); setPage(1); }}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
+                className="rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="All">All Statuses</option>
                 <option value="Valid">Valid</option>
@@ -378,7 +378,7 @@ export function ReceiptsPage() {
               <select
                 value={methodFilter}
                 onChange={(e) => { setMethodFilter(e.target.value as 'All' | PaymentMethod); setPage(1); }}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
+                className="rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="All">All Methods</option>
                 <option value="Cash">Cash</option>
@@ -394,56 +394,56 @@ export function ReceiptsPage() {
         {/* Table */}
         <div className="overflow-x-auto max-h-96 overflow-y-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-50 dark:bg-slate-900/50 sticky top-0 z-10">
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Receipt #</th>
-                <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Issued To</th>
-                <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Revenue Item</th>
-                <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-right">Amount</th>
-                <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Method</th>
-                <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Date</th>
-                <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Status</th>
-                <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-center">Actions</th>
+            <thead className="bg-card/50 sticky top-0 z-10">
+              <tr className="border-b border-border">
+                <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Receipt #</th>
+                <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Issued To</th>
+                <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Item</th>
+                <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Amount</th>
+                <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Method</th>
+                <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Date</th>
+                <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Status</th>
+                <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+            <tbody className="divide-y divide-border/60">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-sm text-slate-400 dark:text-slate-500">
+                  <td colSpan={8} className="text-center py-12 text-sm text-muted-foreground dark:text-muted-foreground">
                     No receipts found matching your criteria.
                   </td>
                 </tr>
               ) : (
                 paginated.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <tr key={r.id} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-mono text-slate-900 dark:text-white font-medium">{r.receiptNo}</span>
+                        <span className="text-sm font-mono text-foreground font-medium">{r.receiptNo}</span>
                         <button
                           onClick={() => handleCopy(r.receiptNo, r.id)}
-                          className="text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] transition-colors"
+                          className="text-muted-foreground hover:text-primary dark:hover:dark:text-primary transition-colors"
                           aria-label="Copy receipt number"
                         >
-                          {copiedId === r.id ? <Check className="w-3 h-3 text-[#E31E24]" /> : <Copy className="w-3 h-3" />}
+                          {copiedId === r.id ? <Check className="w-3 h-3 text-destructive" /> : <Copy className="w-3 h-3" />}
                         </button>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">{r.issuedTo}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{r.entityType}</p>
+                        <p className="text-sm font-medium text-foreground">{r.issuedTo}</p>
+                        <p className="text-xs text-muted-foreground">{r.entityType}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{r.revenueItem}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white text-right">{fmtCurrency(r.totalPaid)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground">{r.revenueItem}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-foreground text-right">{fmtCurrency(r.totalPaid)}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${methodStyle[r.method]}`}>
                         {r.method}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-sm text-slate-600 dark:text-slate-400">{r.date}</div>
-                      <div className="text-xs text-slate-400 dark:text-slate-500">{r.time}</div>
+                      <div className="text-sm text-muted-foreground dark:text-muted-foreground">{r.date}</div>
+                      <div className="text-xs text-muted-foreground dark:text-muted-foreground">{r.time}</div>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${statusStyle[r.status].pill}`}>
@@ -454,14 +454,14 @@ export function ReceiptsPage() {
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => setSelectedReceipt(r)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-primary dark:hover:dark:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors"
                           title="View details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handlePrintReceipt(r)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-[#0B1D3E] dark:hover:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-primary dark:hover:dark:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors"
                           title="Print receipt"
                         >
                           <Printer className="w-4 h-4" />
@@ -476,15 +476,15 @@ export function ReceiptsPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+          <p className="text-sm text-muted-foreground">
             Showing {paginated.length} of {filtered.length} receipts
           </p>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground dark:hover:text-slate-300 hover:bg-muted dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -494,8 +494,8 @@ export function ReceiptsPage() {
                 onClick={() => setPage(p)}
                 className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                   p === page
-                    ? 'bg-[#0B1D3E] text-white'
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    ? 'bg-primary text-white'
+                    : 'text-muted-foreground hover:bg-muted dark:hover:bg-slate-700'
                 }`}
               >
                 {p}
@@ -504,7 +504,7 @@ export function ReceiptsPage() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground dark:hover:text-slate-300 hover:bg-muted dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -515,22 +515,22 @@ export function ReceiptsPage() {
       {/* Detail Modal */}
       {selectedReceipt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedReceipt(null)} />
-          <div className="relative bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedReceipt(null)} />
+          <div className="relative bg-white dark:bg-muted rounded-xl border-border shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between p-5 border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center">
-                  <Receipt className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />
+                <div className="w-10 h-10 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                  <Receipt className="w-5 h-5 text-primary dark:text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Receipt Details</h2>
-                  <p className="text-sm font-mono text-slate-500 dark:text-slate-400">{selectedReceipt.receiptNo}</p>
+                  <h2 className="text-lg font-semibold text-foreground">Receipt Details</h2>
+                  <p className="text-sm font-mono text-muted-foreground">{selectedReceipt.receiptNo}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedReceipt(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground dark:hover:text-slate-300 hover:bg-muted dark:hover:bg-slate-700 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -544,11 +544,11 @@ export function ReceiptsPage() {
                   {selectedReceipt.status}
                 </span>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handlePrintReceipt(selectedReceipt)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#0B1D3E] text-white px-3 py-1.5 text-sm font-medium hover:bg-[#E31E24] transition-colors cursor-pointer">
+                  <button onClick={() => handlePrintReceipt(selectedReceipt)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-white px-3 py-1.5 text-sm font-medium hover:bg-destructive transition-colors cursor-pointer">
                     <Printer className="w-3.5 h-3.5" />
                     Print
                   </button>
-                  <button onClick={() => handlePrintReceipt(selectedReceipt)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                  <button onClick={() => handlePrintReceipt(selectedReceipt)} className="inline-flex items-center gap-1.5 rounded-lg border-border text-foreground px-3 py-1.5 text-sm font-medium hover:bg-card dark:hover:bg-slate-700 transition-colors cursor-pointer">
                     <Download className="w-3.5 h-3.5" />
                     PDF
                   </button>
@@ -566,38 +566,38 @@ export function ReceiptsPage() {
               </div>
 
               {/* Issued To */}
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-4">
-                <p className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium mb-1">Issued To</p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">{selectedReceipt.issuedTo}</p>
+              <div className="rounded-lg bg-card/50 p-4">
+                <p className="text-xs uppercase text-muted-foreground font-medium mb-1">Issued To</p>
+                <p className="text-lg font-semibold text-foreground">{selectedReceipt.issuedTo}</p>
               </div>
 
               {/* Line Items */}
               <div>
-                <p className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium mb-3">Line Items</p>
-                <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <p className="text-xs uppercase text-muted-foreground font-medium mb-3">Line Items</p>
+                <div className="rounded-lg border-border overflow-hidden">
                   <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 dark:bg-slate-900/50">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400">Description</th>
-                        <th className="px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 text-right">Qty</th>
-                        <th className="px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 text-right">Unit Price</th>
-                        <th className="px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 text-right">Amount</th>
+                    <thead className="bg-card/50">
+                      <tr className="border-b border-border">
+                        <th className="px-3 py-2 text-xs font-medium text-muted-foreground">Description</th>
+                        <th className="px-3 py-2 text-xs font-medium text-muted-foreground text-right">Qty</th>
+                        <th className="px-3 py-2 text-xs font-medium text-muted-foreground text-right">Unit Price</th>
+                        <th className="px-3 py-2 text-xs font-medium text-muted-foreground text-right">Amount</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                    <tbody className="divide-y divide-border/60">
                       {selectedReceipt.items.map((item, idx) => (
                         <tr key={idx}>
-                          <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{item.description}</td>
-                          <td className="px-3 py-2 text-slate-600 dark:text-slate-400 text-right">{item.quantity}</td>
-                          <td className="px-3 py-2 text-slate-600 dark:text-slate-400 text-right">{fmtCurrency(item.unitPrice)}</td>
-                          <td className="px-3 py-2 text-slate-900 dark:text-white font-medium text-right">{fmtCurrency(item.amount)}</td>
+                          <td className="px-3 py-2 text-foreground">{item.description}</td>
+                          <td className="px-3 py-2 text-muted-foreground dark:text-muted-foreground text-right">{item.quantity}</td>
+                          <td className="px-3 py-2 text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.unitPrice)}</td>
+                          <td className="px-3 py-2 text-foreground font-medium text-right">{fmtCurrency(item.amount)}</td>
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot className="bg-slate-50 dark:bg-slate-900/50">
-                      <tr className="border-t border-slate-200 dark:border-slate-700">
-                        <td colSpan={3} className="px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 text-right">Total Paid</td>
-                        <td className="px-3 py-2.5 text-sm font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-right">{fmtCurrency(selectedReceipt.totalPaid)}</td>
+                    <tfoot className="bg-card/50">
+                      <tr className="border-t border-border">
+                        <td colSpan={3} className="px-3 py-2.5 text-sm font-semibold text-foreground text-right">Total Paid</td>
+                        <td className="px-3 py-2.5 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(selectedReceipt.totalPaid)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -605,21 +605,21 @@ export function ReceiptsPage() {
               </div>
 
               {/* Barcode Section */}
-              <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+              <div className="rounded-lg border-border p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <ScanBarcode className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                  <p className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium">Verification Barcode</p>
+                  <ScanBarcode className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-xs uppercase text-muted-foreground font-medium">Verification Barcode</p>
                 </div>
-                <div className="flex flex-col items-center bg-white dark:bg-slate-900 rounded-lg p-3">
+                <div className="flex flex-col items-center bg-card rounded-lg p-3">
                   <canvas ref={barcodeCanvasRef} className="max-w-full" />
-                  <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 text-center break-all">
+                  <p className="text-[9px] text-muted-foreground dark:text-muted-foreground mt-2 text-center break-all">
                     Scan barcode or visit verify page to confirm authenticity
                   </p>
                 </div>
               </div>
 
               {/* Date / Time */}
-              <div className="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5"><CalendarCheck className="w-4 h-4" />{selectedReceipt.date}</span>
                 <span className="flex items-center gap-1.5"><UserCheck className="w-4 h-4" />{selectedReceipt.issuedBy}</span>
               </div>
@@ -636,8 +636,8 @@ export function ReceiptsPage() {
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">{label}</p>
-      <p className="text-sm font-medium text-slate-900 dark:text-white">{value}</p>
+      <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
+      <p className="text-sm font-medium text-foreground">{value}</p>
     </div>
   );
 }

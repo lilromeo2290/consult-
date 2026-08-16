@@ -732,9 +732,9 @@ export function BusinessesPage() {
 
   // ── Form Field Helper ────────────────────────────────────────────────────
   const inputClass =
-    'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
+    'w-full rounded-lg border-border bg-white dark:bg-muted px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
   const labelClass =
-    'text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5';
+    'text-sm font-medium text-foreground mb-1.5';
 
   // ══════════════════════════════════════════════════════════════════════════
   //  LIST VIEW
@@ -745,10 +745,10 @@ export function BusinessesPage() {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               Business Registration
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Manage and register businesses within the assembly. Track revenue
               collection and compliance.
             </p>
@@ -756,15 +756,15 @@ export function BusinessesPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setEditingRegNumber(null); setForm({ ...defaultForm, businessUniqueNumber: generateBusinessUniqueNumber(), businessCertNo: generateBusinessCertNo(), daAssignmentNo: generateDaAssignmentNo() }); setView('form'); }}
-              className="inline-flex items-center gap-2 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-destructive text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               Register New Business
             </button>
-            <button onClick={handleExport} className="inline-flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap">
+            <button onClick={handleExport} className="inline-flex items-center gap-2 border border-border bg-white dark:bg-muted text-foreground text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-card dark:hover:bg-slate-700 transition-colors whitespace-nowrap">
               <Download className="w-4 h-4" /> Export
             </button>
-            <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap">
+            <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 border border-border bg-white dark:bg-muted text-foreground text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-card dark:hover:bg-slate-700 transition-colors whitespace-nowrap">
               <Upload className="w-4 h-4" /> Import
             </button>
             <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
@@ -774,7 +774,7 @@ export function BusinessesPage() {
         {/* ── Search & Filters ────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search by name, owner, or registration number..."
@@ -805,56 +805,56 @@ export function BusinessesPage() {
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="rounded-xl border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Unique Number</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Name</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Owner</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Class</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden lg:table-cell">Category</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap hidden md:table-cell">TIN</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Status</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Actions</th>
+                <tr className="bg-card dark:bg-muted/60 border-b border-border">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Business Unique Number</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Business Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Owner</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Business Class</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap hidden lg:table-cell">Category</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap hidden md:table-cell">TIN</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Status</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              <tbody className="divide-y divide-border">
                 {paged.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <td colSpan={8} className="text-center py-12 text-muted-foreground dark:text-muted-foreground">
                       <Building2 className="w-10 h-10 mx-auto mb-3 opacity-40" />
                       No businesses found. Click "Register New Business" to add one.
                     </td>
                   </tr>
                 ) : (
                   paged.map((biz, i) => (
-                    <tr key={`biz-${i}-${biz.regNumber || biz.name}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{biz.businessUniqueNumber || biz.regNumber}</td>
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{biz.name}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{biz.owner}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{biz.type}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap hidden lg:table-cell">{biz.category}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap hidden md:table-cell">{biz.tin}</td>
+                    <tr key={`biz-${i}-${biz.regNumber || biz.name}`} className="hover:bg-card dark:hover:bg-muted/40 transition-colors">
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap">{biz.businessUniqueNumber || biz.regNumber}</td>
+                      <td className="px-4 py-3 font-medium text-foreground whitespace-nowrap">{biz.name}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-foreground whitespace-nowrap">{biz.owner}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-foreground whitespace-nowrap">{biz.type}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-foreground whitespace-nowrap hidden lg:table-cell">{biz.category}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap hidden md:table-cell">{biz.tin}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           biz.status === 'Active'
-                            ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
-                            : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
+                            ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                            : 'bg-[var(--accent-red-light)] text-destructive'
                         }`}>
                           {biz.status}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1">
-                          <button onClick={() => handleViewCertificate(biz.regNumber)} className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="View Certificate">
+                          <button onClick={() => handleViewCertificate(biz.regNumber)} className="p-1.5 rounded-md text-muted-foreground hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="View Certificate">
                             <FileText className="w-4 h-4" />
                           </button>
-                          <button onClick={() => handleEdit(biz)} className="p-1.5 rounded-md text-slate-400 hover:text-[#0B1D3E] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors" title="Edit">
+                          <button onClick={() => handleEdit(biz)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors" title="Edit">
                             <Pencil className="w-4 h-4" />
                           </button>
-                          <button onClick={() => handleDelete(biz.regNumber)} className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Delete">
+                          <button onClick={() => handleDelete(biz.regNumber)} className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Delete">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -869,13 +869,13 @@ export function BusinessesPage() {
 
         {/* ── Pagination ──────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-          <p className="text-slate-500 dark:text-slate-400">Showing {showingFrom}-{showingTo} of {filtered.length}</p>
+          <p className="text-muted-foreground">Showing {showingFrom}-{showingTo} of {filtered.length}</p>
           <div className="flex items-center gap-2">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={safeCurrentPage <= 1} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={safeCurrentPage <= 1} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-card dark:hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <ChevronLeft className="w-4 h-4" /> Previous
             </button>
-            <span className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">{safeCurrentPage} / {totalPages}</span>
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={safeCurrentPage >= totalPages} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            <span className="px-3 py-1.5 rounded-lg bg-muted text-foreground font-medium">{safeCurrentPage} / {totalPages}</span>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={safeCurrentPage >= totalPages} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-card dark:hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               Next <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -904,7 +904,7 @@ export function BusinessesPage() {
           const _expiryParts = fmtDatePartsPreview(viewingCert.expiryDate);
 
           return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setViewingCert(null)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setViewingCert(null)}>
             <div className="rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               {/* Modal Header */}
               <div className="flex items-center justify-between px-5 py-3 bg-slate-800 rounded-t-2xl">
@@ -914,10 +914,10 @@ export function BusinessesPage() {
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-white">Business Operating Permit</h3>
-                    <p className="text-xs text-slate-400">{viewingCert.businessUniqueNumber || viewingCert.certNumber}</p>
+                    <p className="text-xs text-muted-foreground">{viewingCert.businessUniqueNumber || viewingCert.certNumber}</p>
                   </div>
                 </div>
-                <button onClick={() => setViewingCert(null)} className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+                <button onClick={() => setViewingCert(null)} className="p-2 rounded-lg hover:bg-slate-700 text-muted-foreground hover:text-white transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1031,7 +1031,7 @@ export function BusinessesPage() {
 
               {/* Modal Footer */}
               <div className="flex items-center justify-end gap-3 px-5 py-3 border-t border-slate-700 bg-slate-800 rounded-b-2xl">
-                <button onClick={() => setViewingCert(null)} className="px-4 py-2 rounded-lg border border-slate-600 text-slate-300 text-sm font-medium hover:bg-slate-700 transition-colors">
+                <button onClick={() => setViewingCert(null)} className="px-4 py-2 rounded-lg border-border border-slate-600 text-slate-300 text-sm font-medium hover:bg-slate-700 transition-colors">
                   Close
                 </button>
                 <button onClick={() => handlePrintCertificate(viewingCert)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8B7355] hover:bg-[#7a6348] text-white text-sm font-medium transition-colors">
@@ -1053,14 +1053,14 @@ export function BusinessesPage() {
     <div className="space-y-6">
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
-        <button onClick={handleCancel} className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <button onClick={handleCancel} className="p-2 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-foreground">
             {editingRegNumber ? 'Edit Business' : 'Register New Business'}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             {editingRegNumber ? 'Update the business details below.' : 'Fill in the details below to register a new business.'}
           </p>
         </div>
@@ -1070,10 +1070,10 @@ export function BusinessesPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 1: LOCATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <MapPin className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Location</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <MapPin className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Location</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -1108,7 +1108,7 @@ export function BusinessesPage() {
                 <div className="flex gap-2">
                   <input type="text" name="latitude" value={form.latitude} onChange={handleFormChange} placeholder="Latitude" className={`${inputClass} flex-1`} />
                   <input type="text" name="longitude" value={form.longitude} onChange={handleFormChange} placeholder="Longitude" className={`${inputClass} flex-1`} />
-                  <button type="button" onClick={fetchGps} disabled={locating} className="inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border border-[#0B1D3E]/40 dark:border-[#0B1D3E] text-[#0B1D3E] dark:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap">
+                  <button type="button" onClick={fetchGps} disabled={locating} className="inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border-border border-primary/40 dark:border-primary text-primary dark:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap">
                     {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
                     {locating ? '...' : 'GPS'}
                   </button>
@@ -1131,27 +1131,27 @@ export function BusinessesPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 2: BUSINESS INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <Briefcase className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Business Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <Briefcase className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Business Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               {/* Row 1: DA Assignment No., Business Unique Number, Business Cert No. */}
               <div>
                 <label className={`${labelClass} block`}>DA Assignment No.</label>
-                <input type="text" name="daAssignmentNo" value={form.daAssignmentNo} readOnly placeholder="Select Locality to auto-generate" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
+                <input type="text" name="daAssignmentNo" value={form.daAssignmentNo} readOnly placeholder="Select Locality to auto-generate" className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground`} />
               </div>
               {/* Business Unique Number */}
               <div>
                 <label className={`${labelClass} block`}>Business Unique Number</label>
-                <input type="text" name="businessUniqueNumber" value={form.businessUniqueNumber} readOnly placeholder="Select Locality & Date to auto-generate" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
+                <input type="text" name="businessUniqueNumber" value={form.businessUniqueNumber} readOnly placeholder="Select Locality & Date to auto-generate" className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground`} />
               </div>
               {/* Business Certificate Number */}
               <div>
                 <label className={`${labelClass} block`}>Business Certificate Number</label>
-                <input type="text" name="businessCertNo" value={form.businessCertNo} readOnly placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400`} />
+                <input type="text" name="businessCertNo" value={form.businessCertNo} readOnly placeholder="Auto-generated" className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground`} />
               </div>
               {/* Business Name */}
               <div className="sm:col-span-2 lg:col-span-3">
@@ -1172,12 +1172,12 @@ export function BusinessesPage() {
                     className={inputClass}
                   />
                   {bizRevenueCodeShowDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
                       {bizRevenueCodeFiltered.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
                       ) : bizRevenueCodeFiltered.slice(0, 50).map((item) => (
-                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                          <span className="font-mono text-slate-800 dark:text-white">{item.code}</span>
+                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
+                          <span className="font-mono text-foreground dark:text-foreground">{item.code}</span>
                         </button>
                       ))}
                     </div>
@@ -1197,12 +1197,12 @@ export function BusinessesPage() {
                     className={inputClass}
                   />
                   {bizRevenueDescShowDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
                       {bizRevenueDescFiltered.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
                       ) : bizRevenueDescFiltered.slice(0, 50).map((item) => (
-                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                          <span className="text-slate-800 dark:text-white">{item.description}</span>
+                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
+                          <span className="text-foreground dark:text-foreground">{item.description}</span>
                         </button>
                       ))}
                     </div>
@@ -1250,7 +1250,7 @@ export function BusinessesPage() {
               {/* Amount (read-only) */}
               <div>
                 <label className={`${labelClass} block`}>Amount</label>
-                <input type="text" value={displayAmount !== null ? `GH\u20b5 ${displayAmount.toLocaleString()}` : ''} readOnly placeholder="Select a category" className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-[#0B1D3E] dark:text-[#4a7ab5] font-semibold`} />
+                <input type="text" value={displayAmount !== null ? `GH\u20b5 ${displayAmount.toLocaleString()}` : ''} readOnly placeholder="Select a category" className={`${inputClass} bg-card dark:bg-muted/50 text-primary dark:text-primary font-semibold`} />
               </div>
               {/* Employees, Year Established */}
               <div>
@@ -1276,8 +1276,8 @@ export function BusinessesPage() {
                   </select>
                 </div>
                 <label className="flex items-center gap-2 pb-2.5 cursor-pointer select-none">
-                  <input type="checkbox" name="excludedFromFees" checked={form.excludedFromFees} onChange={handleFormChange} className="w-4 h-4 rounded border-slate-300 text-[#0B1D3E] focus:ring-[#0B1D3E]" />
-                  <span className="text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">Excluded from fees</span>
+                  <input type="checkbox" name="excludedFromFees" checked={form.excludedFromFees} onChange={handleFormChange} className="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
+                  <span className="text-sm text-foreground whitespace-nowrap">Excluded from fees</span>
                 </label>
               </div>
             </div>
@@ -1287,10 +1287,10 @@ export function BusinessesPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 3: OWNER INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <User className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Owner Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <User className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Owner Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -1330,11 +1330,11 @@ export function BusinessesPage() {
 
         {/* ─── Action Buttons ──────────────────────────────────────────── */}
         <div className="flex items-center justify-end gap-3 pt-2">
-          <button onClick={handleCancel} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-500 hover:bg-slate-600 text-white text-sm font-medium transition-colors">
+          <button onClick={handleCancel} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-card0 hover:bg-slate-600 text-white text-sm font-medium transition-colors">
             <X className="w-4 h-4" />
             Cancel
           </button>
-          <button onClick={handleSave} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors">
+          <button onClick={handleSave} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-destructive text-white text-sm font-medium transition-colors">
             <Save className="w-4 h-4" />
             {editingRegNumber ? 'Update' : 'Save'}
           </button>

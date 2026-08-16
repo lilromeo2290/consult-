@@ -73,7 +73,7 @@ const formatCurrency = (amount: number | undefined | null): string => {
 
 const methodBadge: Record<PaymentMethod, { bg: string; text: string }> = {
   Cash: { bg: 'bg-amber-100 text-amber-800', text: 'Cash' },
-  'Mobile Money': { bg: 'bg-[#0B1D3E]/10 text-[#0B1D3E]', text: 'MoMo' },
+  'Mobile Money': { bg: 'bg-primary/10 text-primary', text: 'MoMo' },
   Bank: { bg: 'bg-blue-100 text-blue-800', text: 'Bank' },
   POS: { bg: 'bg-purple-100 text-purple-800', text: 'POS' },
   Online: { bg: 'bg-sky-100 text-sky-800', text: 'Online' },
@@ -355,7 +355,7 @@ export function PaymentsPage() {
           .header { text-align: center; border-bottom: 3px double #1e293b; padding-bottom: 16px; margin-bottom: 24px; }
           .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.05em; }
           .header p { font-size: 12px; color: #64748b; margin-top: 4px; }
-          .receipt-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #E31E24; }
+          .receipt-title { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: var(--destructive); }
           .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
           .info-item { font-size: 13px; }
           .info-item .label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -434,7 +434,7 @@ export function PaymentsPage() {
         </div>
         <button
           onClick={openModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#E31E24] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-destructive transition-colors cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Record Payment
@@ -444,14 +444,14 @@ export function PaymentsPage() {
       {/* ── Stats ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Payments', value: totalPayments.toLocaleString(), icon: Receipt, color: 'text-[#0B1D3E]', bg: 'bg-[#0B1D3E]/10' },
+          { label: 'Total Payments', value: totalPayments.toLocaleString(), icon: Receipt, color: 'text-primary', bg: 'bg-primary/10' },
           { label: 'Total Collected', value: formatCurrency(totalCollected), icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Today', value: formatCurrency(todayPayments), icon: CalendarCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: 'Pending Balance', value: formatCurrency(totalPending), icon: Clock, color: 'text-red-600', bg: 'bg-red-50' },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+            className="flex items-center gap-4 rounded-lg border-border border-gray-200 bg-white p-4 shadow-sm"
           >
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${stat.bg}`}>
               <stat.icon className={`h-6 w-6 ${stat.color}`} />
@@ -465,7 +465,7 @@ export function PaymentsPage() {
       </div>
 
       {/* ── Filters ─────────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border-border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="h-4 w-4 text-gray-500" />
           <span className="text-sm font-semibold text-gray-700">Filters</span>
@@ -479,7 +479,7 @@ export function PaymentsPage() {
               placeholder="Search receipts, bills, business…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
+              className="w-full rounded-lg border-border border-gray-300 py-2 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition"
             />
           </div>
           {/* Date From */}
@@ -488,7 +488,7 @@ export function PaymentsPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
+              className="w-full rounded-lg border-border border-gray-300 py-2 px-3 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition"
             />
           </div>
           {/* Date To */}
@@ -497,7 +497,7 @@ export function PaymentsPage() {
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
+              className="w-full rounded-lg border-border border-gray-300 py-2 px-3 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition"
             />
           </div>
           {/* Method */}
@@ -505,7 +505,7 @@ export function PaymentsPage() {
             <select
               value={methodFilter}
               onChange={(e) => { setMethodFilter(e.target.value); setCurrentPage(1); }}
-              className="w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition cursor-pointer"
+              className="w-full appearance-none rounded-lg border-border border-gray-300 py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition cursor-pointer"
             >
               <option value="All">All Methods</option>
               <option value="Cash">Cash</option>
@@ -521,7 +521,7 @@ export function PaymentsPage() {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-              className="w-full appearance-none rounded-lg border border-gray-300 py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition cursor-pointer"
+              className="w-full appearance-none rounded-lg border-border border-gray-300 py-2 pl-3 pr-9 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition cursor-pointer"
             >
               <option value="All">All Statuses</option>
               <option value="Full">Full</option>
@@ -534,7 +534,7 @@ export function PaymentsPage() {
       </div>
 
       {/* ── Table ───────────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border-border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1100px] text-sm">
             <thead>
@@ -567,7 +567,7 @@ export function PaymentsPage() {
                       key={p.id}
                       className="hover:bg-gray-50/60 transition-colors"
                     >
-                      <td className="px-4 py-3 font-medium text-[#0B1D3E]">{p.receiptNo}</td>
+                      <td className="px-4 py-3 font-medium text-primary">{p.receiptNo}</td>
                       <td className="px-4 py-3 text-gray-600">{p.billNo}</td>
                       <td className="px-4 py-3 text-gray-900 font-medium max-w-[200px] truncate">{p.business}</td>
                       <td className="px-4 py-3 text-right text-gray-900 font-semibold whitespace-nowrap">{formatCurrency(p.amount)}</td>
@@ -591,13 +591,13 @@ export function PaymentsPage() {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleViewPayment(p)}
-                            className="rounded-md p-1.5 text-gray-400 hover:text-[#0B1D3E] hover:bg-[#0B1D3E]/10 transition cursor-pointer"
+                            className="rounded-md p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 transition cursor-pointer"
                             title="View details"
                           >
                             <Eye className="h-4 w-4" />
                           </button>
                           <button
-                            className="rounded-md p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                            className="rounded-md p-1.5 text-gray-400 hover:text-destructive hover:bg-red-50 transition cursor-pointer"
                             title="Delete"
                             onClick={() => handleDelete(p.id)}
                           >
@@ -633,7 +633,7 @@ export function PaymentsPage() {
                   onClick={() => setCurrentPage(page)}
                   className={`h-8 w-8 rounded-md text-xs font-semibold transition cursor-pointer ${
                     page === currentPage
-                      ? 'bg-[#0B1D3E] text-white'
+                      ? 'bg-primary text-white'
                       : 'text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -655,31 +655,31 @@ export function PaymentsPage() {
       {/* ── View Payment Modal ─────────────────────────────────────────── */}
       {viewingPayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setViewingPayment(null)} />
-          <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setViewingPayment(null)} />
+          <div className="relative bg-card rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="text-center border-b-2 border-dashed border-gray-300 dark:border-slate-600 px-6 py-5">
-              <h2 className="text-base font-bold text-gray-900 dark:text-white tracking-wider uppercase">{asmName}</h2>
-              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Revenue Management System</p>
-              <p className="text-sm font-semibold text-[#0B1D3E] dark:text-[#4a7ab5] mt-3 tracking-wide">PAYMENT RECEIPT</p>
+            <div className="text-center border-b-2 border-dashed border-gray-300 dark:border-border px-6 py-5">
+              <h2 className="text-base font-bold text-gray-900 dark:text-foreground tracking-wider uppercase">{asmName}</h2>
+              <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Revenue Management System</p>
+              <p className="text-sm font-semibold text-primary dark:text-primary mt-3 tracking-wide">PAYMENT RECEIPT</p>
             </div>
 
             {/* Receipt Info */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-3 px-6 py-4 border-b border-gray-100 dark:border-slate-800">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium">Receipt #</p>
-                <p className="text-sm font-mono font-semibold text-[#0B1D3E] dark:text-[#4a7ab5] mt-0.5">{viewingPayment.receiptNo}</p>
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground font-medium">Receipt #</p>
+                <p className="text-sm font-mono font-semibold text-primary dark:text-primary mt-0.5">{viewingPayment.receiptNo}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium">Payment Date</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mt-0.5">{viewingPayment.date}</p>
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground font-medium">Payment Date</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-foreground mt-0.5">{viewingPayment.date}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium">Bill #</p>
-                <p className="text-sm font-mono font-medium text-gray-700 dark:text-slate-300 mt-0.5">{viewingPayment.billNo}</p>
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground font-medium">Bill #</p>
+                <p className="text-sm font-mono font-medium text-gray-700 dark:text-foreground mt-0.5">{viewingPayment.billNo}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium">Status</p>
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground font-medium">Status</p>
                 <div className="mt-1">
                   <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusBadge[viewingPayment.status].bg}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${statusBadge[viewingPayment.status].dot}`} />
@@ -691,36 +691,36 @@ export function PaymentsPage() {
 
             {/* Payment Details */}
             <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium mb-2">Payment Details</p>
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground font-medium mb-2">Payment Details</p>
               <div className="space-y-2.5 text-sm">
                 <div className="flex items-center gap-2.5">
-                  <User className="w-4 h-4 text-gray-400 dark:text-slate-500 shrink-0" />
+                  <User className="w-4 h-4 text-gray-400 dark:text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Business / Entity</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{viewingPayment.business}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-muted-foreground uppercase">Business / Entity</p>
+                    <p className="font-medium text-gray-900 dark:text-foreground">{viewingPayment.business}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <DollarSign className="w-4 h-4 text-gray-400 dark:text-slate-500 shrink-0" />
+                  <DollarSign className="w-4 h-4 text-gray-400 dark:text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Payment Method</p>
+                    <p className="text-[10px] text-gray-400 dark:text-muted-foreground uppercase">Payment Method</p>
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${methodBadge[viewingPayment.method].bg}`}>
                       {methodBadge[viewingPayment.method].text}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <Hash className="w-4 h-4 text-gray-400 dark:text-slate-500 shrink-0" />
+                  <Hash className="w-4 h-4 text-gray-400 dark:text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Reference #</p>
-                    <p className="font-medium text-gray-700 dark:text-slate-300">{viewingPayment.reference || 'N/A'}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-muted-foreground uppercase">Reference #</p>
+                    <p className="font-medium text-gray-700 dark:text-foreground">{viewingPayment.reference || 'N/A'}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <FileText className="w-4 h-4 text-gray-400 dark:text-slate-500 shrink-0" />
+                  <FileText className="w-4 h-4 text-gray-400 dark:text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Field Officer</p>
-                    <p className="font-medium text-gray-700 dark:text-slate-300">{viewingPayment.fieldOfficer}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-muted-foreground uppercase">Field Officer</p>
+                    <p className="font-medium text-gray-700 dark:text-foreground">{viewingPayment.fieldOfficer}</p>
                   </div>
                 </div>
               </div>
@@ -728,60 +728,60 @@ export function PaymentsPage() {
 
             {/* Amount Summary */}
             <div className="px-6 py-4">
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium mb-3">Amount Summary</p>
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground font-medium mb-3">Amount Summary</p>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-slate-400">Amount Paid</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(viewingPayment.amount)}</span>
+                  <span className="text-gray-600 dark:text-muted-foreground">Amount Paid</span>
+                  <span className="font-semibold text-gray-900 dark:text-foreground">{formatCurrency(viewingPayment.amount)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-slate-400">Outstanding Balance</span>
+                  <span className="text-gray-600 dark:text-muted-foreground">Outstanding Balance</span>
                   <span className={`font-medium ${viewingPayment.balance > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
                     {viewingPayment.balance > 0 ? formatCurrency(viewingPayment.balance) : 'Settled'}
                   </span>
                 </div>
-                <div className="border-t-2 border-gray-900 dark:border-slate-100 pt-2 mt-2 flex justify-between">
-                  <span className="font-bold text-gray-900 dark:text-white">Total Paid</span>
-                  <span className="font-bold text-lg text-[#0B1D3E] dark:text-[#4a7ab5]">{formatCurrency(viewingPayment.amount)}</span>
+                <div className="border-t-2 border-gray-900 dark:border-border pt-2 mt-2 flex justify-between">
+                  <span className="font-bold text-gray-900 dark:text-foreground">Total Paid</span>
+                  <span className="font-bold text-lg text-primary dark:text-primary">{formatCurrency(viewingPayment.amount)}</span>
                 </div>
               </div>
             </div>
 
             {viewingPayment.remarks && (
               <div className="px-6 pb-4">
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-slate-500 font-medium mb-1">Remarks</p>
-                <p className="text-sm text-gray-600 dark:text-slate-400">{viewingPayment.remarks}</p>
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground font-medium mb-1">Remarks</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">{viewingPayment.remarks}</p>
               </div>
             )}
 
             {/* Barcode Verification */}
             <div className="px-6 pb-4">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-center">
+              <div className="rounded-xl border-border p-4 text-center">
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <ScanBarcode className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                  <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-medium">Verification Barcode</p>
+                  <ScanBarcode className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Verification Barcode</p>
                 </div>
                 <div className="flex justify-center">
                   <canvas ref={payBarcodeRef} className="max-w-full" />
                 </div>
-                <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 break-all">{viewingPayment ? getVerificationUrl(getPayBarcodeData(viewingPayment, asmName)) : ''}</p>
+                <p className="text-[9px] text-muted-foreground dark:text-muted-foreground mt-2 break-all">{viewingPayment ? getVerificationUrl(getPayBarcodeData(viewingPayment, asmName)) : ''}</p>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between gap-3 border-t border-gray-200 dark:border-slate-700 px-6 py-4">
+            <div className="flex items-center justify-between gap-3 border-t border-gray-200 dark:border-border px-6 py-4">
               <button
                 onClick={() => navigator.clipboard.writeText(viewingPayment.receiptNo)}
-                className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
               >
                 <Copy className="w-3.5 h-3.5" />
                 Copy Receipt #
               </button>
               <div className="flex items-center gap-2">
-                <button onClick={() => setViewingPayment(null)} className="rounded-lg border border-gray-300 bg-white dark:bg-slate-800 dark:border-slate-600 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition cursor-pointer">
+                <button onClick={() => setViewingPayment(null)} className="rounded-lg border-border border-gray-300 bg-white dark:bg-muted dark:border-border px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-foreground hover:bg-gray-50 dark:hover:bg-slate-700 transition cursor-pointer">
                   Close
                 </button>
-                <button onClick={() => handlePrintPayment(viewingPayment)} className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#E31E24] transition cursor-pointer">
+                <button onClick={() => handlePrintPayment(viewingPayment)} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-destructive transition cursor-pointer">
                   <Printer className="h-4 w-4" />
                   Print
                 </button>
@@ -804,8 +804,8 @@ export function PaymentsPage() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0B1D3E]/10">
-                  <Plus className="h-5 w-5 text-[#0B1D3E]" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                  <Plus className="h-5 w-5 text-primary" />
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">Record Payment</h2>
               </div>
@@ -833,7 +833,7 @@ export function PaymentsPage() {
                       setBillSearchInput('');
                       setShowBillDropdown(false);
                     }}
-                    className="w-full appearance-none rounded-lg border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition cursor-pointer"
+                    className="w-full appearance-none rounded-lg border-border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition cursor-pointer"
                   >
                     <option value="">Select revenue category…</option>
                     {BILL_TYPE_OPTIONS.map((bt) => (
@@ -867,28 +867,28 @@ export function PaymentsPage() {
                     }}
                     disabled={!payRevenueCategory}
                     placeholder={payRevenueCategory ? 'Search by bill number, business name, or owner...' : 'Select a revenue category first'}
-                    className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full rounded-lg border-border border-gray-300 py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 {showBillDropdown && billSearchResults.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="absolute z-50 w-full mt-1 max-h-48 overflow-y-auto rounded-lg border-border border-gray-200 bg-white shadow-lg">
                     {billSearchResults.map((b) => (
                       <button
                         key={b.billNo}
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleSelectBill(b)}
-                        className={`w-full text-left px-4 py-2.5 hover:bg-[#0B1D3E]/10 border-b border-gray-100 last:border-b-0 transition-colors ${selectedBillNo === b.billNo ? 'bg-[#0B1D3E]/10' : ''}`}
+                        className={`w-full text-left px-4 py-2.5 hover:bg-primary/10 border-b border-gray-100 last:border-b-0 transition-colors ${selectedBillNo === b.billNo ? 'bg-primary/10' : ''}`}
                       >
                         <p className="text-sm font-medium text-gray-900 truncate">{b.billNo}{b.uniqueNumber ? ` — ${b.uniqueNumber}` : ''}</p>
                         <p className="text-xs text-gray-500 mt-0.5 truncate">{b.business}{b.owner && b.owner !== b.business ? ` · ${b.owner}` : ''}</p>
-                        <p className="text-xs text-[#0B1D3E] font-medium mt-0.5">Balance: {formatCurrency(b.balance)}</p>
+                        <p className="text-xs text-primary font-medium mt-0.5">Balance: {formatCurrency(b.balance)}</p>
                       </button>
                     ))}
                   </div>
                 )}
                 {showBillDropdown && billSearchInput.trim() && billSearchResults.length === 0 && payRevenueCategory && (
-                  <div className="absolute z-50 w-full mt-1 rounded-lg border border-gray-200 bg-white shadow-lg px-4 py-3">
+                  <div className="absolute z-50 w-full mt-1 rounded-lg border-border border-gray-200 bg-white shadow-lg px-4 py-3">
                     <p className="text-sm text-gray-400">No matching bills found.</p>
                   </div>
                 )}
@@ -905,7 +905,7 @@ export function PaymentsPage() {
                   readOnly
                   value={autoFill.business}
                   placeholder="Auto-filled from bill"
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
+                  className="w-full rounded-lg border-border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
                 />
               </div>
 
@@ -917,7 +917,7 @@ export function PaymentsPage() {
                   readOnly
                   value={autoFill.owner}
                   placeholder="Auto-filled from bill"
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
+                  className="w-full rounded-lg border-border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
                 />
               </div>
 
@@ -928,7 +928,7 @@ export function PaymentsPage() {
                   type="text"
                   readOnly
                   value={selectedBillNo ? formatCurrency(autoFill.balance) : '—'}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm font-semibold text-[#0B1D3E] cursor-not-allowed"
+                  className="w-full rounded-lg border-border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm font-semibold text-primary cursor-not-allowed"
                 />
               </div>
 
@@ -940,7 +940,7 @@ export function PaymentsPage() {
                   readOnly
                   value={autoFill.fieldOfficer || '—'}
                   placeholder="Auto-filled from bill"
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
+                  className="w-full rounded-lg border-border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700 cursor-not-allowed"
                 />
               </div>
 
@@ -956,7 +956,7 @@ export function PaymentsPage() {
                   value={payAmount}
                   onChange={(e) => setPayAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
+                  className="w-full rounded-lg border-border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition"
                 />
               </div>
 
@@ -967,7 +967,7 @@ export function PaymentsPage() {
                   <select
                     value={payMethod}
                     onChange={(e) => setPayMethod(e.target.value as PaymentMethod)}
-                    className="w-full appearance-none rounded-lg border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition cursor-pointer"
+                    className="w-full appearance-none rounded-lg border-border border-gray-300 py-2.5 pl-3 pr-9 text-sm text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition cursor-pointer"
                   >
                     <option value="Cash">Cash</option>
                     <option value="Mobile Money">Mobile Money</option>
@@ -987,7 +987,7 @@ export function PaymentsPage() {
                   value={payReference}
                   onChange={(e) => setPayReference(e.target.value)}
                   placeholder="e.g. MTN-12345"
-                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition"
+                  className="w-full rounded-lg border-border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition"
                 />
               </div>
 
@@ -999,7 +999,7 @@ export function PaymentsPage() {
                   value={payRemarks}
                   onChange={(e) => setPayRemarks(e.target.value)}
                   placeholder="Optional notes about this payment…"
-                  className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-[#0B1D3E] focus:ring-2 focus:ring-[#0B1D3E]/20 focus:outline-none transition resize-none"
+                  className="w-full rounded-lg border-border border-gray-300 py-2.5 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition resize-none"
                 />
               </div>
             </div>
@@ -1008,14 +1008,14 @@ export function PaymentsPage() {
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
               <button
                 onClick={closeModal}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                className="rounded-lg border-border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={!payRevenueCategory || !selectedBillNo || !payAmount}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#E31E24] disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-destructive disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
               >
                 <Download className="h-4 w-4" />
                 Save Payment

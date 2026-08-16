@@ -483,8 +483,8 @@ export function RentPage() {
   };
 
   // ── Shared classes ──────────────────────────────────────────────────────
-  const inputClass =     'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
-  const labelClass =     'block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5';
+  const inputClass =     'w-full rounded-lg border-border bg-white dark:bg-muted px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
+  const labelClass =     'block text-xs font-medium text-muted-foreground dark:text-muted-foreground mb-1.5';
 
   // ══════════════════════════════════════════════════════════════════════════
   //  LIST VIEW
@@ -495,25 +495,25 @@ export function RentPage() {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               Lease Management
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Manage and track lease/rent agreements within the assembly.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setForm({ ...defaultForm, occupantUniqueId: generateUniqueId() }); setEditingId(null); setView('form'); setRevenueSearch(''); setShowRevenueDropdown(false); rentCodeDialogTriggered.current = ''; }}
-              className="inline-flex items-center gap-2 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-destructive text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Add Rent
             </button>
-            <button onClick={handleExport} className="inline-flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
+            <button onClick={handleExport} className="inline-flex items-center gap-2 border border-border bg-white dark:bg-muted text-foreground text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-card dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
               <Download className="w-4 h-4" /> Export
             </button>
-            <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
+            <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 border border-border bg-white dark:bg-muted text-foreground text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-card dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
               <Upload className="w-4 h-4" /> Import
             </button>
             <input ref={fileInputRef} type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
@@ -523,7 +523,7 @@ export function RentPage() {
         {/* ── Search & Filters ────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search by renter, Rent Property Number, location, rent object, class..."
@@ -555,24 +555,24 @@ export function RentPage() {
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="rounded-xl border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Rent Property Unique #</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Occupant's Name</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Rent Property Class</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Rent Property Category</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Amount</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Status</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Actions</th>
+                <tr className="bg-card dark:bg-muted/60 border-b border-border">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Rent Property Unique #</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Occupant's Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Rent Property Class</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Rent Property Category</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Amount</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Status</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              <tbody className="divide-y divide-border">
                 {paged.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <td colSpan={7} className="text-center py-12 text-muted-foreground dark:text-muted-foreground">
                       <Building2 className="w-10 h-10 mx-auto mb-3 opacity-40" />
                       {searchQuery || classFilter !== 'All' || vacantFilter !== 'All'
                         ? 'No rents match your filters.'
@@ -581,11 +581,11 @@ export function RentPage() {
                   </tr>
                 ) : (
                   paged.map((rent) => (
-                    <tr key={rent.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap font-medium">{(rent as any).rentPropertyUniqueNumber || rent.rentPropertyNumber || '—'}</td>
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{rent.occupantName || '—'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{rent.rentPropertyType || '—'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{rent.rentPropertyTypeCategory || '—'}</td>
+                    <tr key={rent.id} className="hover:bg-card dark:hover:bg-muted/40 transition-colors">
+                      <td className="px-4 py-3 font-mono text-xs text-foreground whitespace-nowrap font-medium">{(rent as any).rentPropertyUniqueNumber || rent.rentPropertyNumber || '—'}</td>
+                      <td className="px-4 py-3 font-medium text-foreground whitespace-nowrap">{rent.occupantName || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-foreground whitespace-nowrap">{rent.rentPropertyType || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-foreground whitespace-nowrap">{rent.rentPropertyTypeCategory || '—'}</td>
                       <td className="px-4 py-3 text-right font-semibold whitespace-nowrap">GHS {(Number(rent.amount) || 0).toLocaleString('en-GH', { minimumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -601,7 +601,7 @@ export function RentPage() {
                           <button onClick={() => handleEdit(rent)} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors cursor-pointer" title="Rent Agreement">
                             <FileText className="w-3.5 h-3.5" /> Agreement
                           </button>
-                          <button onClick={() => handleEdit(rent)} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors cursor-pointer" title="Renewal">
+                          <button onClick={() => handleEdit(rent)} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-slate-700 rounded-md transition-colors cursor-pointer" title="Renewal">
                             <CalendarDays className="w-3.5 h-3.5" /> Renewal
                           </button>
                         </div>
@@ -616,13 +616,13 @@ export function RentPage() {
 
         {/* ── Pagination ──────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-          <p className="text-slate-500 dark:text-slate-400">Showing {showingFrom}–{showingTo} of {filtered.length}</p>
+          <p className="text-muted-foreground">Showing {showingFrom}–{showingTo} of {filtered.length}</p>
           <div className="flex items-center gap-2">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-card dark:hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
               <ChevronLeft className="w-4 h-4" /> Previous
             </button>
-            <span className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">{currentPage} / {totalPages}</span>
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+            <span className="px-3 py-1.5 rounded-lg bg-muted text-foreground font-medium">{currentPage} / {totalPages}</span>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-card dark:hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
               Next <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -638,22 +638,22 @@ export function RentPage() {
     <div className="space-y-6">
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
-        <button onClick={handleCancel} className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        <button onClick={handleCancel} className="p-2 rounded-lg border-border text-muted-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted transition-colors cursor-pointer">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-foreground">
             {editingId ? 'Edit Rent' : 'Add Rent'}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             {editingId ? 'Update the lease/rent details below.' : 'Fill in the details below to register a new lease/rent.'}
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <button type="button" onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors cursor-pointer">
+          <button type="button" onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-border text-muted-foreground dark:text-muted-foreground hover:bg-card dark:hover:bg-slate-700 text-sm font-medium transition-colors cursor-pointer">
             <X className="w-4 h-4" /> Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-destructive text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>
         </div>
@@ -663,10 +663,10 @@ export function RentPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 1: LOCATION INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <MapPin className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Location Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <MapPin className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Location Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -690,7 +690,7 @@ export function RentPage() {
               {/* 2. Location Code */}
               <div>
                 <label className={`${labelClass} block`}>Location Code</label>
-                <input type="text" name="locationCode" value={form.locationCode} onChange={handleFormChange} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
+                <input type="text" name="locationCode" value={form.locationCode} onChange={handleFormChange} placeholder="Auto-generated" className={`${inputClass} bg-card/40`} readOnly />
               </div>
               {/* 3. Exact Location */}
               <div className="sm:col-span-2">
@@ -708,7 +708,7 @@ export function RentPage() {
                 <div className="flex gap-2">
                   <input type="text" name="propertyLatitude" value={form.propertyLatitude} onChange={handleFormChange} placeholder="Latitude" className={`${inputClass} flex-1`} />
                   <input type="text" name="propertyLongitude" value={form.propertyLongitude} onChange={handleFormChange} placeholder="Longitude" className={`${inputClass} flex-1`} />
-                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border border-[#0B1D3E]/40 dark:border-[#0B1D3E] text-[#0B1D3E] dark:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap cursor-pointer">
+                  <button type="button" onClick={fetchGps} disabled={locating} className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border-border border-primary/40 dark:border-primary text-primary dark:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap cursor-pointer">
                     {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
                     {locating ? '...' : 'GPS'}
                   </button>
@@ -721,17 +721,17 @@ export function RentPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 2: RENT PROPERTY INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <Building2 className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Rent Property Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <Building2 className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Rent Property Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               {/* 1. Rent Property Number */}
               <div>
                 <label className={`${labelClass} block`}>Rent Property Number</label>
-                <input type="text" name="rentPropertyNumber" value={form.rentPropertyNumber} placeholder="Auto-generated" className={`${inputClass} bg-slate-50 dark:bg-slate-900/40`} readOnly />
+                <input type="text" name="rentPropertyNumber" value={form.rentPropertyNumber} placeholder="Auto-generated" className={`${inputClass} bg-card/40`} readOnly />
               </div>
               {/* 2. Rent Property Unique Number */}
               <div>
@@ -757,12 +757,12 @@ export function RentPage() {
                   className={inputClass}
                 />
                 {rentRevenueCodeShowDropdown && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
                     {rentRevenueCodeFiltered.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                      <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
                     ) : rentRevenueCodeFiltered.slice(0, 50).map((item) => (
-                      <button key={item.code} type="button" onClick={() => { handleRentRevenueSelect(item); setRentRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                        <span className="font-mono text-slate-800 dark:text-white">{item.code}</span>
+                      <button key={item.code} type="button" onClick={() => { handleRentRevenueSelect(item); setRentRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
+                        <span className="font-mono text-foreground dark:text-foreground">{item.code}</span>
                       </button>
                     ))}
                   </div>
@@ -782,19 +782,19 @@ export function RentPage() {
                     className={inputClass}
                   />
                   {showRevenueDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
                       {filteredRevenueCodes.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-slate-400">No matches found</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches found</div>
                       ) : (
                         filteredRevenueCodes.map((item) => (
                           <button
                             key={item.code}
                             type="button"
                             onClick={() => selectRevenue(item)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0"
                           >
-                            <span className="font-medium text-slate-800 dark:text-white">{item.description}</span>
-                            <span className="ml-2 text-xs text-slate-400 font-mono">{item.code}</span>
+                            <span className="font-medium text-foreground dark:text-foreground">{item.description}</span>
+                            <span className="ml-2 text-xs text-muted-foreground font-mono">{item.code}</span>
                           </button>
                         ))
                       )}
@@ -861,10 +861,10 @@ export function RentPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 3: CONTRACT
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <FileText className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Contract</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <FileText className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Contract</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -895,10 +895,10 @@ export function RentPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 4: OCCUPANT'S INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <User className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Occupant's Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <User className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Occupant's Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -929,16 +929,16 @@ export function RentPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD 5: OTHER
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <FileText className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Other</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <FileText className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Other</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
               <label className="flex items-center gap-2 pb-2.5 cursor-pointer select-none">
-                <input type="checkbox" name="excludedFromRenting" checked={form.excludedFromRenting} onChange={handleFormChange} className="w-4 h-4 rounded border-slate-300 text-[#0B1D3E] focus:ring-[#0B1D3E]" />
-                <span className="text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">Excluded from renting</span>
+                <input type="checkbox" name="excludedFromRenting" checked={form.excludedFromRenting} onChange={handleFormChange} className="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
+                <span className="text-sm text-foreground whitespace-nowrap">Excluded from renting</span>
               </label>
             </div>
             <div className="sm:col-span-2 lg:col-span-3">
@@ -949,11 +949,11 @@ export function RentPage() {
         </div>
         {/* ─── Action Buttons ──────────────────────────────────────────── */}
         <div className="flex items-center justify-end gap-3 pt-2">
-          <button onClick={handleCancel} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-500 hover:bg-slate-600 text-white text-sm font-medium transition-colors">
+          <button onClick={handleCancel} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-card0 hover:bg-slate-600 text-white text-sm font-medium transition-colors">
             <X className="w-4 h-4" />
             Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" onClick={handleSave} disabled={!form.occupantName || saving} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-destructive text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? 'Saving...' : (editingId ? 'Update' : 'Save')}
           </button>

@@ -269,12 +269,12 @@ export function FinesManagementPage() {
     children: React.ReactNode;
   }) {
     return (
-      <div className='rounded-xl border border-border bg-card p-5 shadow-sm'>
+      <div className='rounded-xl border-border bg-card p-5 shadow-sm'>
         <div className='flex items-center gap-2.5 mb-4'>
-          <span className='flex h-7 w-7 items-center justify-center rounded-full bg-[#0B1D3E] text-xs font-bold text-white'>
+          <span className='flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white'>
             {number}
           </span>
-          <Icon className='h-5 w-5 text-[#0B1D3E]' />
+          <Icon className='h-5 w-5 text-primary' />
           <h3 className='text-sm font-semibold text-foreground'>{title}</h3>
         </div>
         {children}
@@ -309,13 +309,13 @@ export function FinesManagementPage() {
           <div className='flex items-center gap-2'>
             <button
               onClick={() => { setView('list'); setEditingId(null); }}
-              className='rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
+              className='rounded-lg border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className='inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0B1D3E]/90'
+              className='inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90'
             >
               <Save size={16} />
               {editingId ? 'Update' : 'Save'}
@@ -482,9 +482,9 @@ export function FinesManagementPage() {
                 />
               </div>
               <div className='flex items-end'>
-                <div className='rounded-lg border border-border bg-muted/30 px-4 py-3 text-center w-full'>
+                <div className='rounded-lg border-border bg-background px-4 py-3 text-center w-full'>
                   <p className='text-xs text-muted-foreground'>Amount Due</p>
-                  <p className='text-xl font-bold text-[#0B1D3E]'>
+                  <p className='text-xl font-bold text-primary'>
                     GHS {(form.amountDue || 0).toLocaleString('en-GH', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
@@ -526,12 +526,12 @@ export function FinesManagementPage() {
         <div className='flex items-center gap-2'>
           <button
             onClick={handleExport}
-            className='inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
+            className='inline-flex items-center gap-1.5 rounded-lg border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground'
           >
             <Download size={15} />
             Export
           </button>
-          <label className='inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer'>
+          <label className='inline-flex items-center gap-1.5 rounded-lg border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer'>
             {importing ? <Loader2 size={15} className='animate-spin' /> : <Upload size={15} />}
             Import
             <input
@@ -545,7 +545,7 @@ export function FinesManagementPage() {
           </label>
           <button
             onClick={handleNew}
-            className='inline-flex items-center gap-1.5 rounded-lg bg-[#0B1D3E] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0B1D3E]/90'
+            className='inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90'
           >
             <Plus size={15} />
             New Fine
@@ -554,7 +554,7 @@ export function FinesManagementPage() {
       </div>
 
       {/* Search & Filters */}
-      <div className='rounded-xl border border-border bg-card p-4 shadow-sm'>
+      <div className='rounded-xl border-border bg-card p-4 shadow-sm'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
           <div className='relative flex-1'>
             <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
@@ -563,14 +563,14 @@ export function FinesManagementPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder='Search by fine number, offender name, location, or class...'
-              className='w-full rounded-lg border border-input bg-background pl-9 pr-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+              className='w-full rounded-lg border-border border-input bg-background pl-9 pr-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             />
           </div>
           <div className='flex gap-2'>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className='rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+              className='rounded-lg border-border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             >
               <option value=''>All Statuses</option>
               {FINE_STATUSES.map((s) => (
@@ -580,7 +580,7 @@ export function FinesManagementPage() {
             <select
               value={classFilter}
               onChange={(e) => setClassFilter(e.target.value)}
-              className='rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+              className='rounded-lg border-border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             >
               <option value=''>All Classes</option>
               {FINE_CLASS_NAMES.map((cls) => (
@@ -592,7 +592,7 @@ export function FinesManagementPage() {
       </div>
 
       {/* Table */}
-      <div className='rounded-xl border border-border bg-card shadow-sm overflow-hidden'>
+      <div className='rounded-xl border-border bg-card shadow-sm overflow-hidden'>
         <div className='overflow-x-auto'>
           <table className='w-full text-sm'>
             <thead>
@@ -619,7 +619,7 @@ export function FinesManagementPage() {
                 paginatedFines.map((fine) => (
                   <tr
                     key={fine.id}
-                    className='border-b border-border last:border-b-0 transition-colors hover:bg-muted/30'
+                    className='border-b border-border last:border-b-0 transition-colors hover:bg-background'
                   >
                     <td className='px-4 py-3 font-mono text-xs'>{fine.fineNumber}</td>
                     <td className='px-4 py-3'>
@@ -655,7 +655,7 @@ export function FinesManagementPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(fine.id)}
-                          className='rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600'
+                          className='rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-destructive'
                           aria-label='Delete fine'
                         >
                           <Trash2 size={15} />

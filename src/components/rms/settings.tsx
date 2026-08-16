@@ -205,12 +205,12 @@ export function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">System Settings</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Configure system-wide settings and preferences</p>
+          <h1 className="text-2xl font-bold text-foreground">System Settings</h1>
+          <p className="text-sm text-muted-foreground mt-1">Configure system-wide settings and preferences</p>
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#0B1D3E] hover:bg-[#E31E24] text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-destructive text-white rounded-lg text-sm font-medium transition-colors"
         >
           {saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
           {saved ? 'All Settings Saved!' : 'Save Changes'}
@@ -218,23 +218,23 @@ export function SettingsPage() {
       </div>
 
       {/* Info banner */}
-      <div className="bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 border border-[#0B1D3E]/30 dark:border-[#0B1D3E] rounded-lg px-4 py-3">
-        <p className="text-sm text-[#0B1D3E] dark:text-[#4a7ab5]">
+      <div className="bg-primary/10 dark:bg-primary/20 border border-primary/30 dark:border-primary rounded-lg px-4 py-3">
+        <p className="text-sm text-primary dark:text-primary">
           <CheckCircle2 className="w-4 h-4 inline mr-1.5 -mt-0.5" />
           All settings are automatically saved to the server and will persist across deployments.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 overflow-x-auto">
+      <div className="flex gap-1 bg-muted rounded-xl p-1 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? 'bg-white dark:bg-slate-700 text-[#0B1D3E] dark:text-[#4a7ab5] shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-slate-700 text-primary dark:text-primary shadow-sm'
+                : 'text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-white'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -244,7 +244,7 @@ export function SettingsPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+      <div className="bg-white dark:bg-muted rounded-xl border-border p-6">
         {activeTab === 'assembly' && loaded && (
           <AssemblySettings data={assembly} onChange={(field, value) => setAssembly((p: AssemblyInfo) => ({ ...p, [field]: value }))} />
         )}
@@ -272,8 +272,8 @@ export function SettingsPage() {
 }
 
 // ── Shared input style ──
-const inputCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
-const selectCls = 'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
+const inputCls = 'w-full rounded-lg border-border bg-card px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
+const selectCls = 'w-full rounded-lg border-border bg-card px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
 
 // ── Assembly Tab ──
 function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (field: keyof AssemblyInfo, value: string) => void }) {
@@ -318,50 +318,50 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700">Assembly Information</h2>
+      <h2 className="text-lg font-semibold text-foreground pb-2 border-b border-border">Assembly Information</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Assembly Name</label>
+          <label className="block text-sm font-medium text-foreground">Assembly Name</label>
           <input type="text" value={data.name} onChange={(e) => onChange('name', e.target.value)} placeholder="e.g. Kpando Municipal Assembly" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Assembly Code</label>
+          <label className="block text-sm font-medium text-foreground">Assembly Code</label>
           <input type="text" value={data.code} onChange={(e) => onChange('code', e.target.value)} placeholder="e.g. KMA" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Telephone</label>
+          <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Telephone</label>
           <input type="tel" value={data.telephone} onChange={(e) => onChange('telephone', e.target.value)} placeholder="Enter telephone number" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> Email</label>
+          <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> Email</label>
           <input type="email" value={data.email} onChange={(e) => onChange('email', e.target.value)} placeholder="Enter email address" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> Website</label>
+          <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> Website</label>
           <input type="url" value={data.website} onChange={(e) => onChange('website', e.target.value)} placeholder="Enter website URL" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Physical Address</label>
+          <label className="block text-sm font-medium text-foreground">Physical Address</label>
           <input type="text" value={data.address} onChange={(e) => onChange('address', e.target.value)} placeholder="Enter physical address" className={inputCls} />
         </div>
         <div className="lg:col-span-2 space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Assembly Logo</label>
+          <label className="block text-sm font-medium text-foreground">Assembly Logo</label>
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden ${data.logo ? 'border-[#4a7ab5] dark:border-[#0B1D3E]' : 'bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 border-[#0B1D3E]/40 dark:border-[#0B1D3E]'}`}>
+            <div className={`w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden ${data.logo ? 'border-[#4a7ab5] dark:border-primary' : 'bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary'}`}>
               {data.logo ? (
                 <img src={data.logo} alt="Assembly Logo" className="w-full h-full object-contain" />
               ) : (
-                <Building className="w-8 h-8 text-[#E31E24]" />
+                <Building className="w-8 h-8 text-destructive" />
               )}
             </div>
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2">
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 cursor-pointer">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-card dark:hover:bg-slate-700 transition-colors flex items-center gap-2 cursor-pointer">
                   <Upload className="w-4 h-4" /> Upload Logo
                 </button>
                 {data.logo && (
-                  <button onClick={handleRemoveLogo} className="px-3 py-2 border border-red-300 dark:border-red-700 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
+                  <button onClick={handleRemoveLogo} className="px-3 py-2 border border-red-300 dark:border-red-700 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-destructive/10 transition-colors cursor-pointer">
                     Remove
                   </button>
                 )}
@@ -370,17 +370,17 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
           </div>
         </div>
         <div className="lg:col-span-2 space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Assembly Description</label>
+          <label className="block text-sm font-medium text-foreground">Assembly Description</label>
           <textarea rows={3} value={data.description} onChange={(e) => onChange('description', e.target.value)} placeholder="Enter assembly description" className={inputCls + ' resize-none'} />
         </div>
         <div className="lg:col-span-2 space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><Pen className="w-3.5 h-3.5" /> Authorized Signature</label>
+          <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><Pen className="w-3.5 h-3.5" /> Authorized Signature</label>
           <div className="flex items-start gap-5">
-            <div className={`w-48 h-24 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900/40 ${data.signature ? 'border-[#4a7ab5] dark:border-[#0B1D3E]' : 'border-slate-300 dark:border-slate-600'}`}>
+            <div className={`w-48 h-24 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden bg-card/40 ${data.signature ? 'border-[#4a7ab5] dark:border-primary' : 'border-border'}`}>
               {data.signature ? (
                 <img src={data.signature} alt="Assembly Signature" className="w-full h-full object-contain" />
               ) : (
-                <div className="text-center text-slate-400 dark:text-slate-500">
+                <div className="text-center text-muted-foreground dark:text-muted-foreground">
                   <Pen className="w-6 h-6 mx-auto mb-1 opacity-40" />
                   <span className="text-xs">No signature</span>
                 </div>
@@ -389,25 +389,25 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <input ref={sigInputRef} type="file" accept="image/*" onChange={handleSignatureUpload} className="hidden" />
-                <button type="button" onClick={() => sigInputRef.current?.click()} className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 cursor-pointer">
+                <button type="button" onClick={() => sigInputRef.current?.click()} className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-card dark:hover:bg-slate-700 transition-colors flex items-center gap-2 cursor-pointer">
                   <Upload className="w-4 h-4" /> Upload Signature
                 </button>
                 {data.signature && (
-                  <button onClick={handleRemoveSignature} className="px-3 py-2 border border-red-300 dark:border-red-700 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
+                  <button onClick={handleRemoveSignature} className="px-3 py-2 border border-red-300 dark:border-red-700 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-destructive/10 transition-colors cursor-pointer">
                     Remove
                   </button>
                 )}
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs">Upload the authorized signer's signature image. This will appear on business certificates and official documents.</p>
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground max-w-xs">Upload the authorized signer's signature image. This will appear on business certificates and official documents.</p>
             </div>
           </div>
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Signatory Name</label>
+          <label className="block text-sm font-medium text-foreground">Signatory Name</label>
           <input type="text" value={data.signatureName} onChange={(e) => onChange('signatureName', e.target.value)} placeholder="e.g. Hon. John Doe" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Signatory Title</label>
+          <label className="block text-sm font-medium text-foreground">Signatory Title</label>
           <input type="text" value={data.signatureTitle} onChange={(e) => onChange('signatureTitle', e.target.value)} placeholder="e.g. Municipal Chief Executive" className={inputCls} />
         </div>
       </div>
@@ -419,16 +419,16 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
 function FinancialSettings({ data, onChange }: { data: FinancialInfo; onChange: (field: keyof FinancialInfo, value: string) => void }) {
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700">Financial Settings</h2>
+      <h2 className="text-lg font-semibold text-foreground pb-2 border-b border-border">Financial Settings</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Currency</label>
+          <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Currency</label>
           <select value={data.currency} onChange={(e) => onChange('currency', e.target.value)} className={selectCls}>
             <option value="GHS">GHS - Ghana Cedis</option>
           </select>
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Financial Year Start</label>
+          <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Financial Year Start</label>
           <select value={data.financialYearStart} onChange={(e) => onChange('financialYearStart', e.target.value)} className={selectCls}>
             <option value="january">January</option>
             <option value="april">April</option>
@@ -437,19 +437,19 @@ function FinancialSettings({ data, onChange }: { data: FinancialInfo; onChange: 
           </select>
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Current Financial Year</label>
+          <label className="block text-sm font-medium text-foreground">Current Financial Year</label>
           <input type="text" value={data.currentFinancialYear} onChange={(e) => onChange('currentFinancialYear', e.target.value)} placeholder="e.g. 2026" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Tax Rate (%)</label>
+          <label className="block text-sm font-medium text-foreground">Tax Rate (%)</label>
           <input type="number" value={data.taxRate} onChange={(e) => onChange('taxRate', e.target.value)} placeholder="e.g. 10" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Penalty Rate (%)</label>
+          <label className="block text-sm font-medium text-foreground">Penalty Rate (%)</label>
           <input type="number" value={data.penaltyRate} onChange={(e) => onChange('penaltyRate', e.target.value)} placeholder="e.g. 5" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Interest Rate (%)</label>
+          <label className="block text-sm font-medium text-foreground">Interest Rate (%)</label>
           <input type="number" value={data.interestRate} onChange={(e) => onChange('interestRate', e.target.value)} placeholder="e.g. 2" className={inputCls} />
         </div>
       </div>
@@ -463,22 +463,22 @@ function BillingSettings({ data, onChange }: { data: BillingInfo; onChange: (fie
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700">Billing Configuration</h2>
+      <h2 className="text-lg font-semibold text-foreground pb-2 border-b border-border">Billing Configuration</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Bill Prefix</label>
+          <label className="block text-sm font-medium text-foreground">Bill Prefix</label>
           <input type="text" value={data.billPrefix} onChange={(e) => onChange('billPrefix', e.target.value)} placeholder="e.g. KpMA-BILL" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Receipt Prefix</label>
+          <label className="block text-sm font-medium text-foreground">Receipt Prefix</label>
           <input type="text" value={data.receiptPrefix} onChange={(e) => onChange('receiptPrefix', e.target.value)} placeholder="e.g. KpMA-REC" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Default Due Days</label>
+          <label className="block text-sm font-medium text-foreground">Default Due Days</label>
           <input type="number" value={data.defaultDueDays} onChange={(e) => onChange('defaultDueDays', e.target.value)} placeholder="e.g. 30" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Penalty After (Days)</label>
+          <label className="block text-sm font-medium text-foreground">Penalty After (Days)</label>
           <input type="number" value={data.penaltyAfterDays} onChange={(e) => onChange('penaltyAfterDays', e.target.value)} placeholder="e.g. 15" className={inputCls} />
         </div>
         <ToggleCard label="Auto-Generate Bills" desc="Automatically generate bills at the start of each period" checked={data.autoGenerateBills} onToggle={() => toggleBool('autoGenerateBills')} />
@@ -496,22 +496,22 @@ function SecuritySettings({ data, onChange }: { data: SecurityInfo; onChange: (f
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700">Security Settings</h2>
+      <h2 className="text-lg font-semibold text-foreground pb-2 border-b border-border">Security Settings</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Session Timeout (Minutes)</label>
+          <label className="block text-sm font-medium text-foreground">Session Timeout (Minutes)</label>
           <input type="number" value={data.sessionTimeout} onChange={(e) => onChange('sessionTimeout', e.target.value)} placeholder="e.g. 30" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Max Login Attempts</label>
+          <label className="block text-sm font-medium text-foreground">Max Login Attempts</label>
           <input type="number" value={data.maxLoginAttempts} onChange={(e) => onChange('maxLoginAttempts', e.target.value)} placeholder="e.g. 5" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Password Min Length</label>
+          <label className="block text-sm font-medium text-foreground">Password Min Length</label>
           <input type="number" value={data.passwordMinLength} onChange={(e) => onChange('passwordMinLength', e.target.value)} placeholder="e.g. 8" className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Account Lockout Duration (Minutes)</label>
+          <label className="block text-sm font-medium text-foreground">Account Lockout Duration (Minutes)</label>
           <input type="number" value={data.lockoutDuration} onChange={(e) => onChange('lockoutDuration', e.target.value)} placeholder="e.g. 15" className={inputCls} />
         </div>
         <ToggleCard label="Two-Factor Authentication (2FA)" desc="Require 2FA for all users" checked={data.twoFactorAuth} onToggle={() => toggleBool('twoFactorAuth')} />
@@ -536,18 +536,18 @@ function NotificationSettings({ data, onChange }: { data: NotificationInfo; onCh
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700">Notification Settings</h2>
+      <h2 className="text-lg font-semibold text-foreground pb-2 border-b border-border">Notification Settings</h2>
       <div className="space-y-4">
         {items.map((item) => (
-          <div key={item.key} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+          <div key={item.key} className="flex items-center justify-between p-4 bg-card rounded-lg">
             <div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.label}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{item.desc}</p>
+              <p className="text-sm font-medium text-foreground">{item.label}</p>
+              <p className="text-xs text-muted-foreground">{item.desc}</p>
             </div>
             <button
               type="button"
               onClick={() => onChange(item.key, !data[item.key])}
-              className={`relative w-11 h-6 rounded-full transition-colors ${data[item.key] ? 'bg-[#0B1D3E]' : 'bg-slate-300 dark:bg-slate-600'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors ${data[item.key] ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${data[item.key] ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
@@ -564,32 +564,32 @@ function BackupSettings({ data, onChange }: { data: BackupInfo; onChange: (field
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700">Backup & Restore</h2>
+      <h2 className="text-lg font-semibold text-foreground pb-2 border-b border-border">Backup & Restore</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ToggleCard label="Automatic Daily Backup" desc="Automatically backup database daily at midnight" checked={data.autoDailyBackup} onToggle={() => toggleBool('autoDailyBackup')} />
-        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-card rounded-lg">
           <div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Backup Retention (Days)</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">How long to keep backup files</p>
+            <p className="text-sm font-medium text-foreground">Backup Retention (Days)</p>
+            <p className="text-xs text-muted-foreground">How long to keep backup files</p>
           </div>
-          <input type="number" value={data.retentionDays} onChange={(e) => onChange('retentionDays', e.target.value)} placeholder="90" className="w-24 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition" />
+          <input type="number" value={data.retentionDays} onChange={(e) => onChange('retentionDays', e.target.value)} placeholder="90" className="w-24 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" />
         </div>
       </div>
       <div className="flex flex-wrap gap-3 mt-4">
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#0B1D3E] hover:bg-[#E31E24] text-white rounded-lg text-sm font-medium transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-destructive text-white rounded-lg text-sm font-medium transition-colors">
           <Download className="w-4 h-4" /> Manual Backup Now
         </button>
-        <button className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-lg text-sm font-medium hover:bg-card dark:hover:bg-slate-700 transition-colors">
           <Upload className="w-4 h-4" /> Restore from Backup
         </button>
-        <button className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-lg text-sm font-medium hover:bg-card dark:hover:bg-slate-700 transition-colors">
           <RefreshCw className="w-4 h-4" /> Download Latest Backup
         </button>
       </div>
       <div>
-        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Recent Backups</h3>
-        <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          <div className="flex items-center justify-center px-4 py-8 text-sm text-slate-400 dark:text-slate-500">
+        <h3 className="text-sm font-medium text-foreground mb-3">Recent Backups</h3>
+        <div className="border border-border rounded-lg overflow-hidden">
+          <div className="flex items-center justify-center px-4 py-8 text-sm text-muted-foreground dark:text-muted-foreground">
             No backups yet. Click "Manual Backup Now" to create your first backup.
           </div>
         </div>
@@ -608,39 +608,39 @@ function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySetti
   };
 
   const colorMap: Record<string, { border: string; bg: string; text: string; badge: string }> = {
-    emerald: { border: 'border-[#0B1D3E]/40 dark:border-[#0B1D3E]', bg: 'bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20', text: 'text-[#0B1D3E] dark:text-[#4a7ab5]', badge: 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]' },
-    blue: { border: 'border-blue-300 dark:border-blue-700', bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-400', badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' },
-    amber: { border: 'border-amber-300 dark:border-amber-700', bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-400', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' },
-    red: { border: 'border-red-300 dark:border-red-700', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-400', badge: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' },
+    emerald: { border: 'border-primary/40 dark:border-primary', bg: 'bg-primary/10 dark:bg-primary/20', text: 'text-primary dark:text-primary', badge: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary' },
+    blue: { border: 'border-blue-300 dark:border-blue-700', bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-400', badge: 'bg-[var(--accent-blue-light)] text-[var(--info)]' },
+    amber: { border: 'border-amber-300 dark:border-amber-700', bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-400', badge: 'bg-[var(--accent-amber-light)] text-[var(--warning)]' },
+    red: { border: 'border-red-300 dark:border-red-700', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-400', badge: 'bg-[var(--accent-red-light)] text-destructive' },
     purple: { border: 'border-purple-300 dark:border-purple-700', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400', badge: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400' },
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-slate-700">Revenue Category Configuration</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Configure billing settings for each revenue category individually. These settings override the global billing configuration when generating bills.</p>
+        <h2 className="text-lg font-semibold text-foreground pb-2 border-b border-border">Revenue Category Configuration</h2>
+        <p className="text-sm text-muted-foreground mt-2">Configure billing settings for each revenue category individually. These settings override the global billing configuration when generating bills.</p>
       </div>
       <div className="space-y-4">
         {REVENUE_CATEGORIES.map((cat) => {
           const config = data[cat.key] || defaultBillCategories[cat.key];
           const colors = colorMap[cat.color] || colorMap.emerald;
           return (
-            <div key={cat.key} className={`rounded-xl border ${colors.border} ${colors.bg} overflow-hidden transition-all`}>
+            <div key={cat.key} className={`rounded-xl border-border ${colors.border} ${colors.bg} overflow-hidden transition-all`}>
               {/* Category Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/60 dark:border-slate-700/60">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/60 dark:border-border/60">
                 <div className="flex items-center gap-3">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${colors.badge}`}>
                     {cat.shortLabel}
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{cat.label}</p>
+                    <p className="text-sm font-semibold text-foreground">{cat.label}</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => updateCategory(cat.key, 'enabled', !config.enabled)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${config.enabled ? 'bg-[#0B1D3E]' : 'bg-slate-300 dark:bg-slate-600'}`}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${config.enabled ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`}
                 >
                   <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${config.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
@@ -648,7 +648,7 @@ function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySetti
               {/* Category Fields */}
               <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5 ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Bill Prefix</label>
+                  <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground">Bill Prefix</label>
                   <input
                     type="text"
                     value={config.billPrefix}
@@ -658,7 +658,7 @@ function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySetti
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Receipt Prefix</label>
+                  <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground">Receipt Prefix</label>
                   <input
                     type="text"
                     value={config.receiptPrefix}
@@ -668,7 +668,7 @@ function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySetti
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Default Due Days</label>
+                  <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground">Default Due Days</label>
                   <input
                     type="number"
                     value={config.defaultDueDays}
@@ -678,7 +678,7 @@ function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySetti
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Penalty After (Days)</label>
+                  <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground">Penalty After (Days)</label>
                   <input
                     type="number"
                     value={config.penaltyAfterDays}
@@ -699,15 +699,15 @@ function BillCategorySettingsPanel({ data, onChange }: { data: BillCategorySetti
 // ── Reusable Toggle Card ──
 function ToggleCard({ label, desc, checked, onToggle }: { label: string; desc: string; checked: boolean; onToggle: () => void }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+    <div className="flex items-center justify-between p-4 bg-card rounded-lg">
       <div>
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{desc}</p>
       </div>
       <button
         type="button"
         onClick={onToggle}
-        className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-[#0B1D3E]' : 'bg-slate-300 dark:bg-slate-600'}`}
+        className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`}
       >
         <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>

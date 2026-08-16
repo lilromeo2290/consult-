@@ -107,9 +107,9 @@ const fmtCurrency = (n: number) => `GH₵ ${fmt(n)}`;
 // ---------------------------------------------------------------------------
 
 const COLORS = [
-  '#0B1D3E', '#E31E24', '#3b82f6', '#f59e0b', '#8b5cf6',
-  '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#1a3a6e',
-  '#4a7ab5', '#b44a4d',
+  '#123B5D', '#1F7A8C', '#198754', '#D99A00', '#C0392B',
+  '#2878B5', '#6366F1', '#EC4899', '#F97316', '#0B2940',
+  '#4A90B8', '#E57373',
 ];
 
 // ---------------------------------------------------------------------------
@@ -129,7 +129,7 @@ interface StatCardProps {
 
 function StatCard({ icon, label, value, change, accent, sub }: StatCardProps) {
   return (
-    <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow flex flex-col gap-3">
+    <div className="rounded-xl bg-card border border-border p-5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-shadow flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <span className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${accent}`}>
           {icon}
@@ -138,7 +138,7 @@ function StatCard({ icon, label, value, change, accent, sub }: StatCardProps) {
           <span
             className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
               change >= 0
-                ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
+                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                 : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
             }`}
           >
@@ -148,11 +148,11 @@ function StatCard({ icon, label, value, change, accent, sub }: StatCardProps) {
         )}
       </div>
       <div>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
-        <p className="text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
+        <p className="text-[13px] font-medium text-muted-foreground">{label}</p>
+        <p className="text-[26px] font-bold text-foreground mt-0.5 tracking-tight">
           {value}
         </p>
-        {sub && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{sub}</p>}
+        {sub && <p className="text-[12px] text-muted-foreground mt-1">{sub}</p>}
       </div>
     </div>
   );
@@ -172,9 +172,9 @@ function ChartCard({
   action?: React.ReactNode;
 }) {
   return (
-    <div className={`rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow ${className}`}>
+    <div className={`rounded-xl bg-card border border-border p-5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-shadow ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
         {action}
       </div>
       {children}
@@ -196,13 +196,13 @@ function TableCard({
   emptyMessage?: string;
 }) {
   return (
-    <div className={`rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-shadow overflow-hidden ${className}`}>
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">{title}</h2>
+    <div className={`rounded-xl bg-card border border-border p-5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-shadow overflow-hidden ${className}`}>
+      <h2 className="text-lg font-semibold text-foreground mb-4">{title}</h2>
       <div className="overflow-x-auto max-h-96 overflow-y-auto">
         {children}
       </div>
       {emptyMessage && (
-        <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-6">{emptyMessage}</p>
+        <p className="text-sm text-muted-foreground dark:text-muted-foreground text-center py-6">{emptyMessage}</p>
       )}
     </div>
   );
@@ -213,8 +213,8 @@ function TableCard({
 function RevenueTooltip({ active, payload, label }: any) {
   if (!active || !payload || !payload.length) return null;
   return (
-    <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg px-3 py-2 text-sm">
-      <p className="font-medium text-slate-900 dark:text-white">{label}</p>
+    <div className="rounded-lg border-border bg-card shadow-lg px-3 py-2 text-sm">
+      <p className="font-medium text-foreground">{label}</p>
       {payload.map((entry: any, i: number) => (
         <p key={i} style={{ color: entry.color }} className="font-semibold">
           {entry.name}: {fmtCurrency(entry.value)}
@@ -245,7 +245,7 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, n
 
 function EmptyState({ icon, message }: { icon: React.ReactNode; message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500">
+    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground dark:text-muted-foreground">
       {icon}
       <p className="mt-3 text-sm">{message}</p>
     </div>
@@ -409,31 +409,31 @@ export function DashboardPage() {
   const hasData = totalBusinesses > 0 || totalProperties > 0 || bills.length > 0 || payments.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-card">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
+      <header className="bg-white dark:bg-muted border-b border-border px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#0B1D3E] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
               <Landmark className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+              <h1 className="text-xl font-bold text-foreground">
                 Revenue Management System
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 {assemblyName} — Dashboard Overview
               </p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-xs text-slate-400 dark:text-slate-500">Collection Rate</p>
-              <p className={`text-lg font-bold ${collectionRate >= 50 ? 'text-[#0B1D3E] dark:text-[#4a7ab5]' : collectionRate > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground">Collection Rate</p>
+              <p className={`text-lg font-bold ${collectionRate >= 50 ? 'text-primary dark:text-primary' : collectionRate > 0 ? 'text-amber-600' : 'text-muted-foreground'}`}>
                 {collectionRate}%
               </p>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-muted-foreground">
               Fiscal Year {fiscalYear}
             </p>
           </div>
@@ -444,33 +444,33 @@ export function DashboardPage() {
         {/* ── Stat Cards ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            icon={<Building2 className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
+            icon={<Building2 className="w-5 h-5 text-[var(--accent-teal)]" />}
             label="Total Businesses"
             value={fmt(totalBusinesses)}
             change={totalBusinesses > 0 ? 12 : 0}
-            accent="bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20"
+            accent="bg-[var(--accent-teal-light)]"
             sub={`${activeBusinesses} active`}
           />
           <StatCard
-            icon={<Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+            icon={<Home className="w-5 h-5 text-[var(--info)]" />}
             label="Total Properties"
             value={fmt(totalProperties)}
-            accent="bg-blue-100 dark:bg-blue-900/40"
+            accent="bg-[var(--accent-blue-light)]"
           />
           <StatCard
-            icon={<CircleDollarSign className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
+            icon={<CircleDollarSign className="w-5 h-5 text-[var(--success)]" />}
             label="Amount Collected"
             value={fmtCurrency(totalCollected)}
             change={totalCollected > 0 ? 8 : 0}
-            accent="bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20"
+            accent="bg-[var(--accent-green-light)]"
             sub={`${payments.length} payment(s)`}
           />
           <StatCard
-            icon={<AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />}
+            icon={<AlertTriangle className="w-5 h-5 text-[var(--warning)]" />}
             label="Outstanding"
             value={fmtCurrency(outstanding)}
             change={outstanding > 0 ? -5 : 0}
-            accent="bg-amber-100 dark:bg-amber-900/40"
+            accent="bg-[var(--accent-amber-light)]"
             sub={`${bills.filter(b => b.status !== 'Paid').length} unpaid bill(s)`}
           />
         </div>
@@ -478,33 +478,33 @@ export function DashboardPage() {
         {/* ── Additional stat row ────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
-            icon={<FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+            icon={<FileText className="w-5 h-5 text-[var(--info)]" />}
             label="Total Bills Generated"
             value={fmt(bills.length)}
-            accent="bg-blue-100 dark:bg-blue-900/40"
+            accent="bg-[var(--accent-blue-light)]"
             sub={`Total billed: ${fmtCurrency(totalBilled)}`}
           />
           <StatCard
-            icon={<CheckCircle2 className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
+            icon={<CheckCircle2 className="w-5 h-5 text-[var(--success)]" />}
             label="Bills Paid"
             value={fmt(bills.filter(b => b.status === 'Paid').length)}
-            accent="bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20"
+            accent="bg-[var(--accent-green-light)]"
             sub={`Value: ${fmtCurrency(totalPaidBills)}`}
           />
           <StatCard
-            icon={<Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />}
+            icon={<Clock className="w-5 h-5 text-[var(--destructive)]" />}
             label="Bills Overdue"
             value={fmt(bills.filter(b => b.status === 'Overdue').length)}
-            accent="bg-red-100 dark:bg-red-900/40"
+            accent="bg-[var(--accent-red-light)]"
           />
         </div>
 
         {/* ── No data banner ──────────────────────────────────────────── */}
         {!hasData && (
-          <div className="rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-8 text-center">
-            <BarChart3 className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Data Yet</h3>
-            <p className="text-sm text-slate-400 dark:text-slate-500 max-w-md mx-auto">
+          <div className="rounded-xl border-2 border-dashed border-border bg-card p-8 text-center">
+            <BarChart3 className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No Data Yet</h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
               Start by registering businesses, generating bills, or recording payments. 
               Your dashboard analytics will populate automatically as data is entered into the system.
             </p>
@@ -554,7 +554,7 @@ export function DashboardPage() {
                 </ResponsiveContainer>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 w-full max-w-xs">
                   {businessesByCategory.map((cat, i) => (
-                    <div key={`biz-cat-${i}`} className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                    <div key={`biz-cat-${i}`} className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
                       <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: cat.color }} />
                       {cat.name} ({cat.value})
                     </div>
@@ -585,7 +585,7 @@ export function DashboardPage() {
                 </ResponsiveContainer>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 w-full max-w-xs">
                   {revenueByCategory.slice(0, 6).map((cat, i) => (
-                    <div key={`rev-cat-${i}`} className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                    <div key={`rev-cat-${i}`} className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
                       <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: cat.color }} />
                       {cat.name}
                     </div>
@@ -656,38 +656,38 @@ export function DashboardPage() {
           <TableCard title="Recent Business Registrations" emptyMessage={recentBusinesses.length === 0 ? 'No businesses registered yet' : undefined}>
             {recentBusinesses.length > 0 && (
               <table className="w-full text-left">
-                <thead className="border-b border-slate-200 dark:border-slate-700">
+                <thead className="border-b border-border">
                   <tr>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Business</th>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Owner</th>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Category</th>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Status</th>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Date</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Business</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Owner</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Category</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Status</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                <tbody className="divide-y divide-border/60">
                   {recentBusinesses.map((b, i) => (
-                    <tr key={`biz-${i}-${b.regNumber || b.name}`} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                      <td className="text-sm text-slate-900 dark:text-white font-medium px-3 py-3">
+                    <tr key={`biz-${i}-${b.regNumber || b.name}`} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
+                      <td className="text-sm text-foreground font-medium px-3 py-3">
                         <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-full bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center text-[#0B1D3E] dark:text-[#4a7ab5] text-xs font-bold shrink-0">
+                          <span className="w-7 h-7 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-bold shrink-0">
                             {(b.name || '?')[0]}
                           </span>
                           <span className="truncate max-w-[140px]">{b.name}</span>
                         </div>
                       </td>
-                      <td className="text-sm text-slate-600 dark:text-slate-400 px-3 py-3 truncate max-w-[100px]">{b.owner}</td>
-                      <td className="text-sm text-slate-600 dark:text-slate-400 px-3 py-3">{b.category || b.type}</td>
+                      <td className="text-sm text-muted-foreground dark:text-muted-foreground px-3 py-3 truncate max-w-[100px]">{b.owner}</td>
+                      <td className="text-sm text-muted-foreground dark:text-muted-foreground px-3 py-3">{b.category || b.type}</td>
                       <td className="px-3 py-3">
                         <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${
                           b.status === 'Active'
-                            ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
+                            ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                             : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                         }`}>
                           {b.status}
                         </span>
                       </td>
-                      <td className="text-sm text-slate-500 dark:text-slate-400 px-3 py-3">{b.dateRegistered}</td>
+                      <td className="text-sm text-muted-foreground px-3 py-3">{b.dateRegistered}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -699,28 +699,28 @@ export function DashboardPage() {
           <TableCard title="Recent Payments" emptyMessage={recentPayments.length === 0 ? 'No payments recorded yet' : undefined}>
             {recentPayments.length > 0 && (
               <table className="w-full text-left">
-                <thead className="border-b border-slate-200 dark:border-slate-700">
+                <thead className="border-b border-border">
                   <tr>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Receipt #</th>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Business</th>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5 text-right">Amount</th>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Date</th>
-                    <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Method</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Receipt #</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Business</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5 text-right">Amount</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Date</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Method</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                <tbody className="divide-y divide-border/60">
                   {recentPayments.map((p) => (
-                    <tr key={p.id || p.receiptNo} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                      <td className="text-sm text-slate-900 dark:text-white font-mono px-3 py-3">{p.receiptNo}</td>
-                      <td className="text-sm text-slate-900 dark:text-white font-medium px-3 py-3 truncate max-w-[140px]">{p.business}</td>
-                      <td className="text-sm text-slate-900 dark:text-white font-medium px-3 py-3 text-right">
+                    <tr key={p.id || p.receiptNo} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
+                      <td className="text-sm text-foreground font-mono px-3 py-3">{p.receiptNo}</td>
+                      <td className="text-sm text-foreground font-medium px-3 py-3 truncate max-w-[140px]">{p.business}</td>
+                      <td className="text-sm text-foreground font-medium px-3 py-3 text-right">
                         {fmtCurrency(p.amount)}
                       </td>
-                      <td className="text-sm text-slate-600 dark:text-slate-400 px-3 py-3">{p.date}</td>
+                      <td className="text-sm text-muted-foreground dark:text-muted-foreground px-3 py-3">{p.date}</td>
                       <td className="px-3 py-3">
                         <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${
                           p.method === 'Mobile Money' || p.method === 'MoMo'
-                            ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
+                            ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                             : p.method === 'Bank' || p.method === 'Bank Transfer'
                             ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
@@ -740,28 +740,28 @@ export function DashboardPage() {
         {topCollectors.length > 0 && (
           <TableCard title="Top Revenue Collectors">
             <table className="w-full text-left">
-              <thead className="border-b border-slate-200 dark:border-slate-700">
+              <thead className="border-b border-border">
                 <tr>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Name</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5">Method</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5 text-right">Amount</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-3 py-2.5 text-right">Transactions</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Name</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5">Method</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5 text-right">Amount</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-3 py-2.5 text-right">Transactions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+              <tbody className="divide-y divide-border/60">
                 {topCollectors.map((c, i) => (
-                  <tr key={`collector-${i}`} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                    <td className="text-sm text-slate-900 dark:text-white font-medium px-3 py-3 flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-full bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 flex items-center justify-center text-[#0B1D3E] dark:text-[#4a7ab5] text-xs font-bold shrink-0">
+                  <tr key={`collector-${i}`} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
+                    <td className="text-sm text-foreground font-medium px-3 py-3 flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-bold shrink-0">
                         {c.name.split(' ').map((n) => n[0]).join('')}
                       </span>
                       {c.name}
                     </td>
-                    <td className="text-sm text-slate-600 dark:text-slate-400 px-3 py-3">{c.area}</td>
-                    <td className="text-sm text-slate-900 dark:text-white font-medium px-3 py-3 text-right">
+                    <td className="text-sm text-muted-foreground dark:text-muted-foreground px-3 py-3">{c.area}</td>
+                    <td className="text-sm text-foreground font-medium px-3 py-3 text-right">
                       {fmtCurrency(c.amount)}
                     </td>
-                    <td className="text-sm text-slate-600 dark:text-slate-400 px-3 py-3 text-right">{c.bills}</td>
+                    <td className="text-sm text-muted-foreground dark:text-muted-foreground px-3 py-3 text-right">{c.bills}</td>
                   </tr>
                 ))}
               </tbody>

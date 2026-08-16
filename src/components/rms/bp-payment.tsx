@@ -44,7 +44,7 @@ const PAYMENT_STATUSES = ['Pending', 'Paid', 'Partial', 'Overdue', 'Waived', 'Re
 
 const STATUS_COLORS: Record<string, string> = {
   'Pending': 'bg-yellow-100 text-yellow-800',
-  'Paid': 'bg-[#0B1D3E]/10 text-[#0B1D3E]',
+  'Paid': 'bg-primary/10 text-primary',
   'Partial': 'bg-blue-100 text-blue-800',
   'Overdue': 'bg-red-100 text-red-800',
   'Waived': 'bg-gray-100 text-gray-800',
@@ -174,7 +174,7 @@ export function BPPaymentPage() {
         <button onClick={() => { resetForm(); setView('list'); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={16} /> Back to list
         </button>
-        <div className="rounded-xl border bg-card shadow-sm">
+        <div className="rounded-xl border-border bg-card shadow-sm">
           <div className="flex items-center gap-3 border-b px-6 py-4">
             <Wallet className="text-primary" size={24} />
             <h2 className="text-lg font-semibold">{editingId ? 'Edit' : 'Record'} BP Payment</h2>
@@ -246,17 +246,17 @@ export function BPPaymentPage() {
     <div className="space-y-4">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg border-border bg-card p-4">
           <p className="text-xs text-muted-foreground">Total Records</p>
           <p className="text-2xl font-bold mt-1">{payments.length}</p>
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg border-border bg-card p-4">
           <p className="text-xs text-muted-foreground">Total Amount</p>
           <p className="text-2xl font-bold mt-1">GH₵ {totalAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-lg border-border bg-card p-4">
           <p className="text-xs text-muted-foreground">Paid</p>
-          <p className="text-2xl font-bold mt-1 text-[#0B1D3E]">GH₵ {paidAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
+          <p className="text-2xl font-bold mt-1 text-primary">GH₵ {paidAmount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}</p>
         </div>
       </div>
 
@@ -286,7 +286,7 @@ export function BPPaymentPage() {
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border bg-card">
+      <div className="overflow-x-auto rounded-lg border-border bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -304,7 +304,7 @@ export function BPPaymentPage() {
               <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">No BP payments found</td></tr>
             )}
             {paginated.map((p) => (
-              <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+              <tr key={p.id} className="border-b last:border-0 hover:bg-background transition-colors">
                 <td className="px-4 py-3 font-mono text-xs">{p.permitNumber}</td>
                 <td className="px-4 py-3">{p.applicantFullName || '\u2014'}</td>
                 <td className="px-4 py-3 hidden md:table-cell">{p.paymentType || '\u2014'}</td>
@@ -319,7 +319,7 @@ export function BPPaymentPage() {
                     {deleteConfirm === p.id ? (
                       <button onClick={() => handleDelete(p.id)} className="rounded-md bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700">Confirm</button>
                     ) : (
-                      <button onClick={() => setDeleteConfirm(p.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors" title="Delete"><Trash2 size={15} /></button>
+                      <button onClick={() => setDeleteConfirm(p.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-red-50 hover:text-destructive transition-colors" title="Delete"><Trash2 size={15} /></button>
                     )}
                   </div>
                 </td>

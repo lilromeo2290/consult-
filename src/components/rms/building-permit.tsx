@@ -73,7 +73,7 @@ const STATUS_OPTIONS = ['Pending Review', 'Under Review', 'Approved', 'Rejected'
 const STATUS_COLORS: Record<string, string> = {
   'Pending Review': 'bg-yellow-100 text-yellow-800',
   'Under Review': 'bg-blue-100 text-blue-800',
-  'Approved': 'bg-[#0B1D3E]/10 text-[#0B1D3E]',
+  'Approved': 'bg-primary/10 text-primary',
   'Rejected': 'bg-red-100 text-red-800',
   'Issued': 'bg-green-100 text-green-800',
   'Expired': 'bg-gray-100 text-gray-800',
@@ -250,7 +250,7 @@ export function BuildingPermitPage() {
         <button onClick={() => { resetForm(); setView('list'); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={16} /> Back to list
         </button>
-        <div className="rounded-xl border bg-card shadow-sm">
+        <div className="rounded-xl border-border bg-card shadow-sm">
           <div className="flex items-center justify-between border-b px-6 py-4">
             <div className="flex items-center gap-3">
               <HardHat className="text-primary" size={24} />
@@ -354,7 +354,7 @@ export function BuildingPermitPage() {
         <button onClick={() => { resetForm(); setView('list'); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={16} /> Back to list
         </button>
-        <div className="rounded-xl border bg-card shadow-sm">
+        <div className="rounded-xl border-border bg-card shadow-sm">
           <div className="flex items-center gap-3 border-b px-6 py-4">
             <HardHat className="text-primary" size={24} />
             <div>
@@ -614,7 +614,7 @@ export function BuildingPermitPage() {
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border bg-card">
+      <div className="overflow-x-auto rounded-lg border-border bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -632,7 +632,7 @@ export function BuildingPermitPage() {
               <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">No building permit applications found</td></tr>
             )}
             {paginated.map((p) => (
-              <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+              <tr key={p.id} className="border-b last:border-0 hover:bg-background transition-colors">
                 <td className="px-4 py-3 font-mono text-xs">{p.permitNumber}</td>
                 <td className="px-4 py-3">{p.applicantFullName || '\u2014'}</td>
                 <td className="px-4 py-3 hidden md:table-cell">{p.plotNumber || '\u2014'}</td>
@@ -650,7 +650,7 @@ export function BuildingPermitPage() {
                     {deleteConfirm === p.id ? (
                       <button onClick={() => handleDelete(p.id)} className="rounded-md bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700">Confirm</button>
                     ) : (
-                      <button onClick={() => setDeleteConfirm(p.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors" title="Delete"><Trash2 size={15} /></button>
+                      <button onClick={() => setDeleteConfirm(p.id)} className="rounded-md p-1.5 text-muted-foreground hover:bg-red-50 hover:text-destructive transition-colors" title="Delete"><Trash2 size={15} /></button>
                     )}
                   </div>
                 </td>

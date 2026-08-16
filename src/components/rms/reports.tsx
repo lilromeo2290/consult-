@@ -133,8 +133,8 @@ export function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Reports</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Reports</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Revenue collection performance and analytics
           </p>
         </div>
@@ -142,22 +142,22 @@ export function ReportsPage() {
           <div className="relative">
             <button
               onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg border-border bg-white dark:bg-muted px-3 py-2 text-sm font-medium text-foreground hover:bg-card dark:hover:bg-slate-700 transition-colors"
             >
               <Calendar className="w-4 h-4" />
               {period}
               <ChevronDown className={`w-3 h-3 transition-transform ${showPeriodDropdown ? 'rotate-180' : ''}`} />
             </button>
             {showPeriodDropdown && (
-              <div className="absolute right-0 mt-1 w-36 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20 py-1">
+              <div className="absolute right-0 mt-1 w-36 rounded-lg border-border bg-white dark:bg-muted shadow-lg z-20 py-1">
                 {(['Monthly', 'Quarterly', 'Annually'] as const).map((p) => (
                   <button
                     key={p}
                     onClick={() => { setPeriod(p); setShowPeriodDropdown(false); }}
                     className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                       p === period
-                        ? 'bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20 text-[#0B1D3E] dark:text-[#4a7ab5] font-medium'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                        ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
+                        : 'text-foreground hover:bg-card dark:hover:bg-slate-700'
                     }`}
                   >
                     {p}
@@ -166,7 +166,7 @@ export function ReportsPage() {
               </div>
             )}
           </div>
-          <button onClick={handlePrintReport} className="inline-flex items-center gap-2 rounded-lg bg-[#0B1D3E] text-white px-3 py-2 text-sm font-medium hover:bg-[#E31E24] transition-colors cursor-pointer">
+          <button onClick={handlePrintReport} className="inline-flex items-center gap-2 rounded-lg bg-primary text-white px-3 py-2 text-sm font-medium hover:bg-destructive transition-colors cursor-pointer">
             <Printer className="w-4 h-4" />
             Print Report
           </button>
@@ -174,7 +174,7 @@ export function ReportsPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-1 overflow-x-auto">
+      <div className="flex items-center gap-1 rounded-lg border-border bg-card/50 p-1 overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = view === tab.key;
@@ -184,8 +184,8 @@ export function ReportsPage() {
               onClick={() => setView(tab.key)}
               className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
                 active
-                  ? 'bg-white dark:bg-slate-800 text-[#0B1D3E] dark:text-[#4a7ab5] shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-muted text-primary dark:text-primary shadow-sm'
+                  : 'text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-white'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -201,27 +201,27 @@ export function ReportsPage() {
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KpiCard
-              icon={<DollarSign className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
+              icon={<DollarSign className="w-5 h-5 text-primary dark:text-primary" />}
               label="Total Collected"
               value={fmtCurrency(totalCollected)}
               sub={`Budget: ${fmtCurrency(totalBudget)}`}
               trend={14.3}
             />
             <KpiCard
-              icon={<Target className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
+              icon={<Target className="w-5 h-5 text-primary dark:text-primary" />}
               label="Collection Rate"
               value={`${overallCompliance}%`}
               sub="Target: 95%"
               trend={2.1}
             />
             <KpiCard
-              icon={<Users className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
+              icon={<Users className="w-5 h-5 text-primary dark:text-primary" />}
               label="Registered Entities"
               value={fmtNumber(entityCount)}
               sub="Businesses + Properties + Rents"
             />
             <KpiCard
-              icon={<Receipt className="w-5 h-5 text-[#0B1D3E] dark:text-[#4a7ab5]" />}
+              icon={<Receipt className="w-5 h-5 text-primary dark:text-primary" />}
               label="Receipts Issued"
               value={fmtNumber(receiptCount)}
               sub="Total recorded"
@@ -231,8 +231,8 @@ export function ReportsPage() {
           {/* Two-column: Top Performers + Zone Summary */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Top Revenue Categories */}
-            <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
-              <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4">Top Revenue Categories</h2>
+            <div className="rounded-xl bg-white dark:bg-muted border border-border p-5">
+              <h2 className="text-base font-semibold text-foreground mb-4">Top Revenue Categories</h2>
               <div className="space-y-3">
                 {revenueBreakdown.slice(0, 5).map((item, i) => (
                   <CategoryBar key={`rev-cat-${i}`} item={item} />
@@ -241,17 +241,17 @@ export function ReportsPage() {
             </div>
 
             {/* Zone Summary */}
-            <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
-              <h2 className="text-base font-semibold text-slate-900 dark:text-white mb-4">Zone Compliance Summary</h2>
+            <div className="rounded-xl bg-white dark:bg-muted border border-border p-5">
+              <h2 className="text-base font-semibold text-foreground mb-4">Zone Compliance Summary</h2>
               <div className="space-y-3">
                 {zoneReports.map((zone, i) => (
                   <div key={`zone-bar-${i}`} className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">{zone.zone}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{fmtCurrency(zone.collected)} of {fmtCurrency(zone.target)}</p>
+                      <p className="text-sm font-medium text-foreground">{zone.zone}</p>
+                      <p className="text-xs text-muted-foreground">{fmtCurrency(zone.collected)} of {fmtCurrency(zone.target)}</p>
                     </div>
                     <span className={`inline-flex items-center text-sm font-semibold ${
-                      zone.compliance >= 95 ? 'text-[#0B1D3E] dark:text-[#4a7ab5]' : zone.compliance >= 90 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
+                      zone.compliance >= 95 ? 'text-primary dark:text-primary' : zone.compliance >= 90 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {zone.compliance}%
                       {zone.compliance >= 95 ? <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" /> : zone.compliance < 90 ? <TrendingDown className="w-3.5 h-3.5 ml-0.5" /> : null}
@@ -266,49 +266,49 @@ export function ReportsPage() {
 
       {/* ── Revenue Breakdown Tab ──────────────────────────────────────────── */}
       {view === 'revenue' && (
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="p-5 border-b border-slate-200 dark:border-slate-700">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white">Revenue by Category</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Detailed breakdown of revenue collection across all categories</p>
+        <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
+          <div className="p-5 border-b border-border">
+            <h2 className="text-base font-semibold text-foreground">Revenue by Category</h2>
+            <p className="text-sm text-muted-foreground mt-1">Detailed breakdown of revenue collection across all categories</p>
           </div>
           <div className="overflow-x-auto max-h-96 overflow-y-auto">
             <table className="w-full text-left">
-              <thead className="bg-slate-50 dark:bg-slate-900/50 sticky top-0 z-10">
-                <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Category</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Officer</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-right">Budget</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-right">Collected</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-right">Target</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Progress</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-right">Rate</th>
+              <thead className="bg-card/50 sticky top-0 z-10">
+                <tr className="border-b border-border">
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Category</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Officer</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Budget</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Collected</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Target</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Progress</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Rate</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+              <tbody className="divide-y divide-border/60">
                 {revenueBreakdown.map((item, i) => (
-                  <tr key={`rev-row-${i}`} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <tr key={`rev-row-${i}`} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {item.category.includes('Property') ? (
-                          <Home className="w-4 h-4 text-[#E31E24]" />
+                          <Home className="w-4 h-4 text-destructive" />
                         ) : (
-                          <Building2 className="w-4 h-4 text-[#E31E24]" />
+                          <Building2 className="w-4 h-4 text-destructive" />
                         )}
-                        <span className="text-sm font-medium text-slate-900 dark:text-white">{item.category}</span>
+                        <span className="text-sm font-medium text-foreground">{item.category}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{item.officer}</td>
-                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 text-right">{fmtCurrency(item.budget)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white text-right">{fmtCurrency(item.collected)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 text-right">{fmtCurrency(item.target)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground">{item.officer}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.budget)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-foreground text-right">{fmtCurrency(item.collected)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.target)}</td>
                     <td className="px-4 py-3 w-32">
                       <div className="w-full">
                         <div className="flex items-center justify-between mb-1">
-                          <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-700">
+                          <div className="flex-1 h-2 rounded-full bg-muted dark:bg-slate-700">
                             <div
                               className={`h-2 rounded-full transition-all ${
                                 item.percentage >= 95
-                                  ? 'bg-[#0B1D3E]/100'
+                                  ? 'bg-primary/100'
                                   : item.percentage >= 90
                                   ? 'bg-amber-500'
                                   : 'bg-red-500'
@@ -322,7 +322,7 @@ export function ReportsPage() {
                     <td className="px-4 py-3 text-right">
                       <span className={`inline-flex items-center gap-0.5 text-sm font-semibold ${
                         item.percentage >= 95
-                          ? 'text-[#0B1D3E] dark:text-[#4a7ab5]'
+                          ? 'text-primary dark:text-primary'
                           : item.percentage >= 90
                           ? 'text-amber-600 dark:text-amber-400'
                           : 'text-red-600 dark:text-red-400'
@@ -333,12 +333,12 @@ export function ReportsPage() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-slate-50 dark:bg-slate-900/50">
-                <tr className="border-t-2 border-slate-200 dark:border-slate-700">
-                  <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white" colSpan={2}>Total</td>
-                  <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white text-right">{fmtCurrency(totalBudget)}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-right">{fmtCurrency(totalCollected)}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white text-right">{fmtCurrency(revenueBreakdown.reduce((s, r) => s + r.target, 0))}</td>
+              <tfoot className="bg-card/50">
+                <tr className="border-t-2 border-border">
+                  <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={2}>Total</td>
+                  <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(totalBudget)}</td>
+                  <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(totalCollected)}</td>
+                  <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(revenueBreakdown.reduce((s, r) => s + r.target, 0))}</td>
                   <td className="px-4 py-3" colSpan={2} />
                 </tr>
               </tfoot>
@@ -352,11 +352,11 @@ export function ReportsPage() {
         <div className="space-y-4">
           {/* Zone Filter */}
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-400" />
+            <Filter className="w-4 h-4 text-muted-foreground" />
             <select
               value={zoneFilter}
               onChange={(e) => setZoneFilter(e.target.value)}
-              className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0B1D3E]"
+              className="rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="All">All Zones</option>
               <option value="Zone A">Zone A</option>
@@ -369,26 +369,26 @@ export function ReportsPage() {
           {/* Zone Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredZones.map((zone, i) => (
-              <div key={`zone-card-${i}`} className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 space-y-4">
+              <div key={`zone-card-${i}`} className="rounded-xl bg-white dark:bg-muted border border-border p-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-white">{zone.zone}</h3>
+                  <h3 className="text-base font-semibold text-foreground">{zone.zone}</h3>
                   <ComplianceBadge percentage={zone.compliance} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <MiniStat icon={<Building2 className="w-4 h-4 text-[#E31E24]" />} label="Businesses" value={fmtNumber(zone.businesses)} />
-                  <MiniStat icon={<Home className="w-4 h-4 text-[#E31E24]" />} label="Properties" value={fmtNumber(zone.properties)} />
-                  <MiniStat icon={<DollarSign className="w-4 h-4 text-[#E31E24]" />} label="Collected" value={fmtCurrency(zone.collected)} />
-                  <MiniStat icon={<Target className="w-4 h-4 text-[#E31E24]" />} label="Target" value={fmtCurrency(zone.target)} />
+                  <MiniStat icon={<Building2 className="w-4 h-4 text-destructive" />} label="Businesses" value={fmtNumber(zone.businesses)} />
+                  <MiniStat icon={<Home className="w-4 h-4 text-destructive" />} label="Properties" value={fmtNumber(zone.properties)} />
+                  <MiniStat icon={<DollarSign className="w-4 h-4 text-destructive" />} label="Collected" value={fmtCurrency(zone.collected)} />
+                  <MiniStat icon={<Target className="w-4 h-4 text-destructive" />} label="Target" value={fmtCurrency(zone.target)} />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Collection Progress</span>
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{zone.target > 0 ? ((zone.collected / zone.target) * 100).toFixed(1) : '0.0'}%</span>
+                    <span className="text-xs text-muted-foreground">Collection Progress</span>
+                    <span className="text-xs font-semibold text-foreground">{zone.target > 0 ? ((zone.collected / zone.target) * 100).toFixed(1) : '0.0'}%</span>
                   </div>
-                  <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-700">
+                  <div className="w-full h-2.5 rounded-full bg-muted dark:bg-slate-700">
                     <div
                       className={`h-2.5 rounded-full transition-all ${
-                        zone.compliance >= 95 ? 'bg-[#0B1D3E]/100' : zone.compliance >= 90 ? 'bg-amber-500' : 'bg-red-500'
+                        zone.compliance >= 95 ? 'bg-primary/100' : zone.compliance >= 90 ? 'bg-amber-500' : 'bg-red-500'
                       }`}
                       style={{ width: `${Math.min((zone.collected / zone.target) * 100, 100)}%` }}
                     />
@@ -402,31 +402,31 @@ export function ReportsPage() {
 
       {/* ── Monthly Comparison Tab ───────────────────────────────────────── */}
       {view === 'monthly' && (
-        <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="p-5 border-b border-slate-200 dark:border-slate-700">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white">Year-over-Year Monthly Revenue</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Comparing {currentFY} vs {previousFY} monthly collection figures</p>
+        <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
+          <div className="p-5 border-b border-border">
+            <h2 className="text-base font-semibold text-foreground">Year-over-Year Monthly Revenue</h2>
+            <p className="text-sm text-muted-foreground mt-1">Comparing {currentFY} vs {previousFY} monthly collection figures</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-slate-50 dark:bg-slate-900/50">
-                <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Month</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-right">{currentFY}</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-right">{previousFY}</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3 text-right">Change</th>
-                  <th className="text-xs uppercase text-slate-500 dark:text-slate-400 font-medium px-4 py-3">Visual</th>
+              <thead className="bg-card/50">
+                <tr className="border-b border-border">
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Month</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">{currentFY}</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">{previousFY}</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Change</th>
+                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Visual</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+              <tbody className="divide-y divide-border/60">
                 {monthlyComparison.map((m) => (
-                  <tr key={m.month} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white">{m.month}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white text-right">{fmtCurrency(m.currentYear)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 text-right">{fmtCurrency(m.previousYear)}</td>
+                  <tr key={m.month} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">{m.month}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-foreground text-right">{fmtCurrency(m.currentYear)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground text-right">{fmtCurrency(m.previousYear)}</td>
                     <td className="px-4 py-3 text-right">
                       <span className={`inline-flex items-center gap-0.5 text-sm font-semibold ${
-                        m.change >= 0 ? 'text-[#0B1D3E] dark:text-[#4a7ab5]' : 'text-red-600 dark:text-red-400'
+                        m.change >= 0 ? 'text-primary dark:text-primary' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {m.change >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                         {Math.abs(m.change)}%
@@ -434,13 +434,13 @@ export function ReportsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-20 h-2 rounded-full bg-slate-100 dark:bg-slate-700 relative overflow-hidden">
+                        <div className="w-20 h-2 rounded-full bg-muted dark:bg-slate-700 relative overflow-hidden">
                           <div
                             className="absolute inset-y-0 left-0 bg-slate-300 dark:bg-slate-600"
                             style={{ width: `${(m.previousYear / 400000) * 100}%` }}
                           />
                           <div
-                            className="absolute inset-y-0 left-0 bg-[#0B1D3E]/100"
+                            className="absolute inset-y-0 left-0 bg-primary/100"
                             style={{ width: `${(m.currentYear / 400000) * 100}%` }}
                           />
                         </div>
@@ -449,16 +449,16 @@ export function ReportsPage() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-slate-50 dark:bg-slate-900/50">
-                <tr className="border-t-2 border-slate-200 dark:border-slate-700">
-                  <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white">Total</td>
-                  <td className="px-4 py-3 text-sm font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-right">
+              <tfoot className="bg-card/50">
+                <tr className="border-t-2 border-border">
+                  <td className="px-4 py-3 text-sm font-bold text-foreground">Total</td>
+                  <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">
                     {fmtCurrency(monthlyComparison.reduce((s, m) => s + m.currentYear, 0))}
                   </td>
-                  <td className="px-4 py-3 text-sm font-bold text-slate-500 dark:text-slate-400 text-right">
+                  <td className="px-4 py-3 text-sm font-bold text-muted-foreground text-right">
                     {fmtCurrency(monthlyComparison.reduce((s, m) => s + m.previousYear, 0))}
                   </td>
-                  <td className="px-4 py-3 text-sm font-bold text-[#0B1D3E] dark:text-[#4a7ab5] text-right">
+                  <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">
                     +9.8%
                   </td>
                   <td />
@@ -482,15 +482,15 @@ function KpiCard({ icon, label, value, sub, trend }: {
   trend?: number;
 }) {
   return (
-    <div className="rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
+    <div className="rounded-xl bg-white dark:bg-muted border border-border p-4 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-3">
-        <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[#0B1D3E]/10 dark:bg-[#4a7ab5]/20">
+        <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 dark:bg-primary/20">
           {icon}
         </span>
         {trend !== undefined && (
           <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
             trend >= 0
-              ? 'bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]'
+              ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
               : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
           }`}>
             {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -498,8 +498,8 @@ function KpiCard({ icon, label, value, sub, trend }: {
           </span>
         )}
       </div>
-      <p className="text-xl font-bold text-slate-900 dark:text-white">{value}</p>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{sub}</p>
+      <p className="text-xl font-bold text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
     </div>
   );
 }
@@ -509,18 +509,18 @@ function CategoryBar({ item }: { item: RevenueBreakdown }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{item.category}</p>
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{pct.toFixed(1)}%</span>
+        <p className="text-sm font-medium text-foreground truncate">{item.category}</p>
+        <span className="text-xs font-semibold text-muted-foreground">{pct.toFixed(1)}%</span>
       </div>
-      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-700">
+      <div className="w-full h-2 rounded-full bg-muted dark:bg-slate-700">
         <div
           className={`h-2 rounded-full transition-all ${
-            pct >= 95 ? 'bg-[#0B1D3E]/100' : pct >= 90 ? 'bg-amber-500' : 'bg-red-500'
+            pct >= 95 ? 'bg-primary/100' : pct >= 90 ? 'bg-amber-500' : 'bg-red-500'
           }`}
           style={{ width: `${Math.min(pct, 100)}%` }}
         />
       </div>
-      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{fmtCurrency(item.collected)} of {fmtCurrency(item.budget)}</p>
+      <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">{fmtCurrency(item.collected)} of {fmtCurrency(item.budget)}</p>
     </div>
   );
 }
@@ -528,10 +528,10 @@ function CategoryBar({ item }: { item: RevenueBreakdown }) {
 function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="text-[#0B1D3E] dark:text-[#4a7ab5]">{icon}</span>
+      <span className="text-primary dark:text-primary">{icon}</span>
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-        <p className="text-sm font-medium text-slate-900 dark:text-white">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm font-medium text-foreground">{value}</p>
       </div>
     </div>
   );
@@ -540,7 +540,7 @@ function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string
 function ComplianceBadge({ percentage }: { percentage: number }) {
   if (percentage >= 95) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-[#0B1D3E]/10 text-[#0B1D3E] dark:bg-[#4a7ab5]/20 dark:text-[#4a7ab5]">
+      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary">
         <CheckCircle2 className="w-3 h-3" />
         On Track
       </span>

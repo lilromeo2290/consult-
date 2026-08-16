@@ -402,9 +402,9 @@ export function BusinessRegisterPage() {
 
   // ── Form Helpers ─────────────────────────────────────────────────────────
   const inputClass =
-    'w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition';
+    'w-full rounded-lg border-border bg-white dark:bg-muted px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
   const labelClass =
-    'text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5';
+    'text-sm font-medium text-foreground mb-1.5';
 
   const formatVal = (v: string) => {
     const n = parseFloat(v);
@@ -421,8 +421,8 @@ export function BusinessRegisterPage() {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Business Register</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold text-foreground">Business Register</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Register and manage businesses within the assembly.
             </p>
           </div>
@@ -438,15 +438,15 @@ export function BusinessRegisterPage() {
                 });
                 setView('form');
               }}
-              className="inline-flex items-center gap-2 bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-destructive text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Register New Business
             </button>
-            <button onClick={handleExport} className="inline-flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
+            <button onClick={handleExport} className="inline-flex items-center gap-2 border border-border bg-white dark:bg-muted text-foreground text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-card dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
               <Download className="w-4 h-4" /> Export
             </button>
-            <label className="inline-flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
+            <label className="inline-flex items-center gap-2 border border-border bg-white dark:bg-muted text-foreground text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-card dark:hover:bg-slate-700 transition-colors whitespace-nowrap cursor-pointer">
               <Upload className="w-4 h-4" /> Import
               <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImport} />
             </label>
@@ -456,7 +456,7 @@ export function BusinessRegisterPage() {
         {/* ── Search & Filters ────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search by name, owner, or unique number..."
@@ -477,25 +477,25 @@ export function BusinessRegisterPage() {
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="rounded-xl border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Unique #</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Name</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Owner's Name</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Class</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Category</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Amount</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Status</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Action</th>
+                <tr className="bg-card dark:bg-muted/60 border-b border-border">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Business Unique #</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Business Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Owner's Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Business Class</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Category</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Amount</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Status</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground dark:text-foreground whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
+                    <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                       <Building2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
                       <p className="font-medium">No businesses registered yet</p>
                       <p className="text-xs mt-1">Click &quot;Register New Business&quot; to get started.</p>
@@ -503,15 +503,15 @@ export function BusinessRegisterPage() {
                   </tr>
                 ) : (
                   paged.map((biz) => (
-                    <tr key={biz.regNumber} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">{biz.businessUniqueNumber || '—'}</td>
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{biz.name || '—'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{biz.owner || '—'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{biz.businessClassDesc || '—'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{biz.category || '—'}</td>
+                    <tr key={biz.regNumber} className="border-b border-border dark:border-border/50 hover:bg-card/50 dark:hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground dark:text-muted-foreground whitespace-nowrap">{biz.businessUniqueNumber || '—'}</td>
+                      <td className="px-4 py-3 font-medium text-foreground">{biz.name || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-muted-foreground">{biz.owner || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-muted-foreground">{biz.businessClassDesc || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground dark:text-muted-foreground">{biz.category || '—'}</td>
                       <td className="px-4 py-3 text-right font-semibold whitespace-nowrap">GHS {(parseFloat(biz.amount) || 0).toLocaleString('en-GH', { minimumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${biz.status === 'Active' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${biz.status === 'Active' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-muted text-muted-foreground dark:bg-slate-700 dark:text-muted-foreground'}`}>
                           {biz.status || 'Active'}
                         </span>
                       </td>
@@ -519,7 +519,7 @@ export function BusinessRegisterPage() {
                         <button onClick={() => handleEdit(biz)} className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-xs font-medium px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer">
                           <Pencil className="w-3.5 h-3.5" /> Edit
                         </button>
-                        <button onClick={() => handleDelete(biz.regNumber)} className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-xs font-medium px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors ml-1 cursor-pointer">
+                        <button onClick={() => handleDelete(biz.regNumber)} className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-xs font-medium px-2 py-1 rounded hover:bg-destructive/10 transition-colors ml-1 cursor-pointer">
                           <Trash2 className="w-3.5 h-3.5" /> Delete
                         </button>
                       </td>
@@ -531,23 +531,23 @@ export function BusinessRegisterPage() {
           </div>
           {/* Pagination */}
           {filtered.length > itemsPerPage && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
-              <span className="text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-card/50 dark:bg-muted/30">
+              <span className="text-sm text-muted-foreground">
                 Showing {showingFrom}–{showingTo} of {filtered.length}
               </span>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={safeCurrentPage === 1}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium text-muted-foreground dark:text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" /> Prev
                 </button>
-                <span className="px-3 text-sm text-slate-600 dark:text-slate-400">Page {safeCurrentPage} of {totalPages}</span>
+                <span className="px-3 text-sm text-muted-foreground dark:text-muted-foreground">Page {safeCurrentPage} of {totalPages}</span>
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={safeCurrentPage === totalPages}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium text-muted-foreground dark:text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   Next <ChevronRight className="w-4 h-4" />
                 </button>
@@ -566,15 +566,15 @@ export function BusinessRegisterPage() {
     <div className="space-y-6">
       {/* ── Form Header ─────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
-        <button onClick={() => setView('list')} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer">
+        <button onClick={() => setView('list')} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-slate-200 transition-colors cursor-pointer">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
       </div>
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           {editingRegNumber ? 'Edit Business' : 'Register New Business'}
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+        <p className="text-sm text-muted-foreground mt-0.5">
           {editingRegNumber ? 'Update the business details below.' : 'Fill in the details below to register a new business.'}
         </p>
       </div>
@@ -583,10 +583,10 @@ export function BusinessRegisterPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD A: BUSINESS LOCATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <MapPin className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">A. Business Location</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <MapPin className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">A. Business Location</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -626,7 +626,7 @@ export function BusinessRegisterPage() {
                 <div className="flex gap-2">
                   <input type="text" name="latitude" value={form.latitude} onChange={handleFormChange} placeholder="Latitude" className={`${inputClass} flex-1`} />
                   <input type="text" name="longitude" value={form.longitude} onChange={handleFormChange} placeholder="Longitude" className={`${inputClass} flex-1`} />
-                  <button type="button" onClick={fetchGps} disabled={locating} className="inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border border-[#0B1D3E]/40 dark:border-[#0B1D3E] text-[#0B1D3E] dark:text-[#4a7ab5] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap cursor-pointer">
+                  <button type="button" onClick={fetchGps} disabled={locating} className="inline-flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg border-border border-primary/40 dark:border-primary text-primary dark:text-primary hover:bg-primary/10 dark:hover:dark:bg-primary/20 disabled:opacity-50 transition-colors text-xs font-medium whitespace-nowrap cursor-pointer">
                     {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crosshair className="w-3.5 h-3.5" />}
                     {locating ? '...' : 'GPS'}
                   </button>
@@ -644,10 +644,10 @@ export function BusinessRegisterPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD B: BUSINESS INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <Briefcase className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">B. Business Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <Briefcase className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">B. Business Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -698,12 +698,12 @@ export function BusinessRegisterPage() {
                     className={inputClass}
                   />
                   {bizRevenueCodeShowDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
                       {bizRevenueCodeFiltered.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
                       ) : bizRevenueCodeFiltered.slice(0, 50).map((item) => (
-                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                          <span className="font-mono text-slate-800 dark:text-white">{item.code}</span>
+                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
+                          <span className="font-mono text-foreground dark:text-foreground">{item.code}</span>
                         </button>
                       ))}
                     </div>
@@ -723,12 +723,12 @@ export function BusinessRegisterPage() {
                     className={inputClass}
                   />
                   {bizRevenueDescShowDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
                       {bizRevenueDescFiltered.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-slate-400">No matches</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
                       ) : bizRevenueDescFiltered.slice(0, 50).map((item) => (
-                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0">
-                          <span className="text-slate-800 dark:text-white">{item.description}</span>
+                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
+                          <span className="text-foreground dark:text-foreground">{item.description}</span>
                         </button>
                       ))}
                     </div>
@@ -756,7 +756,7 @@ export function BusinessRegisterPage() {
                   value={form.businessClassDesc}
                   readOnly
                   placeholder="Auto-filled from Class Code"
-                  className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 cursor-not-allowed`}
+                  className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground cursor-not-allowed`}
                 />
               </div>
               {/* Business Class Category */}
@@ -772,7 +772,7 @@ export function BusinessRegisterPage() {
                   value={form.amount ? `GH\u20b5 ${parseFloat(form.amount).toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}
                   readOnly
                   placeholder="Auto-fetched from Rate Config"
-                  className={`${inputClass} bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 cursor-not-allowed`}
+                  className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground cursor-not-allowed`}
                 />
               </div>
               {/* Number of Employees */}
@@ -805,10 +805,10 @@ export function BusinessRegisterPage() {
         {/* ════════════════════════════════════════════════════════════════════
             CARD C: OWNER INFORMATION
            ════════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-            <User className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">C. Owner Information</h2>
+        <div className="bg-white dark:bg-muted rounded-xl border-border overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3 bg-card/60 border-b border-border">
+            <User className="w-4.5 h-4.5 text-muted-foreground dark:text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">C. Owner Information</h2>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
@@ -848,11 +848,11 @@ export function BusinessRegisterPage() {
 
         {/* ─── Action Buttons ──────────────────────────────────────────── */}
         <div className="flex items-center justify-end gap-3 pt-2">
-          <button onClick={handleCancel} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-500 hover:bg-slate-600 text-white text-sm font-medium transition-colors cursor-pointer">
+          <button onClick={handleCancel} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-card0 hover:bg-slate-600 text-white text-sm font-medium transition-colors cursor-pointer">
             <X className="w-4 h-4" />
             Cancel
           </button>
-          <button onClick={handleSave} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B1D3E] hover:bg-[#E31E24] text-white text-sm font-medium transition-colors cursor-pointer">
+          <button onClick={handleSave} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-destructive text-white text-sm font-medium transition-colors cursor-pointer">
             <Save className="w-4 h-4" />
             {editingRegNumber ? 'Update' : 'Save'}
           </button>
