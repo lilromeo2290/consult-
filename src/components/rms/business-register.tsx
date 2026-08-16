@@ -482,17 +482,20 @@ export function BusinessRegisterPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Unique Number</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Unique #</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Name</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Owner</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Owner's Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Business Class</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Category</th>
+                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Amount</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Status</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Actions</th>
+                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
+                    <td colSpan={8} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
                       <Building2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
                       <p className="font-medium">No businesses registered yet</p>
                       <p className="text-xs mt-1">Click &quot;Register New Business&quot; to get started.</p>
@@ -502,8 +505,11 @@ export function BusinessRegisterPage() {
                   paged.map((biz) => (
                     <tr key={biz.regNumber} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                       <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">{biz.businessUniqueNumber || '—'}</td>
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{biz.name}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{biz.owner}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{biz.name || '—'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{biz.owner || '—'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{biz.businessClassDesc || '—'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{biz.category || '—'}</td>
+                      <td className="px-4 py-3 text-right font-semibold whitespace-nowrap">GHS {(parseFloat(biz.amount) || 0).toLocaleString('en-GH', { minimumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${biz.status === 'Active' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'}`}>
                           {biz.status || 'Active'}
