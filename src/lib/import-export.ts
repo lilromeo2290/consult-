@@ -123,6 +123,10 @@ export const BP_OFFICIAL_FIELDS: { key: string; label: string }[] = [
   { key: 'businessName', label: 'Business Name' },
   { key: 'businessRegNumber', label: 'Business Registration Number' },
   { key: 'businessLocation', label: 'Business Location' },
+  { key: 'businessUniqueNumber', label: 'Business Unique Number' },
+  { key: 'businessClassDesc', label: 'Business Class Description' },
+  { key: 'businessCategory', label: 'Business Category' },
+  { key: 'businessAmount', label: 'Business Amount (GHS)' },
   // Physical Planning Department
   { key: 'routingStatus', label: 'Routing Status' },
   { key: 'physicalPlanningComments', label: 'Physical Planning Comments' },

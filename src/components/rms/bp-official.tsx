@@ -28,6 +28,11 @@ interface BPOfficial {
   businessName: string;
   businessRegNumber: string;
   businessLocation: string;
+  // Business details (from Business Register, for table display)
+  businessUniqueNumber: string;
+  businessClassDesc: string;
+  businessCategory: string;
+  businessAmount: number;
   // Physical Planning Department
   routingStatus: string;
   physicalPlanningComments: string;
@@ -59,6 +64,10 @@ interface BusinessLookup {
   streetName: string;
   houseNo: string;
   areaCode: string;
+  businessUniqueNumber: string;
+  businessClassDesc: string;
+  category: string;
+  amount: number;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -133,6 +142,10 @@ const EMPTY_FORM: BPOfficial = {
   businessName: '',
   businessRegNumber: '',
   businessLocation: '',
+  businessUniqueNumber: '',
+  businessClassDesc: '',
+  businessCategory: '',
+  businessAmount: 0,
   routingStatus: 'Pending Submission',
   physicalPlanningComments: '',
   physicalPlanningDate: '',
@@ -193,6 +206,10 @@ export function BPOfficialPage() {
       businessName: biz.name || '',
       businessRegNumber: biz.regNumber || '',
       businessLocation: `${biz.locality || ''} - ${biz.areaCode || ''}`.trim(),
+      businessUniqueNumber: biz.businessUniqueNumber || '',
+      businessClassDesc: biz.businessClassDesc || '',
+      businessCategory: biz.category || '',
+      businessAmount: biz.amount || 0,
     }));
     setBizSearch('');
     setBizDropdownOpen(false);
@@ -209,6 +226,7 @@ export function BPOfficialPage() {
           b.name?.toLowerCase().includes(q) ||
           b.owner?.toLowerCase().includes(q) ||
           b.regNumber?.toLowerCase().includes(q) ||
+          b.businessUniqueNumber?.toLowerCase().includes(q) ||
           b.phone?.includes(q),
       )
       .slice(0, 8);
@@ -853,21 +871,20 @@ export function BPOfficialPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">App. #</th>
-              <th className="px-4 py-3 text-left font-medium">Date</th>
-              <th className="px-4 py-3 text-left font-medium">Applicant</th>
-              <th className="px-4 py-3 text-left font-medium hidden md:table-cell">Business</th>
-              <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">EPA</th>
-              <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">GNFS</th>
-              <th className="px-4 py-3 text-left font-medium">Routing</th>
+              <th className="px-4 py-3 text-left font-medium">Business Unique #</th>
+              <th className="px-4 py-3 text-left font-medium">Business Name</th>
+              <th className="px-4 py-3 text-left font-medium hidden md:table-cell">Owner's Name</th>
+              <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Business Class</th>
+              <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Category</th>
+              <th className="px-4 py-3 text-right font-medium">Amount</th>
               <th className="px-4 py-3 text-left font-medium">Status</th>
-              <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <th className="px-4 py-3 text-right font-medium">Action</th>
             </tr>
           </thead>
           <tbody>
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Stamp size={32} className="text-muted-foreground/40" />
                     <span>No business permit applications found</span>
@@ -881,32 +898,12 @@ export function BPOfficialPage() {
                 key={r.id}
                 className="border-b last:border-0 hover:bg-muted/30 transition-colors"
               >
-                <td className="px-4 py-3 font-mono text-xs font-medium">{r.applicationNumber}</td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">{r.applicationDate || '—'}</td>
-                <td className="px-4 py-3">{r.applicantFullName || '—'}</td>
-                <td className="px-4 py-3 hidden md:table-cell">
-                  <div className="text-xs">
-                    <div className="font-medium">{r.businessName || '—'}</div>
-                    <div className="text-muted-foreground">{r.businessRegNumber || ''}</div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 hidden lg:table-cell">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${r.epaRecommendation ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                    <Leaf size={11} />
-                    {r.epaRecommendation ? 'Reviewed' : 'Pending'}
-                  </span>
-                </td>
-                <td className="px-4 py-3 hidden lg:table-cell">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${r.gnfsRecommendation ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-600'}`}>
-                    <Flame size={11} />
-                    {r.gnfsRecommendation ? 'Reviewed' : 'Pending'}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.routingStatus] || 'bg-gray-100 text-gray-700'}`}>
-                    {r.routingStatus}
-                  </span>
-                </td>
+                <td className="px-4 py-3 font-mono text-xs font-medium">{r.businessUniqueNumber || '—'}</td>
+                <td className="px-4 py-3 font-medium">{r.businessName || '—'}</td>
+                <td className="px-4 py-3 hidden md:table-cell">{r.applicantFullName || '—'}</td>
+                <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{r.businessClassDesc || '—'}</td>
+                <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{r.businessCategory || '—'}</td>
+                <td className="px-4 py-3 text-right font-semibold">GHS {(r.businessAmount || 0).toLocaleString('en-GH', { minimumFractionDigits: 2 })}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status] || 'bg-gray-100 text-gray-800'}`}>
                     {r.status}
