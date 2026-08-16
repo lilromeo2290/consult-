@@ -450,22 +450,46 @@ export function PropertiesPage() {
       alert('Please complete the following required field(s):\n\n' + missing.map((f) => '• ' + f).join('\n'));
       return;
     }
-    const propNum = editingPropNumber || form.propNumber || `UPN-${String(properties.length + 1).padStart(4, '0')}`;
+
+    const propNum = form.propNumber || editingPropNumber || `UPN-${String(Date.now()).padStart(4, '0')}`;
     const newProp: Property = {
       ...form,
       propNumber: propNum,
     };
 
     if (editingPropNumber) {
-      setProperties((prev) =>
-        prev.map((p) =>
-          p.propNumber === editingPropNumber
-            ? { ...p, ...newProp }
-            : p
-        )
-      );
+      // Find and replace the exact record by propNumber or propertyUniqueNumber
+      setProperties((prev) => {
+        const idx = prev.findIndex(
+          (p) => p.propNumber === editingPropNumber || (p as any).propertyUniqueNumber === editingPropNumber
+        );
+        if (idx === -1) {
+          // Fallback: try matching by owner + street combo
+          const fallbackIdx = prev.findIndex(
+            (p) => p.ownerName === form.ownerName && p.streetName === form.streetName && p.houseNo === form.houseNo
+          );
+          if (fallbackIdx !== -1) {
+            const updated = [...prev];
+            updated[fallbackIdx] = { ...prev[fallbackIdx], ...newProp };
+            return updated;
+          }
+          // No match found, append as new
+          return [...prev, newProp];
+        }
+        const updated = [...prev];
+        updated[idx] = { ...prev[idx], ...newProp };
+        return updated;
+      });
     } else {
-      setProperties((prev) => [...prev, newProp]);
+      // Check for duplicates before adding
+      setProperties((prev) => {
+        const exists = prev.some(
+          (p) => p.propNumber === newProp.propNumber ||
+            ((p as any).propertyUniqueNumber && (p as any).propertyUniqueNumber === newProp.propertyUniqueNumber)
+        );
+        if (exists) return prev;
+        return [...prev, newProp];
+      });
     }
 
     toast.success('Successfully saved');
@@ -481,7 +505,9 @@ export function PropertiesPage() {
   };
 
   const handleEdit = (prop: Property) => {
-    setEditingPropNumber(prop.propNumber);
+    // Use propertyUniqueNumber as primary edit key (more reliable), fallback to propNumber
+    const editKey = (prop as any).propertyUniqueNumber || prop.propNumber;
+    setEditingPropNumber(editKey);
     setForm({
       propNumber: prop.propNumber,
       streetName: prop.streetName,
@@ -615,15 +641,17 @@ export function PropertiesPage() {
                 <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Property Unique Number</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Owner</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Value</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Street</th>
-                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Actions</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Property Class Description</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Property Class Category</th>
+                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Use / Amount</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Details</th>
+                  <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {paged.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <td colSpan={7} className="text-center py-12 text-slate-400 dark:text-slate-500">
                       <Home className="w-10 h-10 mx-auto mb-3 opacity-40" />
                       No properties found.
                     </td>
@@ -631,10 +659,12 @@ export function PropertiesPage() {
                 ) : (
                   paged.map((prop) => (
                     <tr key={prop.propNumber} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap font-medium">{(prop as any).propertyUniqueNumber || prop.propNumber}</td>
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{prop.ownerName}</td>
-                      <td className="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">{formatVal(prop.value)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{prop.streetName}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap font-medium">{(prop as any).propertyUniqueNumber || prop.propNumber || '—'}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">{prop.ownerName || '—'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{(prop as any).type || (prop as any).revenueDescription || '—'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{prop.category || '—'}</td>
+                      <td className="px-4 py-3 text-right font-semibold whitespace-nowrap">{formatVal(prop.value)}</td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap max-w-[200px] truncate" title={prop.streetName ? `${prop.streetName}, ${prop.locality || ''}` : prop.comments || ''}>{prop.streetName ? `${prop.streetName}, ${prop.locality || ''}` : (prop.comments || '—')}</td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1">
                           <button onClick={() => handleEdit(prop)} className="p-1.5 rounded-md text-slate-400 hover:text-[#0B1D3E] hover:bg-[#0B1D3E]/10 dark:hover:bg-[#4a7ab5]/20 transition-colors cursor-pointer" title="Edit"><Pencil className="w-4 h-4" /></button>
