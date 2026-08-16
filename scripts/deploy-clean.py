@@ -3,7 +3,8 @@
 import paramiko, os, time
 
 VPS = '153.75.247.4'
-KEY = '/home/z/.ssh/vps_deploy_key'
+VPS_USER = 'root'
+VPS_PASS = 'Do1_BuZe4_M1-V6v1_S4'
 DDIR = '/home/kpma-rms'
 
 def run(c, cmd, timeout=120):
@@ -13,10 +14,9 @@ def run(c, cmd, timeout=120):
     return out, err
 
 def main():
-    key = paramiko.RSAKey.from_private_key_file(KEY)
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(VPS, port=22, username='root', pkey=key, timeout=15)
+    client.connect(VPS, port=22, username=VPS_USER, password=VPS_PASS, timeout=15)
     print('SSH OK')
 
     # Stop PM2
@@ -54,10 +54,10 @@ def main():
     sftp.put('/tmp/public.tar.gz', '/tmp/public.tar.gz')
     run(client, f'cd {DDIR} && tar xzf /tmp/public.tar.gz')
 
-    # Fix .env (for reference, but PM2 needs env vars directly)
+    # Fix .env
     run(client, f'echo "file:/home/kpma-rms-build-fresh/db/custom.db" > {DDIR}/.env')
 
-    # Fix Prisma client hash symlink (standalone embeds a build-specific hash)
+    # Fix Prisma client hash symlink
     print('Fixing Prisma client symlink...')
     out, _ = run(client, f'grep -roh "@prisma/client-[a-f0-9]" {DDIR}/.next/server/ 2>/dev/null | sort -u | head -1')
     if out.strip():
@@ -65,7 +65,7 @@ def main():
         run(client, f'ln -sf {DDIR}/node_modules/@prisma/client {DDIR}/node_modules/{hashed}')
         print(f'  Symlinked {hashed} -> @prisma/client')
 
-    # Restart with correct env vars (standalone does NOT load .env at runtime)
+    # Restart PM2
     print('Starting PM2...')
     run(client, 'pm2 delete kpma-rms 2>/dev/null; true')
     time.sleep(1)

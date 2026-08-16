@@ -1,0 +1,29 @@
+{
+  "name": "Kpando Municipal Assembly - Revenue Management System",
+  "short_name": "KMA RMS",
+  "description": "Revenue Management System for Kpando Municipal Assembly. Manage bills, payments, businesses, properties, rents, and building permits.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B1D3E",
+  "theme_color": "#0B1D3E",
+  "orientation": "any",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/pwa/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["government", "finance", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}
