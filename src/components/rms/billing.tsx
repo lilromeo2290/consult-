@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   Copy,
   ScanBarcode,
+  Trash2,
 } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 import { encodeBarcodeData, getVerificationUrl } from '@/lib/barcode-utils';
@@ -321,6 +322,11 @@ export function BillingPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedRawEntity, setSelectedRawEntity] = useState<any>(null);
 
+  // BP revenue line items
+  const [bpRevenueItems, setBpRevenueItems] = useState<
+    { id: string; revenueCode: string; revenueDescription: string; category: string; amount: number }[]
+  >([{ id: '1', revenueCode: '', revenueDescription: '', category: '', amount: 0 }]);
+
   const entitySearchResults = useMemo(() => {
     if (!entitySearch.trim()) return [];
     return searchEntities(entitySearch, formData.billType, bizData, propData, rentData, bpData);
@@ -393,6 +399,9 @@ export function BillingPage() {
     setEntitySearch('');
     setSelectedRawEntity(null);
     setShowEntityDropdown(false);
+    if (value === 'BP') {
+      setBpRevenueItems([{ id: '1', revenueCode: '', revenueDescription: '', category: '', amount: 0 }]);
+    }
   };
 
   // ── Filtering ───────────────────────────────────────────────────────────
@@ -1594,6 +1603,118 @@ export function BillingPage() {
                         <ReadOnlyField label="Amount" value={formData.charge ? formatCurrency(formData.charge) : '—'} />
                       </>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* BP: Revenue line items table */}
+              {formData.billType === 'BP' && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className={labelClass}>Revenue Items</label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBpRevenueItems((prev) => [
+                          ...prev,
+                          { id: String(Date.now()), revenueCode: '', revenueDescription: '', category: '', amount: 0 },
+                        ])
+                      }
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Row
+                    </button>
+                  </div>
+                  <div className="rounded-lg border border-border overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-muted/60 dark:bg-slate-700/60 border-b border-border">
+                          <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground">Revenue Code</th>
+                          <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground">Revenue Description</th>
+                          <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground">Category</th>
+                          <th className="text-right px-3 py-2 text-xs font-semibold text-muted-foreground">Amount</th>
+                          <th className="w-10 px-2 py-2"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {bpRevenueItems.map((item, idx) => (
+                          <tr key={item.id} className="hover:bg-muted/30 transition-colors">
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="text"
+                                value={item.revenueCode}
+                                onChange={(e) => {
+                                  const updated = [...bpRevenueItems];
+                                  updated[idx] = { ...updated[idx], revenueCode: e.target.value };
+                                  setBpRevenueItems(updated);
+                                }}
+                                className={`${inputClass} text-xs py-1.5 px-2`}
+                                placeholder="XXX"
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="text"
+                                value={item.revenueDescription}
+                                onChange={(e) => {
+                                  const updated = [...bpRevenueItems];
+                                  updated[idx] = { ...updated[idx], revenueDescription: e.target.value };
+                                  setBpRevenueItems(updated);
+                                }}
+                                className={`${inputClass} text-xs py-1.5 px-2`}
+                                placeholder="Description"
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="text"
+                                value={item.category}
+                                onChange={(e) => {
+                                  const updated = [...bpRevenueItems];
+                                  updated[idx] = { ...updated[idx], category: e.target.value };
+                                  setBpRevenueItems(updated);
+                                }}
+                                className={`${inputClass} text-xs py-1.5 px-2`}
+                                placeholder="Category"
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="number"
+                                value={item.amount || ''}
+                                onChange={(e) => {
+                                  const updated = [...bpRevenueItems];
+                                  updated[idx] = { ...updated[idx], amount: parseFloat(e.target.value) || 0 };
+                                  setBpRevenueItems(updated);
+                                  // Auto-sum charge from all revenue items
+                                  const total = updated.reduce((sum, r) => sum + (r.amount || 0), 0);
+                                  setFormData((p) => ({ ...p, charge: total }));
+                                }}
+                                className={`${inputClass} text-xs py-1.5 px-2 text-right font-medium`}
+                                placeholder="0"
+                              />
+                            </td>
+                            <td className="px-1 py-1.5 text-center">
+                              {bpRevenueItems.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = bpRevenueItems.filter((_, i) => i !== idx);
+                                    setBpRevenueItems(updated);
+                                    const total = updated.reduce((sum, r) => sum + (r.amount || 0), 0);
+                                    setFormData((p) => ({ ...p, charge: total }));
+                                  }}
+                                  className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
