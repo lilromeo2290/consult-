@@ -90,11 +90,11 @@ def main():
         run(client, f'ln -sf {DDIR}/node_modules/@prisma/client {DDIR}/node_modules/{hashed}')
         print(f'  Symlinked {hashed} -> @prisma/client')
 
-    # Restart PM2
+    # Restart PM2 with env vars inline (standalone server may not read .env)
     print('Starting PM2...')
     run(client, 'pm2 delete kpma-rms 2>/dev/null; true')
     time.sleep(1)
-    run(client, f'cd {DDIR} && pm2 start server.js --name kpma-rms')
+    run(client, f'cd {DDIR} && PORT=3008 DATABASE_URL="file:/home/kpma-rms-build-fresh/db/custom.db" pm2 start server.js --name kpma-rms')
     run(client, 'pm2 save')
     time.sleep(5)
 
