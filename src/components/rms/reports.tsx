@@ -77,6 +77,7 @@ export function ReportsPage() {
   const [payData] = useSyncedStorage<unknown[]>('rms-payments', []);
   const [billsData] = useSyncedStorage<any[]>('rms-bills', []);
   const [finesData] = useSyncedStorage<any[]>('rms-fines', []);
+  const [bpData] = useSyncedStorage<any[]>('rms-building-permits', []);
   const [financialSettings] = useSyncedStorage<{ currentFinancialYear: string }>('rms-settings-financial', { currentFinancialYear: '' });
 
   // Customers by Revenue Type state
@@ -99,52 +100,49 @@ export function ReportsPage() {
     return zoneReports.filter((z) => z.zone.includes(zoneFilter));
   }, [zoneFilter]);
 
-  // Customers by Revenue Type: flat listing with S/N, Owner Name, Name/Description, Amount
+  // Column config per revenue type
+  const columnConfig = useMemo(() => {
+    switch (revenueTypeFilter) {
+      case 'Property': return { col1: "Property Owner's Name", col2: 'Class' };
+      case 'Business': return { col1: 'Business Name', col2: 'Class' };
+      case 'Rent': return { col1: "Occupant's Name", col2: 'Rent Type' };
+      case 'Fines': return { col1: "Offender's Name", col2: 'Fine Type' };
+      case 'BP': return { col1: "Applicant's Name", col2: 'Development Type' };
+      default: return { col1: 'Name', col2: 'Type' };
+    }
+  }, [revenueTypeFilter]);
+
+  // Customers by Revenue Type: flat listing
   const customerList = useMemo(() => {
-    let rows: { ownerName: string; entityName: string; amount: number }[] = [];
+    let rows: { col1: string; col2: string; amount: number }[] = [];
 
     if (revenueTypeFilter === 'Business') {
       (bizData as any[]).forEach((b: any) => {
-        // Sum bill amounts for this business
         const bizBills = billsData.filter((bl: any) => bl.uniqueNumber === b.regNumber && bl.billType === 'BOP');
         const totalAmt = bizBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ ownerName: b.owner || '', entityName: b.name || '', amount: totalAmt });
+        rows.push({ col1: b.name || '', col2: b.type || b.category || '', amount: totalAmt });
       });
     } else if (revenueTypeFilter === 'Property') {
       (propData as any[]).forEach((p: any) => {
         const propBills = billsData.filter((bl: any) => bl.uniqueNumber === p.propertyUniqueNumber && bl.billType === 'Property Rate');
         const totalAmt = propBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ ownerName: p.ownerName || '', entityName: p.streetName || '', amount: totalAmt });
+        rows.push({ col1: p.ownerName || '', col2: p.category || p.revenueDescription || '', amount: totalAmt });
       });
     } else if (revenueTypeFilter === 'Rent') {
       (rentData as any[]).forEach((r: any) => {
-        const rentBills = billsData.filter((bl: any) => bl.uniqueNumber === (r.rentUniqueNumber || r.uniqueNumber) && bl.billType === 'Rent');
+        const rentBills = billsData.filter((bl: any) => bl.uniqueNumber === (r.rentPropertyUniqueNumber || r.uniqueNumber) && bl.billType === 'Rent');
         const totalAmt = rentBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ ownerName: r.ownerName || r.tenantName || '', entityName: r.location || r.propertyLocation || '', amount: totalAmt });
+        rows.push({ col1: r.occupantName || '', col2: r.rentPropertyType || r.rentRevenueDescription || '', amount: totalAmt });
       });
     } else if (revenueTypeFilter === 'Fines') {
       (finesData as any[]).forEach((f: any) => {
-        rows.push({ ownerName: f.nameOfOffender || '', entityName: f.classDescription || f.locationAddress || '', amount: f.amountDue || f.charge || 0 });
+        rows.push({ col1: f.nameOfOffender || '', col2: f.classDescription || f.category || '', amount: f.amountDue || f.charge || 0 });
       });
-    } else if (revenueTypeFilter === 'Locality') {
-      // All types combined
-      (bizData as any[]).forEach((b: any) => {
-        const bizBills = billsData.filter((bl: any) => bl.uniqueNumber === b.regNumber);
-        const totalAmt = bizBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ ownerName: b.owner || '', entityName: b.name || '', amount: totalAmt });
-      });
-      (propData as any[]).forEach((p: any) => {
-        const propBills = billsData.filter((bl: any) => bl.uniqueNumber === p.propertyUniqueNumber);
-        const totalAmt = propBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ ownerName: p.ownerName || '', entityName: p.streetName || '', amount: totalAmt });
-      });
-      (rentData as any[]).forEach((r: any) => {
-        const rentBills = billsData.filter((bl: any) => bl.uniqueNumber === (r.rentUniqueNumber || r.uniqueNumber));
-        const totalAmt = rentBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ ownerName: r.ownerName || r.tenantName || '', entityName: r.location || r.propertyLocation || '', amount: totalAmt });
-      });
-      (finesData as any[]).forEach((f: any) => {
-        rows.push({ ownerName: f.nameOfOffender || '', entityName: f.classDescription || f.locationAddress || '', amount: f.amountDue || f.charge || 0 });
+    } else if (revenueTypeFilter === 'BP') {
+      (bpData as any[]).forEach((bp: any) => {
+        const bpBills = billsData.filter((bl: any) => bl.uniqueNumber === bp.permitNumber && bl.billType === 'BP');
+        const totalAmt = bpBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
+        rows.push({ col1: bp.applicantFullName || '', col2: bp.typeOfDevelopment || '', amount: totalAmt });
       });
     }
 
@@ -152,13 +150,13 @@ export function ReportsPage() {
     if (customerSearch.trim()) {
       const q = customerSearch.toLowerCase();
       rows = rows.filter((r) =>
-        r.ownerName.toLowerCase().includes(q) ||
-        r.entityName.toLowerCase().includes(q)
+        r.col1.toLowerCase().includes(q) ||
+        r.col2.toLowerCase().includes(q)
       );
     }
 
     return rows;
-  }, [revenueTypeFilter, customerSearch, bizData, propData, rentData, finesData, billsData]);
+  }, [revenueTypeFilter, customerSearch, bizData, propData, rentData, finesData, bpData, billsData]);
 
   const handlePrintReport = () => {
     const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Breakdown' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
@@ -350,7 +348,7 @@ export function ReportsPage() {
                 <option value="Business">Business</option>
                 <option value="Property">Property</option>
                 <option value="Rent">Rent</option>
-                <option value="Locality">Locality</option>
+                <option value="BP">BP-Building Permit</option>
                 <option value="Fines">Fines</option>
               </select>
               <div className="relative flex-1">
@@ -375,8 +373,8 @@ export function ReportsPage() {
                   <thead className="bg-card/50 sticky top-0 z-10">
                     <tr className="border-b border-border">
                       <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 w-16">S/N</th>
-                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Name of Owner</th>
-                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Business Name</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">{columnConfig.col1}</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">{columnConfig.col2}</th>
                       <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Amount</th>
                     </tr>
                   </thead>
@@ -384,8 +382,8 @@ export function ReportsPage() {
                     {customerList.map((row, i) => (
                       <tr key={i} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
                         <td className="px-4 py-3 text-sm text-muted-foreground text-center">{i + 1}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-foreground">{row.ownerName || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-foreground">{row.entityName || '—'}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-foreground">{row.col1 || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-foreground">{row.col2 || '—'}</td>
                         <td className="px-4 py-3 text-sm text-right font-medium text-foreground">{row.amount > 0 ? fmtCurrency(row.amount) : '—'}</td>
                       </tr>
                     ))}
