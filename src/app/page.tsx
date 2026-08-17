@@ -1,13 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { LoginPage } from '@/components/landing/login-page';
+import { useEffect } from 'react';
 import { RmsLayout } from '@/components/rms/rms-layout';
 import { DashboardPage } from '@/components/rms/dashboard';
 import { BusinessRegisterPage } from '@/components/rms/business-register';
 import { PropertiesPage } from '@/components/rms/properties';
 import { RentPage } from '@/components/rms/rent';
-
 import { RateConfigPage } from '@/components/rms/rate-config';
 import { PenaltiesPage } from '@/components/rms/penalties';
 import { BillingPage } from '@/components/rms/billing';
@@ -51,7 +49,6 @@ function RMSView() {
       case 'business-register': return <BusinessRegisterPage />;
       case 'properties': return <PropertiesPage />;
       case 'rent': return <RentPage />;
-
       case 'rates': return <RateConfigPage />;
       case 'penalties': return <PenaltiesPage />;
       case 'billing': return <BillingPage />;
@@ -74,31 +71,5 @@ function RMSView() {
 }
 
 export default function Home() {
-  const view = useAppStore((s) => s.view);
-
-  return (
-    <>
-      {view === 'login' && (
-        <motion.div
-          key="login"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-        >
-          <LoginPage />
-        </motion.div>
-      )}
-
-      {view === 'rms' && (
-        <motion.div
-          key="rms"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-        >
-          <RMSView />
-        </motion.div>
-      )}
-    </>
-  );
+  return <RMSView />;
 }

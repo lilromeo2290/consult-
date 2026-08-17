@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type AppView = 'landing' | 'login' | 'rms';
+type AppView = 'rms';
 type RMSPage =
   | 'dashboard'
   | 'business-register'
@@ -44,6 +44,15 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'search', label: 'Search' },
 ];
 
+const DEFAULT_ADMIN = {
+  id: 'USR-001',
+  staffId: 'STF-001',
+  firstName: 'System',
+  lastName: 'Administrator',
+  role: 'Administrator',
+  accessiblePages: ALL_RMS_PAGES.map((p) => p.page),
+};
+
 interface AppUser {
   id: string;
   staffId: string;
@@ -60,11 +69,8 @@ interface AppState {
   hydrated: boolean;
   setView: (view: AppView) => void;
   setRMSPage: (page: RMSPage) => void;
-  openRMS: () => void;
-  showLogin: () => void;
   loginSuccess: (user?: AppUser) => void;
   logout: () => void;
-  backToLanding: () => void;
   setCurrentUser: (user: AppUser | null) => void;
   /** Check if the current user can access a given page */
   canAccess: (page: RMSPage) => boolean;
@@ -73,27 +79,17 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-      view: 'login' as AppView,
+      view: 'rms' as AppView,
       rmsPage: 'dashboard' as RMSPage,
-      currentUser: null,
+      currentUser: DEFAULT_ADMIN as AppUser,
       hydrated: false,
       setView: (view) => set({ view }),
       setRMSPage: (page) => set({ rmsPage: page }),
-      openRMS: () => set({ view: 'login' }),
-      showLogin: () => set({ view: 'login' }),
       loginSuccess: (user) => {
-        const defaultAdmin: AppUser = user ?? {
-          id: 'USR-001',
-          staffId: 'STF-001',
-          firstName: 'System',
-          lastName: 'Administrator',
-          role: 'Administrator',
-          accessiblePages: ALL_RMS_PAGES.map((p) => p.page),
-        };
+        const defaultAdmin: AppUser = user ?? DEFAULT_ADMIN;
         set({ view: 'rms', rmsPage: 'dashboard', currentUser: defaultAdmin });
       },
-      logout: () => set({ view: 'login', rmsPage: 'dashboard', currentUser: null }),
-      backToLanding: () => set({ view: 'login' }),
+      logout: () => set({ view: 'rms', rmsPage: 'dashboard', currentUser: DEFAULT_ADMIN }),
       setCurrentUser: (user) => set({ currentUser: user }),
       canAccess: (page) => {
         const { currentUser } = get();
@@ -114,12 +110,14 @@ export const useAppStore = create<AppState>()(
       // Mark as hydrated after rehydration completes
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Migration: redirect 'landing' view to 'login'
-          if (state.view === 'landing') {
-            state.view = 'login';
+          // Force RMS view always
+          state.view = 'rms';
+          // Ensure admin user exists
+          if (!state.currentUser) {
+            state.currentUser = DEFAULT_ADMIN as AppUser;
           }
           // Migration: add any newly-added pages to admin's accessiblePages
-          if (state.currentUser && state.currentUser.role === 'Administrator') {
+          if (state.currentUser.role === 'Administrator') {
             const allPages = ALL_RMS_PAGES.map((p) => p.page);
             const current = state.currentUser.accessiblePages || [];
             const hasNew = allPages.some((p) => !current.includes(p));
