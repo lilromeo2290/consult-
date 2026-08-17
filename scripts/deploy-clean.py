@@ -78,8 +78,9 @@ def main():
     sftp.put('/tmp/public.tar.gz', '/tmp/public.tar.gz')
     run(client, f'mkdir -p {DDIR}/public && cd {DDIR}/public && tar xzf /tmp/public.tar.gz')
 
-    # Fix .env
-    run(client, f'echo "file:/home/kpma-rms-build-fresh/db/custom.db" > {DDIR}/.env')
+    # Fix .env with all required vars
+    run(client, f'echo "DATABASE_URL=file:/home/kpma-rms-build-fresh/db/custom.db" > {DDIR}/.env')
+    run(client, f'echo "PORT=3008" >> {DDIR}/.env')
 
     # Fix Prisma client hash symlink
     print('Fixing Prisma client symlink...')
@@ -93,7 +94,7 @@ def main():
     print('Starting PM2...')
     run(client, 'pm2 delete kpma-rms 2>/dev/null; true')
     time.sleep(1)
-    run(client, f'cd {DDIR} && PORT=3008 DATABASE_URL="file:/home/kpma-rms-build-fresh/db/custom.db" pm2 start server.js --name kpma-rms')
+    run(client, f'cd {DDIR} && pm2 start server.js --name kpma-rms')
     run(client, 'pm2 save')
     time.sleep(5)
 
