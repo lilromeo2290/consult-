@@ -206,8 +206,9 @@ function searchEntities(
     buildingPermits.forEach((b) => {
       const num = (b.permitNumber || b.id || '').toLowerCase();
       const name = (b.applicantFullName || '').toLowerCase();
-      const own = (b.applicantFullName || '').toLowerCase();
-      if (num.includes(q) || name.includes(q) || own.includes(q)) {
+      const phone = (b.telephoneNumber || '').toLowerCase();
+      const ghanaCard = (b.nationalIdNumber || '').toLowerCase();
+      if (num.includes(q) || name.includes(q) || phone.includes(q) || ghanaCard.includes(q)) {
         results.push({
           uniqueNumber: b.permitNumber || b.id || '',
           businessName: b.applicantFullName || '',
@@ -1436,7 +1437,9 @@ export function BillingPage() {
                         ? 'Unique Number / Business Name / Owner Name'
                         : formData.billType === 'Rent'
                           ? 'Occupant Name / Rent Property Number'
-                          : 'Unique Number / Applicant Name'
+                          : formData.billType === 'BP'
+                            ? "Application No. / Applicant's Name / Telephone # / Ghana Card #"
+                            : 'Unique Number / Applicant Name'
                     })
                   </span>
                 </label>
@@ -1466,7 +1469,9 @@ export function BillingPage() {
                         ? 'Type unique number, business name, or owner name...'
                         : formData.billType === 'Rent'
                           ? 'Type occupant name or rent property number...'
-                          : 'Type unique number or applicant name...'
+                          : formData.billType === 'BP'
+                            ? 'Type application no., name, telephone, or Ghana card...'
+                            : 'Type unique number or applicant name...'
                     }
                   />
                 </div>
@@ -1481,13 +1486,16 @@ export function BillingPage() {
                         className="w-full text-left px-4 py-2.5 hover:bg-primary/10 dark:hover:dark:bg-primary/20 border-b border-border dark:border-border last:border-b-0 transition-colors"
                       >
                         <p className="text-sm font-medium text-foreground truncate">
-                          {formData.billType === 'Rent'
-                            ? (entity.businessName || entity.uniqueNumber)
+                          {formData.billType === 'BP'
+                            ? (entity.uniqueNumber)
                             : (entity.businessName || entity.uniqueNumber)
                           }
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                          {entity.uniqueNumber}{entity.owner && entity.owner !== entity.businessName ? ` · ${entity.owner}` : ''}{entity.category ? ` · ${entity.category}` : ''}
+                          {formData.billType === 'BP'
+                            ? (`${entity.businessName}${entity.phone ? ' · ' + entity.phone : ''}${entity._raw?.nationalIdNumber ? ' · ' + entity._raw.nationalIdNumber : ''}`)
+                            : (`${entity.uniqueNumber}${entity.owner && entity.owner !== entity.businessName ? ' · ' + entity.owner : ''}${entity.category ? ' · ' + entity.category : ''}`)
+                          }
                         </p>
                       </button>
                     ))}
@@ -1555,9 +1563,13 @@ export function BillingPage() {
 
                     {formData.billType === 'BP' && (
                       <>
-                        <ReadOnlyField label="Applicant Name" value={formData.businessName} />
+                        <ReadOnlyField label="Application Number" value={formData.uniqueNumber} />
+                        <ReadOnlyField label="Applicant's Name" value={formData.businessName} />
+                        <ReadOnlyField label="Telephone Number" value={formData.phone} />
+                        <ReadOnlyField label="Development Type" value={formData.category} />
+                        <ReadOnlyField label="Nature of Application" value={selectedRawEntity?.natureOfApplication || ''} />
+                        <ReadOnlyField label="Ghana Card #" value={selectedRawEntity?.nationalIdNumber || ''} />
                         <ReadOnlyField label="Location" value={formData.location} />
-                        <ReadOnlyField label="Category" value={formData.category} />
                       </>
                     )}
                   </div>
