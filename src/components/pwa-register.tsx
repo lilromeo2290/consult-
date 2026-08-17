@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { PwaInstallProvider } from './pwa-install-prompt';
 
 export function PwaRegister() {
   useEffect(() => {

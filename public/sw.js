@@ -1,11 +1,12 @@
-const CACHE_NAME = 'kma-rms-v3';
+const CACHE_NAME = 'kma-rms-v4';
 
 const PRECACHE_URLS = [
   '/',
   '/logo.svg',
+  '/manifest.json',
   '/pwa/icon-192x192.png',
   '/pwa/icon-512x512.png',
-  '/manifest.json',
+  '/pwa/apple-touch-icon.png',
 ];
 
 // Install: precache shell assets

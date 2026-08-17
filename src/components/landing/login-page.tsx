@@ -15,7 +15,9 @@ import {
   AlertCircle,
   Shield,
   UserX,
+  Download,
 } from 'lucide-react';
+import { usePwaInstall } from '@/components/pwa-install-prompt';
 
 const USERS_STORAGE_KEY = 'rms-users';
 
@@ -74,6 +76,7 @@ const defaultAdmin: StoredUser = {
 export function LoginPage() {
   const { resolvedTheme } = useTheme();
   const loginSuccess = useAppStore((s) => s.loginSuccess);
+  const { isInstallable, promptInstall } = usePwaInstall();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -394,6 +397,27 @@ export function LoginPage() {
               </motion.button>
             </form>
 
+            {/* Install App Button (Android) */}
+            {isInstallable && (
+              <motion.button
+                type="button"
+                onClick={promptInstall}
+                className="w-full mt-3 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer active:scale-[0.98]"
+                style={{
+                  background: isDark
+                    ? 'rgba(31,122,140,0.15)'
+                    : 'rgba(31,122,140,0.08)',
+                  color: '#1F7A8C',
+                  border: '1px solid rgba(31,122,140,0.25)',
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.5 }}
+              >
+                <Download size={15} />
+                Install App on Your Phone
+              </motion.button>
+            )}
 
           </motion.div>
 
