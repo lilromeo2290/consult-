@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kma-rms-v4';
+const CACHE_NAME = 'kma-rms-v5';
 
 const PRECACHE_URLS = [
   '/',
@@ -48,7 +48,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets (_next/static, images, fonts): cache-first
+  // Static assets (_next/static, images, fonts): network-first (ensures fresh deploys)
   if (
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/pwa/') ||
@@ -61,14 +61,13 @@ self.addEventListener('fetch', (event) => {
     url.pathname.endsWith('.css')
   ) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((response) => {
+      fetch(request)
+        .then((response) => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
-        });
-      })
+        })
+        .catch(() => caches.match(request))
     );
     return;
   }
