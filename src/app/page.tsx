@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { LoginPage } from '@/components/landing/login-page';
 import { RmsLayout } from '@/components/rms/rms-layout';
 import { DashboardPage } from '@/components/rms/dashboard';
 import { BusinessRegisterPage } from '@/components/rms/business-register';
@@ -71,5 +73,31 @@ function RMSView() {
 }
 
 export default function Home() {
-  return <RMSView />;
+  const view = useAppStore((s) => s.view);
+
+  return (
+    <>
+      {view === 'login' && (
+        <motion.div
+          key="login"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        >
+          <LoginPage />
+        </motion.div>
+      )}
+
+      {view === 'rms' && (
+        <motion.div
+          key="rms"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        >
+          <RMSView />
+        </motion.div>
+      )}
+    </>
+  );
 }
