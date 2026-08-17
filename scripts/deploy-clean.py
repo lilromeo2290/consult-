@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Clean deploy: stop PM2, clear, upload, extract, fix, restart."""
-import paramiko, os, time
+"""Clean deploy: build tars from .next, upload, extract, fix, restart."""
+import paramiko, os, subprocess, time, sys
 
 VPS = '153.75.247.4'
 VPS_USER = 'root'
 VPS_PASS = 'Do1_BuZe4_M1-V6v1_S4'
 DDIR = '/home/kpma-rms'
+PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def run(c, cmd, timeout=120):
     stdin, stdout, stderr = c.exec_command(cmd, timeout=timeout)
@@ -13,7 +14,34 @@ def run(c, cmd, timeout=120):
     err = stderr.read().decode()
     return out, err
 
+def local(cmd):
+    r = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    if r.returncode != 0:
+        print(f'  LOCAL ERR: {r.stderr.strip()}')
+        sys.exit(1)
+    return r.stdout.strip()
+
 def main():
+    # ---- Step 0: Build tars from current .next output ----
+    print('Creating tars from .next output...')
+
+    standalone_dir = os.path.join(PROJECT, '.next', 'standalone')
+    static_dir = os.path.join(PROJECT, '.next', 'static')
+    public_dir = os.path.join(PROJECT, 'public')
+
+    assert os.path.isdir(standalone_dir), f'Missing {standalone_dir}. Run npm run build first.'
+
+    local(f'cd {standalone_dir} && tar czf /tmp/standalone.tar.gz .')
+    print('  standalone.tar.gz OK')
+
+    local(f'cd {static_dir} && tar czf /tmp/static.tar.gz .')
+    print('  static.tar.gz OK')
+
+    # Public: use original public/ dir (standalone may not copy all files)
+    local(f'cd {public_dir} && tar czf /tmp/public.tar.gz .')
+    print('  public.tar.gz OK')
+
+    # ---- Step 1: SSH & deploy ----
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(VPS, port=22, username=VPS_USER, password=VPS_PASS, timeout=15)
@@ -38,21 +66,17 @@ def main():
 
     # Verify node_modules
     out, _ = run(client, f'ls {DDIR}/node_modules/ 2>&1')
-    print(f'node_modules ({len(out.split())} items): {out[:200].strip()}')
-
-    # Check if react exists (may be symlink)
-    out, _ = run(client, f'ls -la {DDIR}/node_modules/react 2>&1 | head -1')
-    print(f'react: {out.strip()}')
+    print(f'node_modules ({len(out.split())} items)')
 
     # Upload & extract static
     print('Uploading static...')
     sftp.put('/tmp/static.tar.gz', '/tmp/static.tar.gz')
     run(client, f'mkdir -p {DDIR}/.next/static && cd {DDIR}/.next/static && tar xzf /tmp/static.tar.gz')
 
-    # Upload & extract public
+    # Upload & extract public INTO public/ subdir
     print('Uploading public...')
     sftp.put('/tmp/public.tar.gz', '/tmp/public.tar.gz')
-    run(client, f'cd {DDIR} && tar xzf /tmp/public.tar.gz')
+    run(client, f'mkdir -p {DDIR}/public && cd {DDIR}/public && tar xzf /tmp/public.tar.gz')
 
     # Fix .env
     run(client, f'echo "file:/home/kpma-rms-build-fresh/db/custom.db" > {DDIR}/.env')
