@@ -83,6 +83,8 @@ export function ReportsPage() {
   // Customers by Revenue Type state
   const [revenueTypeFilter, setRevenueTypeFilter] = useState<string>('Business');
   const [customerSearch, setCustomerSearch] = useState('');
+  // Customer Statements state
+  const [stmtSearch, setStmtSearch] = useState('');
 
   const currentFY = financialSettings.currentFinancialYear || new Date().getFullYear().toString();
   const previousFY = String(Number(currentFY) - 1);
@@ -157,6 +159,72 @@ export function ReportsPage() {
 
     return rows;
   }, [revenueTypeFilter, customerSearch, bizData, propData, rentData, finesData, bpData, billsData]);
+
+  // Customer Statements: build statement table from bills + payments
+  const customerStatements = useMemo(() => {
+    let filteredBills = [...billsData];
+
+    if (stmtSearch.trim()) {
+      const q = stmtSearch.toLowerCase();
+      filteredBills = filteredBills.filter((b: any) =>
+        (b.businessName || '').toLowerCase().includes(q) ||
+        (b.uniqueNumber || '').toLowerCase().includes(q) ||
+        (b.billNumber || '').toLowerCase().includes(q) ||
+        (b.owner || '').toLowerCase().includes(q)
+      );
+    }
+
+    const statements: { customer: string; uniqueNumber: string; rows: { date: string; description: string; ref: string; billDR: number; receiptCR: number; balance: number }[] }[] = [];
+
+    const entityBills = new Map<string, any[]>();
+    filteredBills.forEach((b) => {
+      const key = b.uniqueNumber || b.billNumber;
+      if (!entityBills.has(key)) entityBills.set(key, []);
+      entityBills.get(key)!.push(b);
+    });
+
+    entityBills.forEach((bills) => {
+      bills.sort((a: any, b: any) => (a.date || '').localeCompare(b.date || ''));
+      const customerName = bills[0].businessName || bills[0].owner || 'Unknown';
+      const uniqueNum = bills[0].uniqueNumber || '';
+      const rows: { date: string; description: string; ref: string; billDR: number; receiptCR: number; balance: number }[] = [];
+      let balance = 0;
+
+      bills.forEach((bill) => {
+        const billAmt = bill.amountDue || bill.charge || 0;
+        balance += billAmt;
+        rows.push({
+          date: bill.date || '',
+          description: 'Bill',
+          ref: bill.billNumber || '',
+          billDR: billAmt,
+          receiptCR: 0,
+          balance,
+        });
+
+        const billPayments = (payData as any[]).filter((p: any) => p.billNo === bill.billNumber);
+        billPayments.forEach((p) => {
+          const payAmt = p.amount || 0;
+          balance = Math.max(0, balance - payAmt);
+          rows.push({
+            date: p.date || p.paymentDate || '',
+            description: 'Payment',
+            ref: p.receiptNumber || p.receiptNo || '',
+            billDR: 0,
+            receiptCR: payAmt,
+            balance: balance > 0 ? balance : 0,
+          });
+        });
+      });
+
+      if (rows.length > 0) {
+        statements.push({ customer: customerName, uniqueNumber: uniqueNum, rows });
+      }
+    });
+
+    statements.sort((a, b) => a.customer.localeCompare(b.customer));
+    return statements;
+  }, [stmtSearch, billsData, payData]);
 
   const handlePrintReport = () => {
     const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Breakdown' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
@@ -398,9 +466,69 @@ export function ReportsPage() {
               )}
             </div>
           </div>
+
+          {/* B. Customer Statements */}
+          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
+            <div className="p-5 border-b border-border">
+              <h2 className="text-base font-semibold text-foreground">Customer Statements</h2>
+              <p className="text-sm text-muted-foreground mt-1">View bill and payment history per customer</p>
+            </div>
+            <div className="p-4 border-b border-border">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={stmtSearch}
+                  onChange={(e) => setStmtSearch(e.target.value)}
+                  placeholder="Search by name, unique number, or bill #..."
+                  className="w-full rounded-lg border-border bg-card pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+              {customerStatements.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No statements found.</p>
+                </div>
+              ) : (
+                customerStatements.map((stmt, sIdx) => (
+                  <div key={sIdx} className={sIdx > 0 ? 'border-t-4 border-muted/40' : ''}>
+                    <div className="px-4 py-2.5 bg-muted/40 dark:bg-slate-700/40">
+                      <span className="text-sm font-semibold text-foreground">{stmt.customer}</span>
+                      <span className="text-xs text-muted-foreground ml-3">{stmt.uniqueNumber}</span>
+                    </div>
+                    <table className="w-full text-left">
+                      <thead className="bg-card/30">
+                        <tr className="border-b border-border">
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Date</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Item Description</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Ref #</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Bill / DR</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Receipt / CR</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/40">
+                        {stmt.rows.map((row, rIdx) => (
+                          <tr key={rIdx} className="hover:bg-card/50 transition-colors">
+                            <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">{row.date}</td>
+                            <td className="px-4 py-2 text-sm text-foreground">{row.description}</td>
+                            <td className="px-4 py-2 text-sm font-mono text-muted-foreground">{row.ref || '—'}</td>
+                            <td className="px-4 py-2 text-sm text-right text-foreground">{row.billDR > 0 ? fmtCurrency(row.billDR) : '—'}</td>
+                            <td className="px-4 py-2 text-sm text-right text-primary dark:text-primary">{row.receiptCR > 0 ? fmtCurrency(row.receiptCR) : '—'}</td>
+                            <td className="px-4 py-2 text-sm text-right font-semibold text-foreground">{row.balance > 0 ? fmtCurrency(row.balance) : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       )}
-
       {/* ── Zones Tab ─────────────────────────────────────────────────────── */}
       {view === 'zones' && (
         <div className="space-y-4">
