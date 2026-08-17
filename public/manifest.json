@@ -1,6 +1,6 @@
 {
-  "name": "KMA Revenue Management System",
-  "short_name": "KMA RMS",
+  "name": "Kpando Municipal Assembly RMS",
+  "short_name": "Kpando MA RMS",
   "description": "Revenue Management System for Kpando Municipal Assembly",
   "start_url": "/",
   "display": "standalone",

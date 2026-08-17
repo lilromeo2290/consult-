@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "KMA Revenue Management System",
+  title: "Kpando Municipal Assembly RMS",
   description:
     "Revenue Management System for Kpando Municipal Assembly. Manage bills, payments, businesses, properties, rents, and building permits.",
   keywords: [
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "KMA RMS",
+    title: "Kpando MA RMS",
   },
   icons: {
     icon: "/pwa/icon-192x192.png",

@@ -326,7 +326,7 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
         </div>
         <div className="space-y-2">
           <label className="block text-sm font-medium text-foreground">Assembly Code</label>
-          <input type="text" value={data.code} onChange={(e) => onChange('code', e.target.value)} placeholder="e.g. KMA" className={inputCls} />
+          <input type="text" value={data.code} onChange={(e) => onChange('code', e.target.value)} placeholder="e.g. KpMA" className={inputCls} />
         </div>
         <div className="space-y-2">
           <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Telephone</label>

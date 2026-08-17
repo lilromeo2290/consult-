@@ -158,7 +158,7 @@ function PwaInstallBanner({
           <div className="shrink-0 w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
             <img
               src="/pwa/icon-192x192.png"
-              alt="KMA RMS"
+              alt="Kpando MA RMS"
               className="w-10 h-10 rounded-lg"
             />
           </div>
@@ -166,7 +166,7 @@ function PwaInstallBanner({
           {/* Text */}
           <div className="flex-1 min-w-0">
             <h3 className="text-white font-semibold text-[15px] leading-tight">
-              Install KMA RMS
+              Install Kpando MA RMS
             </h3>
             <p className="text-white/60 text-xs mt-0.5 leading-relaxed">
               Add to your home screen for quick access, works offline
