@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kma-rms-v5';
+const CACHE_NAME = 'kma-rms-v6';
 
 const PRECACHE_URLS = [
   '/',

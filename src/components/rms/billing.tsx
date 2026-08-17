@@ -1508,14 +1508,48 @@ export function BillingPage() {
                 )}
               </div>
 
-              {/* ── Auto-populated fields (read-only, vary by bill type) ── */}
-              {formData.uniqueNumber && (
+              {/* ── BP: Always show applicant fields when BP is selected ── */}
+              {formData.billType === 'BP' && (
+                <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-900/20 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-semibold mb-3">
+                    Applicant Information
+                  </p>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className={labelClass}>Application Number</label>
+                        <input type="text" value={formData.uniqueNumber} readOnly className={`${inputClass} bg-muted/50`} placeholder="Auto-filled from search" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Applicant's Name</label>
+                        <input type="text" value={formData.businessName} readOnly className={`${inputClass} bg-muted/50`} placeholder="Auto-filled from search" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className={labelClass}>Telephone Number</label>
+                        <input type="text" value={formData.phone} readOnly className={`${inputClass} bg-muted/50`} placeholder="Auto-filled from search" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Development Type</label>
+                        <input type="text" value={formData.category} readOnly className={`${inputClass} bg-muted/50`} placeholder="Auto-filled from search" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className={labelClass}>Nature of Application</label>
+                      <input type="text" value={selectedRawEntity?.natureOfApplication || ''} readOnly className={`${inputClass} bg-muted/50`} placeholder="Auto-filled from search" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Auto-populated fields for non-BP types (read-only) ── */}
+              {formData.billType !== 'BP' && formData.uniqueNumber && (
                 <div className="rounded-lg border-border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-1">
                   <p className="text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-semibold px-3 pt-2">
                     {formData.billType === 'Property Rate' ? 'Property Information' : formData.billType === 'BOP' ? 'Business Information' : formData.billType === 'Rent' ? 'Rent Property Information' : 'Applicant Information'} (Auto-populated)
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 px-3 pb-3">
-                    {/* Unique Number — always shown */}
                     <ReadOnlyField label="Unique Number" value={formData.uniqueNumber} />
 
                     {formData.billType === 'Property Rate' && (
@@ -1558,18 +1592,6 @@ export function BillingPage() {
                         <ReadOnlyField label="Class" value={formData.businessClassDesc} />
                         <ReadOnlyField label="Category" value={formData.category} />
                         <ReadOnlyField label="Amount" value={formData.charge ? formatCurrency(formData.charge) : '—'} />
-                      </>
-                    )}
-
-                    {formData.billType === 'BP' && (
-                      <>
-                        <ReadOnlyField label="Application Number" value={formData.uniqueNumber} />
-                        <ReadOnlyField label="Applicant's Name" value={formData.businessName} />
-                        <ReadOnlyField label="Telephone Number" value={formData.phone} />
-                        <ReadOnlyField label="Development Type" value={formData.category} />
-                        <ReadOnlyField label="Nature of Application" value={selectedRawEntity?.natureOfApplication || ''} />
-                        <ReadOnlyField label="Ghana Card #" value={selectedRawEntity?.nationalIdNumber || ''} />
-                        <ReadOnlyField label="Location" value={formData.location} />
                       </>
                     )}
                   </div>
