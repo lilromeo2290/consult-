@@ -5,6 +5,7 @@ import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
   BarChart3,
   Download,
+  Search,
   Filter,
   TrendingUp,
   TrendingDown,
@@ -349,92 +350,11 @@ export function ReportsPage() {
       {/* ── Revenue Breakdown Tab ──────────────────────────────────────────── */}
       {view === 'revenue' && (
         <div className="space-y-6">
-          {/* Existing Revenue by Category table */}
+          {/* Revenue Type */}
           <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
             <div className="p-5 border-b border-border">
-              <h2 className="text-base font-semibold text-foreground">Revenue by Category</h2>
-              <p className="text-sm text-muted-foreground mt-1">Detailed breakdown of revenue collection across all categories</p>
-            </div>
-            <div className="overflow-x-auto max-h-96 overflow-y-auto">
-              <table className="w-full text-left">
-                <thead className="bg-card/50 sticky top-0 z-10">
-                  <tr className="border-b border-border">
-                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Category</th>
-                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Officer</th>
-                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Budget</th>
-                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Collected</th>
-                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Target</th>
-                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Progress</th>
-                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Rate</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
-                  {revenueBreakdown.map((item, i) => (
-                    <tr key={`rev-row-${i}`} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          {item.category.includes('Property') ? (
-                            <Home className="w-4 h-4 text-destructive" />
-                          ) : (
-                            <Building2 className="w-4 h-4 text-destructive" />
-                          )}
-                          <span className="text-sm font-medium text-foreground">{item.category}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground">{item.officer}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.budget)}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-foreground text-right">{fmtCurrency(item.collected)}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.target)}</td>
-                      <td className="px-4 py-3 w-32">
-                        <div className="w-full">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex-1 h-2 rounded-full bg-muted dark:bg-slate-700">
-                              <div
-                                className={`h-2 rounded-full transition-all ${
-                                  item.percentage >= 95
-                                    ? 'bg-primary/100'
-                                    : item.percentage >= 90
-                                    ? 'bg-amber-500'
-                                    : 'bg-red-500'
-                                }`}
-                                style={{ width: `${Math.min(item.percentage, 100)}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span className={`inline-flex items-center gap-0.5 text-sm font-semibold ${
-                          item.percentage >= 95
-                            ? 'text-primary dark:text-primary'
-                            : item.percentage >= 90
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-red-600 dark:text-red-400'
-                        }`}>
-                          {item.percentage}%
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-card/50">
-                  <tr className="border-t-2 border-border">
-                    <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={2}>Total</td>
-                    <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(totalBudget)}</td>
-                    <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(totalCollected)}</td>
-                    <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(revenueBreakdown.reduce((s, r) => s + r.target, 0))}</td>
-                    <td className="px-4 py-3" colSpan={2} />
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-
-          {/* Customers Listing by Revenue Type */}
-          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
-            <div className="p-5 border-b border-border">
-              <h2 className="text-base font-semibold text-foreground">Customers Listing by Revenue Type</h2>
-              <p className="text-sm text-muted-foreground mt-1">View customer statement of bills and payments by revenue type</p>
+              <h2 className="text-base font-semibold text-foreground">Revenue Type</h2>
+              <p className="text-sm text-muted-foreground mt-1">Customers listing by revenue type</p>
             </div>
             <div className="p-4 border-b border-border flex flex-col sm:flex-row gap-3">
               <select
@@ -442,10 +362,10 @@ export function ReportsPage() {
                 onChange={(e) => setRevenueTypeFilter(e.target.value)}
                 className="rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="Business">Business (BOP)</option>
-                <option value="Property">Property Rate</option>
+                <option value="Business">Business</option>
+                <option value="Property">Property</option>
                 <option value="Rent">Rent</option>
-                <option value="Locality">Locality (All)</option>
+                <option value="Locality">Locality</option>
                 <option value="Fines">Fines</option>
               </select>
               <div className="relative flex-1">
