@@ -137,7 +137,7 @@ function PwaInstallBanner({
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
     >
       <div
-        className="mx-auto max-w-lg rounded-2xl p-4 shadow-2xl border"
+        className="relative mx-auto max-w-lg rounded-2xl p-4 shadow-2xl border"
         style={{
           background: 'linear-gradient(135deg, #123B5D 0%, #0B2940 100%)',
           borderColor: 'rgba(255,255,255,0.1)',
