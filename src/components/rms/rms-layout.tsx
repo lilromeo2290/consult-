@@ -61,7 +61,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Penalties', page: 'penalties', icon: Gavel, group: 'Revenue' },
   { label: 'Building Permit', page: 'building-permit', icon: HardHat, group: 'Building' },
   { label: 'BP Official', page: 'bp-official', icon: Stamp, group: 'Building' },
-  { label: 'Fines Management', page: 'fines-management', icon: Gavel, group: 'Building' },
+  { label: 'Bill Management', page: 'billing', icon: FileText, group: 'Finance' },
   { label: 'Payments', page: 'payments', icon: CreditCard, group: 'Finance' },
   { label: 'Payment History', page: 'payment-history', icon: Clock, group: 'Finance' },
   { label: 'Receipts', page: 'receipts', icon: Receipt, group: 'Finance' },
