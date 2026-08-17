@@ -7,7 +7,6 @@ import { useAppStore, type AppUser } from '@/stores/app-store';
 import { ParticleBackground } from './particle-background';
 import { ThemeToggle } from './theme-toggle';
 import {
-  ArrowLeft,
   Eye,
   EyeOff,
   Lock,
@@ -75,7 +74,6 @@ const defaultAdmin: StoredUser = {
 export function LoginPage() {
   const { resolvedTheme } = useTheme();
   const loginSuccess = useAppStore((s) => s.loginSuccess);
-  const backToLanding = useAppStore((s) => s.backToLanding);
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -232,19 +230,7 @@ export function LoginPage() {
       </div>
 
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 sm:px-8 relative z-10">
-        <motion.button
-          onClick={backToLanding}
-          className="flex items-center gap-2 text-sm font-medium rounded-lg px-3 py-2 transition-colors cursor-pointer"
-          style={{
-            color: isDark ? 'rgba(148,163,184,0.8)' : 'rgba(71,85,105,0.8)',
-          }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </motion.button>
+      <header className="flex items-center justify-end px-6 py-4 sm:px-8 relative z-10">
         <ThemeToggle />
       </header>
 

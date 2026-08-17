@@ -1,9 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { SplashScreen } from '@/components/landing/splash-screen';
-import { LandingPage } from '@/components/landing/landing-page';
+import { motion } from 'framer-motion';
 import { LoginPage } from '@/components/landing/login-page';
 import { RmsLayout } from '@/components/rms/rms-layout';
 import { DashboardPage } from '@/components/rms/dashboard';
@@ -77,53 +74,22 @@ function RMSView() {
 }
 
 export default function Home() {
-  const [showSplash, setShowSplash] = useState(true);
   const view = useAppStore((s) => s.view);
-  const currentUser = useAppStore((s) => s.currentUser);
-  const hydrated = useAppStore((s) => s.hydrated);
-
-  // Skip splash screen if user is already logged in (persisted session)
-  useEffect(() => {
-    if (hydrated && currentUser && showSplash) {
-      setShowSplash(false);
-    }
-  }, [hydrated, currentUser, showSplash]);
-
-  const handleSplashComplete = useCallback(() => {
-    setShowSplash(false);
-  }, []);
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        {showSplash && (
-          <SplashScreen key="splash" onComplete={handleSplashComplete} />
-        )}
-      </AnimatePresence>
-
-      {!showSplash && view === 'landing' && (
-        <motion.div
-          key="landing"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        >
-          <LandingPage />
-        </motion.div>
-      )}
-
-      {!showSplash && view === 'login' && (
+      {view === 'login' && (
         <motion.div
           key="login"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
         >
           <LoginPage />
         </motion.div>
       )}
 
-      {!showSplash && view === 'rms' && (
+      {view === 'rms' && (
         <motion.div
           key="rms"
           initial={{ opacity: 0 }}

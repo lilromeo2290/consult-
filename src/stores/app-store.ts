@@ -73,7 +73,7 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-      view: 'landing' as AppView,
+      view: 'login' as AppView,
       rmsPage: 'dashboard' as RMSPage,
       currentUser: null,
       hydrated: false,
@@ -92,8 +92,8 @@ export const useAppStore = create<AppState>()(
         };
         set({ view: 'rms', rmsPage: 'dashboard', currentUser: defaultAdmin });
       },
-      logout: () => set({ view: 'landing', rmsPage: 'dashboard', currentUser: null }),
-      backToLanding: () => set({ view: 'landing' }),
+      logout: () => set({ view: 'login', rmsPage: 'dashboard', currentUser: null }),
+      backToLanding: () => set({ view: 'login' }),
       setCurrentUser: (user) => set({ currentUser: user }),
       canAccess: (page) => {
         const { currentUser } = get();
@@ -114,6 +114,10 @@ export const useAppStore = create<AppState>()(
       // Mark as hydrated after rehydration completes
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Migration: redirect 'landing' view to 'login'
+          if (state.view === 'landing') {
+            state.view = 'login';
+          }
           // Migration: add any newly-added pages to admin's accessiblePages
           if (state.currentUser && state.currentUser.role === 'Administrator') {
             const allPages = ALL_RMS_PAGES.map((p) => p.page);
