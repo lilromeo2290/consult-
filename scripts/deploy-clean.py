@@ -44,7 +44,7 @@ def main():
     # ---- Step 1: SSH & deploy ----
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(VPS, port=22, username=VPS_USER, password=VPS_PASS, timeout=15)
+    client.connect(VPS, port=22, username=VPS_USER, password=VPS_PASS, timeout=30)
     print('SSH OK')
 
     # Stop PM2

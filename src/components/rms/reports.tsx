@@ -74,7 +74,13 @@ export function ReportsPage() {
   const [propData] = useSyncedStorage<unknown[]>('rms-properties', []);
   const [rentData] = useSyncedStorage<unknown[]>('rms-rents', []);
   const [payData] = useSyncedStorage<unknown[]>('rms-payments', []);
+  const [billsData] = useSyncedStorage<any[]>('rms-bills', []);
+  const [finesData] = useSyncedStorage<any[]>('rms-fines', []);
   const [financialSettings] = useSyncedStorage<{ currentFinancialYear: string }>('rms-settings-financial', { currentFinancialYear: '' });
+
+  // Customers by Revenue Type state
+  const [revenueTypeFilter, setRevenueTypeFilter] = useState<string>('Business');
+  const [customerSearch, setCustomerSearch] = useState('');
 
   const currentFY = financialSettings.currentFinancialYear || new Date().getFullYear().toString();
   const previousFY = String(Number(currentFY) - 1);
@@ -91,6 +97,82 @@ export function ReportsPage() {
     if (zoneFilter === 'All') return zoneReports;
     return zoneReports.filter((z) => z.zone.includes(zoneFilter));
   }, [zoneFilter]);
+
+  // Customers by Revenue Type: build statement table from bills + payments
+  const customerStatements = useMemo(() => {
+    let filteredBills: any[] = [];
+    if (revenueTypeFilter === 'Business') filteredBills = billsData.filter((b: any) => b.billType === 'BOP');
+    else if (revenueTypeFilter === 'Property') filteredBills = billsData.filter((b: any) => b.billType === 'Property Rate');
+    else if (revenueTypeFilter === 'Rent') filteredBills = billsData.filter((b: any) => b.billType === 'Rent');
+    else if (revenueTypeFilter === 'Fines') filteredBills = billsData.filter((b: any) => b.billType === 'Fine');
+    else if (revenueTypeFilter === 'Locality') filteredBills = billsData; // all types
+
+    if (customerSearch.trim()) {
+      const q = customerSearch.toLowerCase();
+      filteredBills = filteredBills.filter((b: any) =>
+        (b.businessName || '').toLowerCase().includes(q) ||
+        (b.uniqueNumber || '').toLowerCase().includes(q) ||
+        (b.billNumber || '').toLowerCase().includes(q) ||
+        (b.owner || '').toLowerCase().includes(q)
+      );
+    }
+
+    // Build statement rows per bill: bill row + payment rows, tracking balance
+    const statements: { customer: string; uniqueNumber: string; rows: { date: string; description: string; ref: string; billDR: number; receiptCR: number; balance: number }[] }[] = [];
+
+    // Group bills by entity (uniqueNumber)
+    const entityBills = new Map<string, any[]>();
+    filteredBills.forEach((b) => {
+      const key = b.uniqueNumber || b.billNumber;
+      if (!entityBills.has(key)) entityBills.set(key, []);
+      entityBills.get(key)!.push(b);
+    });
+
+    entityBills.forEach((bills, _key) => {
+      // Sort bills by date
+      bills.sort((a: any, b: any) => (a.date || '').localeCompare(b.date || ''));
+      const customerName = bills[0].businessName || bills[0].owner || 'Unknown';
+      const uniqueNum = bills[0].uniqueNumber || '';
+      const rows: { date: string; description: string; ref: string; billDR: number; receiptCR: number; balance: number }[] = [];
+      let balance = 0;
+
+      bills.forEach((bill) => {
+        const billAmt = bill.amountDue || bill.charge || 0;
+        balance += billAmt;
+        rows.push({
+          date: bill.date || '',
+          description: 'Bill',
+          ref: bill.billNumber || '',
+          billDR: billAmt,
+          receiptCR: 0,
+          balance,
+        });
+
+        // Find payments for this bill
+        const billPayments = (payData as any[]).filter((p: any) => p.billNo === bill.billNumber);
+        billPayments.forEach((p) => {
+          const payAmt = p.amount || 0;
+          balance = Math.max(0, balance - payAmt);
+          rows.push({
+            date: p.date || p.paymentDate || '',
+            description: 'Payment',
+            ref: p.receiptNumber || p.receiptNo || '',
+            billDR: 0,
+            receiptCR: payAmt,
+            balance: balance > 0 ? balance : 0,
+          });
+        });
+      });
+
+      if (rows.length > 0) {
+        statements.push({ customer: customerName, uniqueNumber: uniqueNum, rows });
+      }
+    });
+
+    // Sort by customer name
+    statements.sort((a, b) => a.customer.localeCompare(b.customer));
+    return statements;
+  }, [revenueTypeFilter, customerSearch, billsData, payData]);
 
   const handlePrintReport = () => {
     const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Breakdown' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
@@ -266,83 +348,158 @@ export function ReportsPage() {
 
       {/* ── Revenue Breakdown Tab ──────────────────────────────────────────── */}
       {view === 'revenue' && (
-        <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
-          <div className="p-5 border-b border-border">
-            <h2 className="text-base font-semibold text-foreground">Revenue by Category</h2>
-            <p className="text-sm text-muted-foreground mt-1">Detailed breakdown of revenue collection across all categories</p>
-          </div>
-          <div className="overflow-x-auto max-h-96 overflow-y-auto">
-            <table className="w-full text-left">
-              <thead className="bg-card/50 sticky top-0 z-10">
-                <tr className="border-b border-border">
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Category</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Officer</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Budget</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Collected</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Target</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Progress</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Rate</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {revenueBreakdown.map((item, i) => (
-                  <tr key={`rev-row-${i}`} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        {item.category.includes('Property') ? (
-                          <Home className="w-4 h-4 text-destructive" />
-                        ) : (
-                          <Building2 className="w-4 h-4 text-destructive" />
-                        )}
-                        <span className="text-sm font-medium text-foreground">{item.category}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground">{item.officer}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.budget)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-foreground text-right">{fmtCurrency(item.collected)}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.target)}</td>
-                    <td className="px-4 py-3 w-32">
-                      <div className="w-full">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex-1 h-2 rounded-full bg-muted dark:bg-slate-700">
-                            <div
-                              className={`h-2 rounded-full transition-all ${
-                                item.percentage >= 95
-                                  ? 'bg-primary/100'
-                                  : item.percentage >= 90
-                                  ? 'bg-amber-500'
-                                  : 'bg-red-500'
-                              }`}
-                              style={{ width: `${Math.min(item.percentage, 100)}%` }}
-                            />
+        <div className="space-y-6">
+          {/* Existing Revenue by Category table */}
+          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
+            <div className="p-5 border-b border-border">
+              <h2 className="text-base font-semibold text-foreground">Revenue by Category</h2>
+              <p className="text-sm text-muted-foreground mt-1">Detailed breakdown of revenue collection across all categories</p>
+            </div>
+            <div className="overflow-x-auto max-h-96 overflow-y-auto">
+              <table className="w-full text-left">
+                <thead className="bg-card/50 sticky top-0 z-10">
+                  <tr className="border-b border-border">
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Category</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Officer</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Budget</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Collected</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Target</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Progress</th>
+                    <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Rate</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {revenueBreakdown.map((item, i) => (
+                    <tr key={`rev-row-${i}`} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          {item.category.includes('Property') ? (
+                            <Home className="w-4 h-4 text-destructive" />
+                          ) : (
+                            <Building2 className="w-4 h-4 text-destructive" />
+                          )}
+                          <span className="text-sm font-medium text-foreground">{item.category}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground">{item.officer}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.budget)}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-foreground text-right">{fmtCurrency(item.collected)}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground dark:text-muted-foreground text-right">{fmtCurrency(item.target)}</td>
+                      <td className="px-4 py-3 w-32">
+                        <div className="w-full">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex-1 h-2 rounded-full bg-muted dark:bg-slate-700">
+                              <div
+                                className={`h-2 rounded-full transition-all ${
+                                  item.percentage >= 95
+                                    ? 'bg-primary/100'
+                                    : item.percentage >= 90
+                                    ? 'bg-amber-500'
+                                    : 'bg-red-500'
+                                }`}
+                                style={{ width: `${Math.min(item.percentage, 100)}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={`inline-flex items-center gap-0.5 text-sm font-semibold ${
-                        item.percentage >= 95
-                          ? 'text-primary dark:text-primary'
-                          : item.percentage >= 90
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {item.percentage}%
-                      </span>
-                    </td>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={`inline-flex items-center gap-0.5 text-sm font-semibold ${
+                          item.percentage >= 95
+                            ? 'text-primary dark:text-primary'
+                            : item.percentage >= 90
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {item.percentage}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-card/50">
+                  <tr className="border-t-2 border-border">
+                    <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={2}>Total</td>
+                    <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(totalBudget)}</td>
+                    <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(totalCollected)}</td>
+                    <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(revenueBreakdown.reduce((s, r) => s + r.target, 0))}</td>
+                    <td className="px-4 py-3" colSpan={2} />
                   </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-card/50">
-                <tr className="border-t-2 border-border">
-                  <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={2}>Total</td>
-                  <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(totalBudget)}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(totalCollected)}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(revenueBreakdown.reduce((s, r) => s + r.target, 0))}</td>
-                  <td className="px-4 py-3" colSpan={2} />
-                </tr>
-              </tfoot>
-            </table>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* Customers Listing by Revenue Type */}
+          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
+            <div className="p-5 border-b border-border">
+              <h2 className="text-base font-semibold text-foreground">Customers Listing by Revenue Type</h2>
+              <p className="text-sm text-muted-foreground mt-1">View customer statement of bills and payments by revenue type</p>
+            </div>
+            <div className="p-4 border-b border-border flex flex-col sm:flex-row gap-3">
+              <select
+                value={revenueTypeFilter}
+                onChange={(e) => setRevenueTypeFilter(e.target.value)}
+                className="rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="Business">Business (BOP)</option>
+                <option value="Property">Property Rate</option>
+                <option value="Rent">Rent</option>
+                <option value="Locality">Locality (All)</option>
+                <option value="Fines">Fines</option>
+              </select>
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  placeholder="Search by name, unique number, or bill #..."
+                  className="w-full rounded-lg border-border bg-card pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              {customerStatements.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No records found for this revenue type.</p>
+                </div>
+              ) : (
+                customerStatements.map((stmt, sIdx) => (
+                  <div key={sIdx} className={sIdx > 0 ? 'border-t-4 border-muted/40' : ''}>
+                    <div className="px-4 py-2.5 bg-muted/40 dark:bg-slate-700/40">
+                      <span className="text-sm font-semibold text-foreground">{stmt.customer}</span>
+                      <span className="text-xs text-muted-foreground ml-3">{stmt.uniqueNumber}</span>
+                    </div>
+                    <table className="w-full text-left">
+                      <thead className="bg-card/30">
+                        <tr className="border-b border-border">
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Date</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Item Description</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Ref #</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Bill / DR</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Receipt / CR</th>
+                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/40">
+                        {stmt.rows.map((row, rIdx) => (
+                          <tr key={rIdx} className="hover:bg-card/50 transition-colors">
+                            <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">{row.date}</td>
+                            <td className="px-4 py-2 text-sm text-foreground">{row.description}</td>
+                            <td className="px-4 py-2 text-sm font-mono text-muted-foreground">{row.ref || '—'}</td>
+                            <td className="px-4 py-2 text-sm text-right text-foreground">{row.billDR > 0 ? fmtCurrency(row.billDR) : '—'}</td>
+                            <td className="px-4 py-2 text-sm text-right text-primary dark:text-primary">{row.receiptCR > 0 ? fmtCurrency(row.receiptCR) : '—'}</td>
+                            <td className="px-4 py-2 text-sm text-right font-semibold text-foreground">{row.balance > 0 ? fmtCurrency(row.balance) : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
