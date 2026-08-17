@@ -226,6 +226,34 @@ export function ReportsPage() {
     return statements;
   }, [stmtSearch, billsData, payData]);
 
+  // C. Detailed Collection by Revenue Items: aggregate bills by revenue code
+  const revenueItems = useMemo(() => {
+    const map = new Map<string, { code: string; description: string; target: number; collected: number }>();
+
+    billsData.forEach((b: any) => {
+      const code = b.revenueCode || '';
+      const desc = b.revenueDescription || b.description || '';
+      if (!code) return;
+
+      const existing = map.get(code);
+      const billAmt = b.amountDue || b.charge || 0;
+
+      // Find payments for this bill
+      const paid = (payData as any[])
+        .filter((p: any) => p.billNo === b.billNumber)
+        .reduce((s: number, p: any) => s + (p.amount || 0), 0);
+
+      if (existing) {
+        existing.target += billAmt;
+        existing.collected += paid;
+      } else {
+        map.set(code, { code, description: desc, target: billAmt, collected: paid });
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.code.localeCompare(b.code));
+  }, [billsData, payData]);
+
   const handlePrintReport = () => {
     const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Breakdown' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
     let bodyContent = '';
@@ -524,6 +552,50 @@ export function ReportsPage() {
                     </table>
                   </div>
                 ))
+              )}
+            </div>
+          </div>
+
+          {/* C. Detailed Collection by Revenue Items */}
+          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
+            <div className="p-5 border-b border-border">
+              <h2 className="text-base font-semibold text-foreground">Detailed Collection by Revenue Items</h2>
+              <p className="text-sm text-muted-foreground mt-1">Aggregated collections grouped by revenue code</p>
+            </div>
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+              {revenueItems.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Receipt className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No revenue items found.</p>
+                </div>
+              ) : (
+                <table className="w-full text-left">
+                  <thead className="bg-card/50 sticky top-0 z-10">
+                    <tr className="border-b border-border">
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Code</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Description</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Target</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Total Collections</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {revenueItems.map((item, i) => (
+                      <tr key={i} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
+                        <td className="px-4 py-3 text-sm font-mono font-medium text-foreground">{item.code}</td>
+                        <td className="px-4 py-3 text-sm text-foreground">{item.description || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-right text-foreground">{item.target > 0 ? fmtCurrency(item.target) : '—'}</td>
+                        <td className="px-4 py-3 text-sm text-right font-medium text-primary dark:text-primary">{item.collected > 0 ? fmtCurrency(item.collected) : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-card/50">
+                    <tr className="border-t-2 border-border">
+                      <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={2}>Total</td>
+                      <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(revenueItems.reduce((s, r) => s + r.target, 0))}</td>
+                      <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(revenueItems.reduce((s, r) => s + r.collected, 0))}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               )}
             </div>
           </div>
