@@ -120,7 +120,7 @@ export function ReportsPage() {
       (bizData as any[]).forEach((b: any) => {
         const bizBills = billsData.filter((bl: any) => bl.uniqueNumber === b.regNumber && bl.billType === 'BOP');
         const totalAmt = bizBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ col1: b.name || '', col2: b.type || b.category || '', amount: totalAmt });
+        rows.push({ col1: b.name || '', col2: b.category || '', amount: totalAmt });
       });
     } else if (revenueTypeFilter === 'Property') {
       (propData as any[]).forEach((p: any) => {
