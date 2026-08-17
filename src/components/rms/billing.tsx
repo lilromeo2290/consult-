@@ -253,6 +253,8 @@ export function BillingPage() {
   const [paymentsData] = useSyncedStorage<any[]>('rms-payments', []);
   // Rate overrides for auto-charge lookup
   const [rateOverrides, setRateOverrides] = useState<Record<string, RateEntry>>({});
+  // Permit rate overrides (from Rate Config > Permit tab)
+  const [permitRateOverrides, setPermitRateOverrides] = useState<Record<string, any>>({});
   useEffect(() => {
     try {
       const raw = localStorage.getItem('rms-settings-rate-config');
@@ -262,6 +264,15 @@ export function BillingPage() {
         loadOverrides(data);
       }
     } catch {}
+    // Load permit rates from API (same key as Rate Config > Permit tab)
+    fetch('/api/rms-data?key=rms-rate-overrides-permit&_t=' + Date.now(), { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.data && typeof d.data === 'object') {
+          setPermitRateOverrides(d.data);
+        }
+      })
+      .catch(() => {});
   }, []);
   // Field officers from user management
   const [usersData] = useSyncedStorage<any[]>('rms-users', []);
@@ -375,6 +386,25 @@ export function BillingPage() {
     setSelectedRawEntity(entity._raw);
     setEntitySearch(entity.uniqueNumber);
     setShowEntityDropdown(false);
+
+    // For BP: auto-populate revenue items from permit rate config
+    if (formData.billType === 'BP' && entity._raw) {
+      const devType = entity._raw.typeOfDevelopment || '';
+      const nature = entity._raw.natureOfApplication || '';
+      const permitRates = Object.entries(permitRateOverrides);
+      if (permitRates.length > 0) {
+        const items = permitRates.map(([code, entry]: [string, any], idx: number) => ({
+          id: String(Date.now() + idx),
+          revenueCode: code,
+          revenueDescription: entry.businessClass || code,
+          category: entry.category || devType,
+          amount: entry.amount || 0,
+        }));
+        setBpRevenueItems(items);
+        const total = items.reduce((sum, r) => sum + (r.amount || 0), 0);
+        setFormData((p) => ({ ...p, charge: total }));
+      }
+    }
   };
 
   // Auto-lookup when bill type changes (clear search)
@@ -1607,25 +1637,10 @@ export function BillingPage() {
                 </div>
               )}
 
-              {/* BP: Revenue line items table */}
+              {/* BP: Revenue line items table (auto-populated from Rate Config > Permit) */}
               {formData.billType === 'BP' && (
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className={labelClass}>Revenue Items</label>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setBpRevenueItems((prev) => [
-                          ...prev,
-                          { id: String(Date.now()), revenueCode: '', revenueDescription: '', category: '', amount: 0 },
-                        ])
-                      }
-                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Add Row
-                    </button>
-                  </div>
+                  <label className={labelClass}>Revenue Items</label>
                   <div className="rounded-lg border border-border overflow-hidden">
                     <table className="w-full text-sm">
                       <thead>
@@ -1634,85 +1649,25 @@ export function BillingPage() {
                           <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground">Revenue Description</th>
                           <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground">Category</th>
                           <th className="text-right px-3 py-2 text-xs font-semibold text-muted-foreground">Amount</th>
-                          <th className="w-10 px-2 py-2"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {bpRevenueItems.map((item, idx) => (
-                          <tr key={item.id} className="hover:bg-muted/30 transition-colors">
-                            <td className="px-2 py-1.5">
-                              <input
-                                type="text"
-                                value={item.revenueCode}
-                                onChange={(e) => {
-                                  const updated = [...bpRevenueItems];
-                                  updated[idx] = { ...updated[idx], revenueCode: e.target.value };
-                                  setBpRevenueItems(updated);
-                                }}
-                                className={`${inputClass} text-xs py-1.5 px-2`}
-                                placeholder="XXX"
-                              />
-                            </td>
-                            <td className="px-2 py-1.5">
-                              <input
-                                type="text"
-                                value={item.revenueDescription}
-                                onChange={(e) => {
-                                  const updated = [...bpRevenueItems];
-                                  updated[idx] = { ...updated[idx], revenueDescription: e.target.value };
-                                  setBpRevenueItems(updated);
-                                }}
-                                className={`${inputClass} text-xs py-1.5 px-2`}
-                                placeholder="Description"
-                              />
-                            </td>
-                            <td className="px-2 py-1.5">
-                              <input
-                                type="text"
-                                value={item.category}
-                                onChange={(e) => {
-                                  const updated = [...bpRevenueItems];
-                                  updated[idx] = { ...updated[idx], category: e.target.value };
-                                  setBpRevenueItems(updated);
-                                }}
-                                className={`${inputClass} text-xs py-1.5 px-2`}
-                                placeholder="Category"
-                              />
-                            </td>
-                            <td className="px-2 py-1.5">
-                              <input
-                                type="number"
-                                value={item.amount || ''}
-                                onChange={(e) => {
-                                  const updated = [...bpRevenueItems];
-                                  updated[idx] = { ...updated[idx], amount: parseFloat(e.target.value) || 0 };
-                                  setBpRevenueItems(updated);
-                                  // Auto-sum charge from all revenue items
-                                  const total = updated.reduce((sum, r) => sum + (r.amount || 0), 0);
-                                  setFormData((p) => ({ ...p, charge: total }));
-                                }}
-                                className={`${inputClass} text-xs py-1.5 px-2 text-right font-medium`}
-                                placeholder="0"
-                              />
-                            </td>
-                            <td className="px-1 py-1.5 text-center">
-                              {bpRevenueItems.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const updated = bpRevenueItems.filter((_, i) => i !== idx);
-                                    setBpRevenueItems(updated);
-                                    const total = updated.reduce((sum, r) => sum + (r.amount || 0), 0);
-                                    setFormData((p) => ({ ...p, charge: total }));
-                                  }}
-                                  className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
+                        {bpRevenueItems.length === 0 || (bpRevenueItems.length === 1 && !bpRevenueItems[0].revenueCode) ? (
+                          <tr>
+                            <td colSpan={4} className="text-center py-6 text-xs text-muted-foreground">
+                              Select a building permit to auto-populate revenue items from Rate Configuration.
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          bpRevenueItems.filter((r) => r.revenueCode).map((item) => (
+                            <tr key={item.id} className="hover:bg-muted/30 transition-colors">
+                              <td className="px-3 py-2 text-sm font-mono text-foreground">{item.revenueCode}</td>
+                              <td className="px-3 py-2 text-sm text-foreground">{item.revenueDescription}</td>
+                              <td className="px-3 py-2 text-sm text-muted-foreground">{item.category}</td>
+                              <td className="px-3 py-2 text-sm text-right font-semibold text-foreground">{item.amount > 0 ? formatCurrency(item.amount) : '—'}</td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
