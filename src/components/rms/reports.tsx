@@ -70,7 +70,7 @@ const monthlyComparison: MonthlyComparison[] = [];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-type ReportView = 'overview' | 'revenue' | 'statements' | 'zones' | 'monthly';
+type ReportView = 'overview' | 'revenue' | 'statements' | 'items' | 'zones' | 'monthly';
 
 export function ReportsPage() {
   // Synced data for counts
@@ -91,6 +91,7 @@ export function ReportsPage() {
   const [filterDateTo, setFilterDateTo] = useState('');
   const [filterLocality, setFilterLocality] = useState('');
   const [filterRevenueItem, setFilterRevenueItem] = useState('');
+  const [filterRevenueCode, setFilterRevenueCode] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
   const currentFY = financialSettings.currentFinancialYear || new Date().getFullYear().toString();
@@ -156,8 +157,14 @@ export function ReportsPage() {
       );
     }
 
+    // Revenue code filter
+    if (filterRevenueCode.trim()) {
+      const q = filterRevenueCode.toLowerCase();
+      result = result.filter((b: any) => (b.revenueCode || '').toLowerCase().includes(q));
+    }
+
     return result;
-  }, [billsData, revenueTypeFilter, filterCustomer, filterUniqueNo, filterDateFrom, filterDateTo, filterLocality, filterRevenueItem]);
+  }, [billsData, revenueTypeFilter, filterCustomer, filterUniqueNo, filterDateFrom, filterDateTo, filterLocality, filterRevenueItem, filterRevenueCode]);
 
   // Also filter payments by date range
   const filteredPayments = useMemo(() => {
@@ -291,7 +298,7 @@ export function ReportsPage() {
   }, [filteredBills, filteredPayments]);
 
   const handlePrintReport = () => {
-    const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Type' : view === 'statements' ? 'Customer Statements' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
+    const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Type' : view === 'statements' ? 'Customer Statements' : view === 'items' ? 'Revenue Items' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
     let bodyContent = '';
 
     if (view === 'revenue') {
@@ -303,6 +310,9 @@ export function ReportsPage() {
         return `<div style="margin-bottom:16px;"><div style="padding:6px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;"><strong style="font-size:12px;">${stmt.customer}</strong><span style="font-size:11px;color:#64748b;margin-left:8px;">${stmt.uniqueNumber}</span></div><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f1f5f9;border-bottom:1px solid #e2e8f0;"><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Date</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Description</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Ref #</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Bill/DR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Receipt/CR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Balance</th></tr></thead><tbody>${rows}</tbody></table></div>`;
       }).join('');
       bodyContent = stmtHtml || '<p style="text-align:center;color:#94a3b8;padding:24px;">No statements found.</p>';
+    } else if (view === 'items') {
+      const rows = revenueItems.map(r => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-family:monospace;">${r.code}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.description||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${r.target>0?fmtCurrency(r.target):'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${r.collected>0?fmtCurrency(r.collected):'—'}</td></tr>`).join('');
+      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Revenue Code</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Revenue Description</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Target</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Total Collections</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td colspan="2" style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(revenueItems.reduce((s,r)=>s+r.target,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">${fmtCurrency(revenueItems.reduce((s,r)=>s+r.collected,0))}</td></tr></tfoot></table>`;
     } else if (view === 'zones') {
       const zoneData = zoneFilter === 'All' ? zoneReports : zoneReports.filter(z => z.zone.includes(zoneFilter));
       const rows = zoneData.map((z) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:500;">${z.zone}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${z.businesses}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${z.properties}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(z.collected)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(z.target)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:600;text-align:right;">${z.compliance}%</td></tr>`).join('');
@@ -329,6 +339,7 @@ export function ReportsPage() {
     { key: 'overview', label: 'Overview', icon: PieChart },
     { key: 'revenue', label: 'Revenue Type', icon: DollarSign },
     { key: 'statements', label: 'Customer Statements', icon: FileText },
+    { key: 'items', label: 'Revenue Items', icon: Receipt },
     { key: 'zones', label: 'Zone Reports', icon: Building2 },
     { key: 'monthly', label: 'Monthly Comparison', icon: BarChart3 },
   ];
@@ -588,49 +599,6 @@ export function ReportsPage() {
             </div>
           </div>
 
-          {/* C. Detailed Collection by Revenue Items */}
-          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
-            <div className="p-5 border-b border-border">
-              <h2 className="text-base font-semibold text-foreground">Detailed Collection by Revenue Items</h2>
-              <p className="text-sm text-muted-foreground mt-1">Aggregated collections grouped by revenue code</p>
-            </div>
-            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-              {revenueItems.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Receipt className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                  <p className="text-sm">No revenue items found.</p>
-                </div>
-              ) : (
-                <table className="w-full text-left">
-                  <thead className="bg-card/50 sticky top-0 z-10">
-                    <tr className="border-b border-border">
-                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Code</th>
-                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Description</th>
-                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Target</th>
-                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Total Collections</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
-                    {revenueItems.map((item, i) => (
-                      <tr key={i} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
-                        <td className="px-4 py-3 text-sm font-mono font-medium text-foreground">{item.code}</td>
-                        <td className="px-4 py-3 text-sm text-foreground">{item.description || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-right text-foreground">{item.target > 0 ? fmtCurrency(item.target) : '—'}</td>
-                        <td className="px-4 py-3 text-sm text-right font-medium text-primary dark:text-primary">{item.collected > 0 ? fmtCurrency(item.collected) : '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-card/50">
-                    <tr className="border-t-2 border-border">
-                      <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={2}>Total</td>
-                      <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(revenueItems.reduce((s, r) => s + r.target, 0))}</td>
-                      <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(revenueItems.reduce((s, r) => s + r.collected, 0))}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              )}
-            </div>
-          </div>
         </div>
       )}
       {/* ── Customer Statements Tab ──────────────────────────────────── */}
@@ -739,6 +707,133 @@ export function ReportsPage() {
                     </table>
                   </div>
                 ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Revenue Items Tab ─────────────────────────────────────── */}
+      {view === 'items' && (
+        <div className="space-y-6">
+          {/* Report Filters */}
+          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between cursor-pointer" onClick={() => setShowFilters(!showFilters)}>
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-primary dark:text-primary" />
+                <span className="text-sm font-semibold text-foreground">Report Filters</span>
+                {(revenueTypeFilter !== 'Business' || filterCustomer || filterUniqueNo || filterDateFrom || filterDateTo || filterLocality || filterRevenueItem || filterRevenueCode) && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold">!</span>
+                )}
+              </div>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+            </div>
+            {showFilters && (
+              <div className="p-4 space-y-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                  {/* Revenue Type */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Revenue Type</label>
+                    <select
+                      value={revenueTypeFilter}
+                      onChange={(e) => setRevenueTypeFilter(e.target.value)}
+                      className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="Business">Business</option>
+                      <option value="Property">Property</option>
+                      <option value="Rent">Rent</option>
+                      <option value="BP">BP-Building Permit</option>
+                      <option value="Fines">Fines</option>
+                    </select>
+                  </div>
+                  {/* Customer Name */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Customer Name</label>
+                    <input type="text" value={filterCustomer} onChange={(e) => setFilterCustomer(e.target.value)} placeholder="Name..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  {/* Unique Number */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Unique Number</label>
+                    <input type="text" value={filterUniqueNo} onChange={(e) => setFilterUniqueNo(e.target.value)} placeholder="Unique #..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  {/* Locality */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Locality</label>
+                    <select value={filterLocality} onChange={(e) => setFilterLocality(e.target.value)} className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">All Localities</option>
+                      {LOCALITIES.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
+                    </select>
+                  </div>
+                  {/* Date From */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Date From</label>
+                    <input type="date" value={filterDateFrom} onChange={(e) => setFilterDateFrom(e.target.value)} className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  {/* Date To */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Date To</label>
+                    <input type="date" value={filterDateTo} onChange={(e) => setFilterDateTo(e.target.value)} className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  {/* Revenue Item */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Revenue Item</label>
+                    <input type="text" value={filterRevenueItem} onChange={(e) => setFilterRevenueItem(e.target.value)} placeholder="Description..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  {/* Revenue Code */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Revenue Code</label>
+                    <input type="text" value={filterRevenueCode} onChange={(e) => setFilterRevenueCode(e.target.value)} placeholder="Code..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                </div>
+                {/* Clear button */}
+                <div className="flex justify-end pt-3">
+                  <button onClick={() => { setRevenueTypeFilter('Business'); setFilterCustomer(''); setFilterUniqueNo(''); setFilterDateFrom(''); setFilterDateTo(''); setFilterLocality(''); setFilterRevenueItem(''); setFilterRevenueCode(''); }} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                    <X className="w-3.5 h-3.5" /> Clear all filters
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Revenue Items Table */}
+          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
+            <div className="p-5 border-b border-border">
+              <h2 className="text-base font-semibold text-foreground">Revenue Items</h2>
+              <p className="text-sm text-muted-foreground mt-1">Aggregated collections grouped by revenue code</p>
+            </div>
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+              {revenueItems.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Receipt className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No revenue items found.</p>
+                </div>
+              ) : (
+                <table className="w-full text-left">
+                  <thead className="bg-card/50 sticky top-0 z-10">
+                    <tr className="border-b border-border">
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Code</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Description</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Target</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Total Collections</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {revenueItems.map((item, i) => (
+                      <tr key={i} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
+                        <td className="px-4 py-3 text-sm font-mono font-medium text-foreground">{item.code}</td>
+                        <td className="px-4 py-3 text-sm text-foreground">{item.description || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-right text-foreground">{item.target > 0 ? fmtCurrency(item.target) : '—'}</td>
+                        <td className="px-4 py-3 text-sm text-right font-medium text-primary dark:text-primary">{item.collected > 0 ? fmtCurrency(item.collected) : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-card/50">
+                    <tr className="border-t-2 border-border">
+                      <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={2}>Total</td>
+                      <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{fmtCurrency(revenueItems.reduce((s, r) => s + r.target, 0))}</td>
+                      <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(revenueItems.reduce((s, r) => s + r.collected, 0))}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               )}
             </div>
           </div>
