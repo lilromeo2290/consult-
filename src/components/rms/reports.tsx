@@ -299,7 +299,23 @@ export function ReportsPage() {
 
   // C. Detailed Collection by Revenue Items (uses filteredBills + filteredPayments)
   const revenueItems = useMemo(() => {
+    // When 'All' is selected, start with every code from REVENUE_CODE_MAP
     const map = new Map<string, { code: string; description: string; target: number; collected: number }>();
+
+    if (revenueTypeFilter === 'All') {
+      REVENUE_CODE_MAP.forEach(([code, desc]) => {
+        map.set(code, { code, description: desc, target: 0, collected: 0 });
+      });
+    }
+
+    // Match payments to bills by billNo, then aggregate by revenueCode
+    const billPaymentMap = new Map<string, number>();
+    filteredPayments.forEach((p: any) => {
+      const billNo = p.billNo || '';
+      if (!billNo) return;
+      const existing = billPaymentMap.get(billNo) || 0;
+      billPaymentMap.set(billNo, existing + (p.amount || 0));
+    });
 
     filteredBills.forEach((b: any) => {
       const code = b.revenueCode || '';
@@ -308,9 +324,7 @@ export function ReportsPage() {
 
       const existing = map.get(code);
       const billAmt = b.amountDue || b.charge || 0;
-      const paid = filteredPayments
-        .filter((p: any) => p.billNo === b.billNumber)
-        .reduce((s: number, p: any) => s + (p.amount || 0), 0);
+      const paid = billPaymentMap.get(b.billNumber) || 0;
 
       if (existing) {
         existing.target += billAmt;
@@ -320,8 +334,19 @@ export function ReportsPage() {
       }
     });
 
-    return Array.from(map.values()).sort((a, b) => a.code.localeCompare(b.code));
-  }, [filteredBills, filteredPayments]);
+    // If filtering by specific code or item, narrow results
+    let result = Array.from(map.values());
+    if (filterRevenueCode.trim()) {
+      const q = filterRevenueCode.toLowerCase();
+      result = result.filter(r => r.code.toLowerCase().includes(q));
+    }
+    if (filterRevenueItem.trim()) {
+      const q = filterRevenueItem.toLowerCase();
+      result = result.filter(r => r.description.toLowerCase().includes(q));
+    }
+
+    return result.sort((a, b) => a.code.localeCompare(b.code));
+  }, [filteredBills, filteredPayments, revenueTypeFilter, filterRevenueCode, filterRevenueItem]);
 
   const handlePrintReport = () => {
     const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Type' : view === 'statements' ? 'Customer Statements' : view === 'items' ? 'Revenue Items' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
@@ -759,7 +784,7 @@ export function ReportsPage() {
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-primary dark:text-primary" />
                 <span className="text-sm font-semibold text-foreground">Report Filters</span>
-                {(revenueTypeFilter !== 'Business' || filterCustomer || filterUniqueNo || filterDateFrom || filterDateTo || filterLocality || filterRevenueItem || filterRevenueCode) && (
+                {(revenueTypeFilter !== 'Business' || filterDateFrom || filterDateTo || filterRevenueItem || filterRevenueCode) && (
                   <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold">!</span>
                 )}
               </div>
@@ -782,24 +807,6 @@ export function ReportsPage() {
                       <option value="Rent">Rent</option>
                       <option value="BP">BP-Building Permit</option>
                       <option value="Fines">Fines</option>
-                    </select>
-                  </div>
-                  {/* Customer Name */}
-                  <div className="flex items-center gap-3">
-                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Customer Name</label>
-                    <input type="text" value={filterCustomer} onChange={(e) => setFilterCustomer(e.target.value)} placeholder="Name..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                  </div>
-                  {/* Unique Number */}
-                  <div className="flex items-center gap-3">
-                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Unique Number</label>
-                    <input type="text" value={filterUniqueNo} onChange={(e) => setFilterUniqueNo(e.target.value)} placeholder="Unique #..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                  </div>
-                  {/* Locality */}
-                  <div className="flex items-center gap-3">
-                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Locality</label>
-                    <select value={filterLocality} onChange={(e) => setFilterLocality(e.target.value)} className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                      <option value="">All Localities</option>
-                      {LOCALITIES.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
                     </select>
                   </div>
                   {/* Date From */}
@@ -883,8 +890,8 @@ export function ReportsPage() {
                     <tr className="border-b border-border">
                       <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Code</th>
                       <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Description</th>
-                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Target</th>
-                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Total Collections</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Amount (Billed)</th>
+                      <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Payments / Receipts</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
