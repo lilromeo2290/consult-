@@ -39,7 +39,7 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'payment-history', label: 'Payment History' },
   { page: 'receipts', label: 'Receipts' },
   { page: 'reports', label: 'Reports' },
-  { page: 'individual-report', label: 'Individual Report' },
+  { page: 'individual-report', label: 'Customer Statement' },
   { page: 'users', label: 'User Management' },
   { page: 'settings', label: 'Settings' },
   { page: 'audit-trail', label: 'Audit Trail' },
