@@ -84,7 +84,7 @@ export function ReportsPage() {
   const [financialSettings] = useSyncedStorage<{ currentFinancialYear: string }>('rms-settings-financial', { currentFinancialYear: '' });
 
   // Unified report filters
-  const [revenueTypeFilter, setRevenueTypeFilter] = useState<string>('Business');
+  const [revenueTypeFilter, setRevenueTypeFilter] = useState<string>('All');
   const [filterCustomer, setFilterCustomer] = useState('');
   const [filterUniqueNo, setFilterUniqueNo] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
@@ -116,7 +116,7 @@ export function ReportsPage() {
 
     // Revenue type filter
     const billTypeMap: Record<string, string> = { Business: 'BOP', Property: 'Property Rate', Rent: 'Rent', Fines: 'Fine', BP: 'BP' };
-    if (revenueTypeFilter && billTypeMap[revenueTypeFilter]) {
+    if (revenueTypeFilter && revenueTypeFilter !== 'All' && billTypeMap[revenueTypeFilter]) {
       result = result.filter((b: any) => b.billType === billTypeMap[revenueTypeFilter]);
     }
 
@@ -186,46 +186,40 @@ export function ReportsPage() {
       case 'Rent': return { col1: "Occupant's Name", col2: 'Rent Type' };
       case 'Fines': return { col1: "Offender's Name", col2: 'Fine Type' };
       case 'BP': return { col1: "Applicant's Name", col2: 'Development Type' };
+      case 'All': return { col1: 'Name', col2: 'Type', showType: true };
       default: return { col1: 'Name', col2: 'Type' };
     }
   }, [revenueTypeFilter]);
 
   // A. Customers by Revenue Type: flat listing (uses filteredBills)
   const customerList = useMemo(() => {
-    let rows: { col1: string; col2: string; amount: number }[] = [];
+    let rows: { col1: string; col2: string; amount: number; type?: string }[] = [];
 
-    if (revenueTypeFilter === 'Business') {
-      (bizData as any[]).forEach((b: any) => {
-        const bizBills = filteredBills.filter((bl: any) => bl.uniqueNumber === b.regNumber);
-        if (bizBills.length === 0) return;
-        const totalAmt = bizBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ col1: b.name || '', col2: b.category || '', amount: totalAmt });
+    const buildRows = (type: string, data: any[], nameFn: (e: any) => string, col2Fn: (e: any) => string, uniqueFn: (e: any) => string) => {
+      data.forEach((entity) => {
+        const eBills = filteredBills.filter((bl: any) => bl.uniqueNumber === uniqueFn(entity));
+        if (type !== 'Fines' && eBills.length === 0) return;
+        const totalAmt = type === 'Fines'
+          ? (entity.amountDue || entity.charge || 0)
+          : eBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
+        rows.push({ col1: nameFn(entity), col2: col2Fn(entity), amount: totalAmt, type });
       });
-    } else if (revenueTypeFilter === 'Property') {
-      (propData as any[]).forEach((p: any) => {
-        const propBills = filteredBills.filter((bl: any) => bl.uniqueNumber === p.propertyUniqueNumber);
-        if (propBills.length === 0) return;
-        const totalAmt = propBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ col1: p.ownerName || '', col2: p.category || p.revenueDescription || '', amount: totalAmt });
-      });
-    } else if (revenueTypeFilter === 'Rent') {
-      (rentData as any[]).forEach((r: any) => {
-        const rentBills = filteredBills.filter((bl: any) => bl.uniqueNumber === (r.rentPropertyUniqueNumber || r.uniqueNumber));
-        if (rentBills.length === 0) return;
-        const totalAmt = rentBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ col1: r.occupantName || '', col2: r.rentPropertyType || r.rentRevenueDescription || '', amount: totalAmt });
-      });
-    } else if (revenueTypeFilter === 'Fines') {
-      (finesData as any[]).forEach((f: any) => {
-        rows.push({ col1: f.nameOfOffender || '', col2: f.classDescription || f.category || '', amount: f.amountDue || f.charge || 0 });
-      });
-    } else if (revenueTypeFilter === 'BP') {
-      (bpData as any[]).forEach((bp: any) => {
-        const bpBills = filteredBills.filter((bl: any) => bl.uniqueNumber === bp.permitNumber);
-        if (bpBills.length === 0) return;
-        const totalAmt = bpBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
-        rows.push({ col1: bp.applicantFullName || '', col2: bp.typeOfDevelopment || '', amount: totalAmt });
-      });
+    };
+
+    if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Business') {
+      buildRows('Business', bizData as any[], (b) => b.name || '', (b) => b.category || '', (b) => b.regNumber);
+    }
+    if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Property') {
+      buildRows('Property', propData as any[], (p) => p.ownerName || '', (p) => p.category || p.revenueDescription || '', (p) => p.propertyUniqueNumber);
+    }
+    if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Rent') {
+      buildRows('Rent', rentData as any[], (r) => r.occupantName || '', (r) => r.rentPropertyType || r.rentRevenueDescription || '', (r) => r.rentPropertyUniqueNumber || r.uniqueNumber);
+    }
+    if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Fines') {
+      buildRows('Fines', finesData as any[], (f) => f.nameOfOffender || '', (f) => f.classDescription || f.category || '', () => '');
+    }
+    if (revenueTypeFilter === 'All' || revenueTypeFilter === 'BP') {
+      buildRows('BP', bpData as any[], (bp) => bp.applicantFullName || '', (bp) => bp.typeOfDevelopment || '', (bp) => bp.permitNumber);
     }
 
     return rows;
@@ -302,8 +296,10 @@ export function ReportsPage() {
     let bodyContent = '';
 
     if (view === 'revenue') {
-      const rows = customerList.map((r, i) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:center;">${i+1}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.col1||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.col2||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${r.amount>0?fmtCurrency(r.amount):'—'}</td></tr>`).join('');
-      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">S/N</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${columnConfig.col1}</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${columnConfig.col2}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Amount</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td colspan="3" style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(customerList.reduce((s,r)=>s+r.amount,0))}</td></tr></tfoot></table>`;
+      const showType = 'showType' in columnConfig && columnConfig.showType;
+      const rows = customerList.map((r, i) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:center;">${i+1}</td>${showType?`<td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.type||'—'}</td>`:''}<td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.col1||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.col2||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${r.amount>0?fmtCurrency(r.amount):'—'}</td></tr>`).join('');
+      const typeHeader = showType ? '<th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Revenue Type</th>' : '';
+      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">S/N</th>${typeHeader}<th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${columnConfig.col1}</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${columnConfig.col2}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Amount</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td colspan="${showType?4:3}" style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(customerList.reduce((s,r)=>s+r.amount,0))}</td></tr></tfoot></table>`;
     } else if (view === 'statements') {
       const stmtHtml = customerStatements.map(stmt => {
         const rows = stmt.rows.map(r => `<tr><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.date}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.description}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.ref||'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.billDR>0?fmtCurrency(r.billDR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.receiptCR>0?fmtCurrency(r.receiptCR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.balance>0?fmtCurrency(r.balance):'—'}</td></tr>`).join('');
@@ -506,6 +502,7 @@ export function ReportsPage() {
                       onChange={(e) => setRevenueTypeFilter(e.target.value)}
                       className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     >
+                      <option value="All">All Revenue Type</option>
                       <option value="Business">Business</option>
                       <option value="Property">Property</option>
                       <option value="Rent">Rent</option>
@@ -573,6 +570,7 @@ export function ReportsPage() {
                   <thead className="bg-card/50 sticky top-0 z-10">
                     <tr className="border-b border-border">
                       <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 w-16">S/N</th>
+                      {'showType' in columnConfig && columnConfig.showType && <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Revenue Type</th>}
                       <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">{columnConfig.col1}</th>
                       <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">{columnConfig.col2}</th>
                       <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Amount</th>
@@ -582,6 +580,7 @@ export function ReportsPage() {
                     {customerList.map((row, i) => (
                       <tr key={i} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
                         <td className="px-4 py-3 text-sm text-muted-foreground text-center">{i + 1}</td>
+                        {'showType' in columnConfig && columnConfig.showType && <td className="px-4 py-3 text-sm text-foreground">{row.type || '—'}</td>}
                         <td className="px-4 py-3 text-sm font-medium text-foreground">{row.col1 || '—'}</td>
                         <td className="px-4 py-3 text-sm text-foreground">{row.col2 || '—'}</td>
                         <td className="px-4 py-3 text-sm text-right font-medium text-foreground">{row.amount > 0 ? fmtCurrency(row.amount) : '—'}</td>
@@ -590,7 +589,7 @@ export function ReportsPage() {
                   </tbody>
                   <tfoot className="bg-card/50">
                     <tr className="border-t-2 border-border">
-                      <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={3}>Total</td>
+                      <td className="px-4 py-3 text-sm font-bold text-foreground" colSpan={'showType' in columnConfig && columnConfig.showType ? 4 : 3}>Total</td>
                       <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">{fmtCurrency(customerList.reduce((s, r) => s + r.amount, 0))}</td>
                     </tr>
                   </tfoot>
@@ -738,6 +737,7 @@ export function ReportsPage() {
                       onChange={(e) => setRevenueTypeFilter(e.target.value)}
                       className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     >
+                      <option value="All">All Revenue Type</option>
                       <option value="Business">Business</option>
                       <option value="Property">Property</option>
                       <option value="Rent">Rent</option>
