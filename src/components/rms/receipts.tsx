@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 import { encodeBarcodeData, getVerificationUrl } from '@/lib/barcode-utils';
+import { assemblyHeaderHTML } from '@/lib/utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -182,6 +183,7 @@ export function ReceiptsPage() {
   }, [selectedReceipt]);
 
   const _asmName = () => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; } };
+  const _asmDesc = () => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.description || ''; } catch { return ''; } };
   const handlePrintReceipt = (r: Receipt) => {
     const barcodeSvg = getBarcodeSvg(r);
     const itemsRows = r.items.map((item) => `
@@ -230,8 +232,7 @@ export function ReceiptsPage() {
         <div style="position:relative;">
           ${r.status === 'Voided' ? '<div class="voided-stamp">VOIDED</div>' : ''}
           <div class="header">
-            <h1>${_asmName().toUpperCase()}</h1>
-            <p>Revenue Management System — Official Receipt</p>
+            ${assemblyHeaderHTML('Revenue Management System — Official Receipt')}
           </div>
           <div class="receipt-title">OFFICIAL RECEIPT</div>
           <div class="info-grid">

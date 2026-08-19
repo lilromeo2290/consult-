@@ -30,6 +30,7 @@ import { RENT_CLASS_NAMES } from '@/lib/rent-class-code-map';
 import { FINE_CLASS_NAMES } from '@/lib/fines-class-code-map';
 import { FEE_CODE_LOOKUP } from '@/lib/fee-code-lookup';
 import { getRateOverride, loadOverrides, type RateEntry } from '@/lib/rate-overrides';
+import { assemblyHeaderHTML } from '@/lib/utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -773,6 +774,7 @@ export function BillingPage() {
   // ── Print bill ─────────────────────────────────────────────────────────
 
   const _asmName = () => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; } };
+  const _asmDesc = () => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.description || ''; } catch { return ''; } };
   const handlePrintBill = (bill: Bill) => {
     const barcodeSvg = getBillBarcodeSvg(bill);
     setViewingBill(bill);
@@ -817,8 +819,7 @@ export function BillingPage() {
         </head>
         <body>
           <div class="header">
-            <h1>${_asmName().toUpperCase()}</h1>
-            <p>Revenue Management System — Official Bill</p>
+            ${assemblyHeaderHTML('Revenue Management System — Official Bill')}
           </div>
           <div class="bill-title">INVOICE / BILL</div>
           <div class="info-grid">
@@ -1331,6 +1332,7 @@ export function BillingPage() {
               {/* Header */}
               <div className="text-center border-b-2 border-dashed border-border px-6 py-5">
                 <h2 className="text-base font-bold text-foreground tracking-wider uppercase">{_asmName()}</h2>
+                {_asmDesc() && <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{_asmDesc()}</p>}
                 <p className="text-xs text-muted-foreground mt-1">Revenue Management System</p>
                 <p className="text-sm font-semibold text-primary dark:text-primary mt-3 tracking-wide">OFFICIAL BILL</p>
               </div>

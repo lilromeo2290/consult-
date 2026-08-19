@@ -277,26 +277,7 @@ const selectCls = 'w-full rounded-lg border-border bg-card px-4 py-2.5 text-sm t
 
 // ── Assembly Tab ──
 function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (field: keyof AssemblyInfo, value: string) => void }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const sigInputRef = useRef<HTMLInputElement>(null);
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (ev.target?.result) {
-        onChange('logo', ev.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveLogo = () => {
-    onChange('logo', '');
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
 
   const handleSignatureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -345,33 +326,8 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
           <input type="text" value={data.address} onChange={(e) => onChange('address', e.target.value)} placeholder="Enter physical address" className={inputCls} />
         </div>
         <div className="lg:col-span-2 space-y-2">
-          <label className="block text-sm font-medium text-foreground">Assembly Logo</label>
-          <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden ${data.logo ? 'border-[#4a7ab5] dark:border-primary' : 'bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary'}`}>
-              {data.logo ? (
-                <img src={data.logo} alt="Assembly Logo" className="w-full h-full object-contain" />
-              ) : (
-                <Building className="w-8 h-8 text-destructive" />
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-card dark:hover:bg-slate-700 transition-colors flex items-center gap-2 cursor-pointer">
-                  <Upload className="w-4 h-4" /> Upload Logo
-                </button>
-                {data.logo && (
-                  <button onClick={handleRemoveLogo} className="px-3 py-2 border border-red-300 dark:border-red-700 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-destructive/10 transition-colors cursor-pointer">
-                    Remove
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="lg:col-span-2 space-y-2">
           <label className="block text-sm font-medium text-foreground">Assembly Description</label>
-          <textarea rows={3} value={data.description} onChange={(e) => onChange('description', e.target.value)} placeholder="Enter assembly description" className={inputCls + ' resize-none'} />
+          <textarea rows={6} value={data.description} onChange={(e) => onChange('description', e.target.value)} placeholder="Enter full assembly description (e.g. Kpando Municipal Assembly, Volta Region, Ghana)" className={inputCls + ' resize-y min-h-[100px]'} />
         </div>
         <div className="lg:col-span-2 space-y-2">
           <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><Pen className="w-3.5 h-3.5" /> Authorized Signature</label>
