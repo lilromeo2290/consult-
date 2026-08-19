@@ -72,7 +72,7 @@ const monthlyComparison: MonthlyComparison[] = [];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-type ReportView = 'overview' | 'revenue' | 'statements' | 'individual' | 'items' | 'zones' | 'monthly';
+type ReportView = 'overview' | 'revenue' | 'statements' | 'items' | 'zones' | 'monthly';
 
 export function ReportsPage() {
   // Synced data for counts
@@ -96,7 +96,8 @@ export function ReportsPage() {
   const [filterRevenueCode, setFilterRevenueCode] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Individual report filters
+  // Individual report sidebar
+  const [showIndSidebar, setShowIndSidebar] = useState(false);
   const [indStmtType, setIndStmtType] = useState<string>('Business');
   const [indCustomer, setIndCustomer] = useState('');
   const [indUniqueNo, setIndUniqueNo] = useState('');
@@ -204,13 +205,15 @@ export function ReportsPage() {
   const customerList = useMemo(() => {
     let rows: { cells: string[]; amount: number; type?: string }[] = [];
 
-    const buildRows = (type: string, data: any[], cellsFn: (e: any) => string[], uniqueFn: (e: any) => string) => {
+    const buildRows = (type: string, data: any[], cellsFn: (e: any) => string[], uniqueFn: (e: any) => string, amtFn?: (e: any) => number) => {
       data.forEach((entity) => {
         const eBills = filteredBills.filter((bl: any) => bl.uniqueNumber === uniqueFn(entity));
-        if (type !== 'Fines' && eBills.length === 0) return;
-        const totalAmt = type === 'Fines'
-          ? (entity.amountDue || entity.charge || 0)
-          : eBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
+        let totalAmt = 0;
+        if (eBills.length > 0) {
+          totalAmt = eBills.reduce((s: number, bl: any) => s + (bl.amountDue || bl.charge || 0), 0);
+        } else if (amtFn) {
+          totalAmt = amtFn(entity);
+        }
         rows.push({ cells: cellsFn(entity), amount: totalAmt, type });
       });
     };
@@ -218,31 +221,36 @@ export function ReportsPage() {
     if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Business') {
       buildRows('Business', bizData as any[],
         (b) => [b.name || '', b.ownerName || '', b.type || b.businessType || '', b.category || ''],
-        (b) => b.regNumber
+        (b) => b.regNumber,
+        (b) => b.amountDue || b.charge || 0
       );
     }
     if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Property') {
       buildRows('Property', propData as any[],
         (p) => [p.ownerName || '', p.type || '', p.category || ''],
-        (p) => p.propertyUniqueNumber
+        (p) => p.propertyUniqueNumber,
+        (p) => p.rateAmount || p.amountDue || 0
       );
     }
     if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Rent') {
       buildRows('Rent', rentData as any[],
         (r) => [r.occupantName || '', r.rentPropertyType || '', r.rentPropertyTypeCategory || r.rentRevenueDescription || ''],
-        (r) => r.rentPropertyUniqueNumber || r.uniqueNumber
+        (r) => r.rentPropertyUniqueNumber || r.uniqueNumber,
+        (r) => r.amountDue || r.charge || 0
       );
     }
     if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Fines') {
       buildRows('Fines', finesData as any[],
         (f) => [f.nameOfOffender || '', f.classDescription || '', f.category || ''],
-        () => ''
+        () => '',
+        (f) => f.amountDue || f.charge || 0
       );
     }
     if (revenueTypeFilter === 'All' || revenueTypeFilter === 'BP') {
       buildRows('BP', bpData as any[],
         (bp) => [bp.applicantFullName || '', bp.typeOfDevelopment || ''],
-        (bp) => bp.permitNumber
+        (bp) => bp.permitNumber,
+        (bp) => bp.amountDue || bp.charge || 0
       );
     }
 
@@ -403,7 +411,7 @@ export function ReportsPage() {
   }, [filteredBills, filteredPayments]);
 
   const handlePrintReport = () => {
-    const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Type' : view === 'statements' ? 'Customer Statements' : view === 'individual' ? 'Individual Report' : view === 'items' ? 'Revenue Items' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
+    const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Type' : view === 'statements' ? 'Customer Statements' : view === 'items' ? 'Revenue Items' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
     let bodyContent = '';
 
     if (view === 'revenue') {
@@ -431,16 +439,6 @@ export function ReportsPage() {
       const zoneData = zoneFilter === 'All' ? zoneReports : zoneReports.filter(z => z.zone.includes(zoneFilter));
       const rows = zoneData.map((z) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:500;">${z.zone}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${z.businesses}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${z.properties}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(z.collected)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(z.target)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:600;text-align:right;">${z.compliance}%</td></tr>`).join('');
       bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Zone</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Businesses</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Properties</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Collected</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Target</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Compliance</th></tr></thead><tbody>${rows}</tbody></table>`;
-    } else if (view === 'individual') {
-      if (individualReport && individualReport.length > 0) {
-        const indHtml = individualReport.map(stmt => {
-          const sRows = stmt.rows.map(r => `<tr><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.date}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.description}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.ref||'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.billDR>0?fmtCurrency(r.billDR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.receiptCR>0?fmtCurrency(r.receiptCR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.balance>0?fmtCurrency(r.balance):'—'}</td></tr>`).join('');
-          return `<div style="margin-bottom:16px;"><div style="padding:6px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;"><strong style="font-size:12px;">${stmt.customer}</strong><span style="font-size:11px;color:#64748b;margin-left:8px;">${stmt.uniqueNumber}</span><span style="font-size:10px;color:#94a3b8;margin-left:8px;">[${stmt.statementType}]</span></div><div style="display:flex;gap:24px;padding:6px 8px;background:#f1f5f9;font-size:11px;"><span>Total Billed: <strong>${fmtCurrency(stmt.totalBilled)}</strong></span><span>Total Paid: <strong style="color:#E31E24;">${fmtCurrency(stmt.totalPaid)}</strong></span><span>Balance: <strong>${fmtCurrency(stmt.balance)}</strong></span></div><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f1f5f9;border-bottom:1px solid #e2e8f0;"><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Date</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Description</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Ref #</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Bill/DR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Receipt/CR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Balance</th></tr></thead><tbody>${sRows}</tbody></table></div>`;
-        }).join('');
-        bodyContent = indHtml;
-      } else {
-        bodyContent = '<p style="text-align:center;color:#94a3b8;padding:24px;">No individual report found. Adjust your filters.</p>';
-      }
     } else if (view === 'monthly') {
       const rows = monthlyComparison.map((m) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:500;">${m.month}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(m.currentYear)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(m.previousYear)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;color:${m.change>=0?'#E31E24':'#dc2626'};font-weight:600;">${m.change>=0?'+':''}${m.change}%</td></tr>`).join('');
       bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Month</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${currentFY}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${previousFY}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Change</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">${fmtCurrency(monthlyComparison.reduce((s,m)=>s+m.currentYear,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(monthlyComparison.reduce((s,m)=>s+m.previousYear,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">+9.8%</td></tr></tfoot></table>`;
@@ -463,7 +461,6 @@ export function ReportsPage() {
     { key: 'overview', label: 'Overview', icon: PieChart },
     { key: 'revenue', label: 'Revenue Type', icon: DollarSign },
     { key: 'statements', label: 'Customer Statements', icon: FileText },
-    { key: 'individual', label: 'Individual Report', icon: UserCircle },
     { key: 'items', label: 'Revenue Items', icon: Receipt },
     { key: 'zones', label: 'Zone Reports', icon: Building2 },
     { key: 'monthly', label: 'Monthly Comparison', icon: BarChart3 },
@@ -509,7 +506,11 @@ export function ReportsPage() {
           </div>
           <button onClick={handlePrintReport} className="inline-flex items-center gap-2 rounded-lg bg-primary text-white px-3 py-2 text-sm font-medium hover:bg-destructive transition-colors cursor-pointer">
             <Printer className="w-4 h-4" />
-            {view === 'overview' ? 'Print Overview' : view === 'revenue' ? 'Print Revenue Type' : view === 'statements' ? 'Print Customer Statements' : view === 'individual' ? 'Print Individual Report' : view === 'items' ? 'Print Revenue Items' : view === 'zones' ? 'Print Zone Reports' : 'Print Monthly Comparison'}
+            {view === 'overview' ? 'Print Overview' : view === 'revenue' ? 'Print Revenue Type' : view === 'statements' ? 'Print Customer Statements' : view === 'items' ? 'Print Revenue Items' : view === 'zones' ? 'Print Zone Reports' : 'Print Monthly Comparison'}
+          </button>
+          <button onClick={() => setShowIndSidebar(true)} className="inline-flex items-center gap-2 rounded-lg border border-primary text-primary dark:text-primary px-3 py-2 text-sm font-medium hover:bg-primary/10 transition-colors cursor-pointer">
+            <UserCircle className="w-4 h-4" />
+            Individual Report
           </button>
         </div>
       </div>
@@ -840,123 +841,6 @@ export function ReportsPage() {
           </div>
         </div>
       )}
-      {/* ── Individual Report Tab ────────────────────────────── */}
-      {view === 'individual' && (
-        <div className="space-y-6">
-          {/* Report Filters */}
-          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
-            <div className="p-4 border-b border-border">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-primary dark:text-primary" />
-                <span className="text-sm font-semibold text-foreground">Report Filters</span>
-                {(indCustomer || indUniqueNo || indDateFrom || indDateTo) && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold">!</span>
-                )}
-              </div>
-            </div>
-            <div className="p-4 space-y-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                {/* Statement Type */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Statement</label>
-                  <select
-                    value={indStmtType}
-                    onChange={(e) => setIndStmtType(e.target.value)}
-                    className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="Business">Business</option>
-                    <option value="Property">Property</option>
-                    <option value="Rent">Rent</option>
-                    <option value="Fines">Fines</option>
-                    <option value="Building Permit">Building Permit</option>
-                  </select>
-                </div>
-                {/* Customer Name */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Customer Name</label>
-                  <input type="text" value={indCustomer} onChange={(e) => setIndCustomer(e.target.value)} placeholder="Name..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-                {/* Unique Number */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Unique Number</label>
-                  <input type="text" value={indUniqueNo} onChange={(e) => setIndUniqueNo(e.target.value)} placeholder="Unique #..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-                {/* Date From */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Date From</label>
-                  <input type="date" value={indDateFrom} onChange={(e) => setIndDateFrom(e.target.value)} placeholder="mm/dd/yyyy" className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-                {/* Date To */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Date To</label>
-                  <input type="date" value={indDateTo} onChange={(e) => setIndDateTo(e.target.value)} placeholder="mm/dd/yyyy" className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-              </div>
-              {/* Clear button */}
-              <div className="flex justify-end pt-3">
-                <button onClick={() => { setIndCustomer(''); setIndUniqueNo(''); setIndDateFrom(''); setIndDateTo(''); }} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                  <X className="w-3.5 h-3.5" /> Clear all filters
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Individual Statement Result */}
-          <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
-            <div className="p-5 border-b border-border">
-              <h2 className="text-base font-semibold text-foreground">Individual Statement</h2>
-              <p className="text-sm text-muted-foreground mt-1">Statement for a single entity — {indStmtType}</p>
-            </div>
-            <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-              {!individualReport || individualReport.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <UserCircle className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                  <p className="text-sm">No statement found. Adjust the filters above.</p>
-                </div>
-              ) : (
-                individualReport.map((stmt, sIdx) => (
-                  <div key={sIdx} className={sIdx > 0 ? 'border-t-4 border-muted/40' : ''}>
-                    {/* Entity header with summary */}
-                    <div className="px-4 py-2.5 bg-muted/40 dark:bg-slate-700/40">
-                      <span className="text-sm font-semibold text-foreground">{stmt.customer}</span>
-                      <span className="text-xs text-muted-foreground ml-3">{stmt.uniqueNumber}</span>
-                    </div>
-                    <div className="flex gap-6 px-4 py-2 bg-card/50 dark:bg-slate-700/30 border-b border-border">
-                      <div className="text-xs text-muted-foreground">Total Billed: <span className="font-bold text-foreground">{fmtCurrency(stmt.totalBilled)}</span></div>
-                      <div className="text-xs text-muted-foreground">Total Paid: <span className="font-bold text-primary dark:text-primary">{fmtCurrency(stmt.totalPaid)}</span></div>
-                      <div className="text-xs text-muted-foreground">Balance: <span className="font-bold text-foreground">{fmtCurrency(stmt.balance)}</span></div>
-                    </div>
-                    <table className="w-full text-left">
-                      <thead className="bg-card/30">
-                        <tr className="border-b border-border">
-                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Date</th>
-                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Item Description</th>
-                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2">Ref #</th>
-                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Bill / DR</th>
-                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Receipt / CR</th>
-                          <th className="text-[11px] uppercase text-muted-foreground font-medium px-4 py-2 text-right">Balance</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/40">
-                        {stmt.rows.map((row, rIdx) => (
-                          <tr key={rIdx} className="hover:bg-card/50 transition-colors">
-                            <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">{row.date}</td>
-                            <td className="px-4 py-2 text-sm text-foreground">{row.description}</td>
-                            <td className="px-4 py-2 text-sm font-mono text-muted-foreground">{row.ref || '—'}</td>
-                            <td className="px-4 py-2 text-sm text-right text-foreground">{row.billDR > 0 ? fmtCurrency(row.billDR) : '—'}</td>
-                            <td className="px-4 py-2 text-sm text-right text-primary dark:text-primary">{row.receiptCR > 0 ? fmtCurrency(row.receiptCR) : '—'}</td>
-                            <td className="px-4 py-2 text-sm text-right font-semibold text-foreground">{row.balance > 0 ? fmtCurrency(row.balance) : '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
       {/* ── Revenue Items Tab ─────────────────────────────────────── */}
       {view === 'items' && (
         <div className="space-y-6">
@@ -1203,6 +1087,134 @@ export function ReportsPage() {
                 </tr>
               </tfoot>
             </table>
+          </div>
+        </div>
+      )}
+      {/* ── Individual Report Sidebar ────────────────────────── */}
+      {showIndSidebar && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/30" onClick={() => setShowIndSidebar(false)} />
+          {/* Panel */}
+          <div className="relative w-full max-w-lg bg-white dark:bg-muted border-l border-border shadow-2xl flex flex-col overflow-hidden">
+            {/* Sidebar header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-primary text-white">
+              <div className="flex items-center gap-2">
+                <UserCircle className="w-5 h-5" />
+                <h2 className="text-base font-semibold">Individual Report</h2>
+              </div>
+              <button onClick={() => setShowIndSidebar(false)} className="p-1 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Filters */}
+            <div className="p-4 space-y-3 border-b border-border">
+              <div>
+                <label className="block text-xs text-muted-foreground font-medium mb-1">Statement</label>
+                <select
+                  value={indStmtType}
+                  onChange={(e) => setIndStmtType(e.target.value)}
+                  className="w-full rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="Business">Business</option>
+                  <option value="Property">Property</option>
+                  <option value="Rent">Rent</option>
+                  <option value="Fines">Fines</option>
+                  <option value="Building Permit">Building Permit</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground font-medium mb-1">Customer Name</label>
+                <input type="text" value={indCustomer} onChange={(e) => setIndCustomer(e.target.value)} placeholder="Name..." className="w-full rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground font-medium mb-1">Unique Number</label>
+                <input type="text" value={indUniqueNo} onChange={(e) => setIndUniqueNo(e.target.value)} placeholder="Unique #..." className="w-full rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground font-medium mb-1">Date From</label>
+                  <input type="date" value={indDateFrom} onChange={(e) => setIndDateFrom(e.target.value)} className="w-full rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground font-medium mb-1">Date To</label>
+                  <input type="date" value={indDateTo} onChange={(e) => setIndDateTo(e.target.value)} className="w-full rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button onClick={() => { setIndCustomer(''); setIndUniqueNo(''); setIndDateFrom(''); setIndDateTo(''); }} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                  <X className="w-3.5 h-3.5" /> Clear filters
+                </button>
+              </div>
+            </div>
+
+            {/* Results */}
+            <div className="flex-1 overflow-y-auto">
+              {!individualReport || individualReport.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <UserCircle className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No statement found.</p>
+                  <p className="text-xs mt-1">Adjust the filters above.</p>
+                </div>
+              ) : (
+                individualReport.map((stmt, sIdx) => (
+                  <div key={sIdx} className={sIdx > 0 ? 'border-t-4 border-muted/40' : ''}>
+                    <div className="px-4 py-2.5 bg-muted/40 dark:bg-slate-700/40">
+                      <span className="text-sm font-semibold text-foreground">{stmt.customer}</span>
+                      <span className="text-xs text-muted-foreground ml-3">{stmt.uniqueNumber}</span>
+                    </div>
+                    <div className="flex gap-4 px-4 py-2 bg-card/50 dark:bg-slate-700/30 border-b border-border text-xs">
+                      <span className="text-muted-foreground">Billed: <strong className="text-foreground">{fmtCurrency(stmt.totalBilled)}</strong></span>
+                      <span className="text-muted-foreground">Paid: <strong className="text-primary dark:text-primary">{fmtCurrency(stmt.totalPaid)}</strong></span>
+                      <span className="text-muted-foreground">Balance: <strong className="text-foreground">{fmtCurrency(stmt.balance)}</strong></span>
+                    </div>
+                    <table className="w-full text-left">
+                      <thead className="bg-card/30">
+                        <tr className="border-b border-border">
+                          <th className="text-[10px] uppercase text-muted-foreground font-medium px-3 py-1.5">Date</th>
+                          <th className="text-[10px] uppercase text-muted-foreground font-medium px-3 py-1.5">Description</th>
+                          <th className="text-[10px] uppercase text-muted-foreground font-medium px-3 py-1.5">Ref</th>
+                          <th className="text-[10px] uppercase text-muted-foreground font-medium px-3 py-1.5 text-right">DR</th>
+                          <th className="text-[10px] uppercase text-muted-foreground font-medium px-3 py-1.5 text-right">CR</th>
+                          <th className="text-[10px] uppercase text-muted-foreground font-medium px-3 py-1.5 text-right">Bal</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/40">
+                        {stmt.rows.map((row, rIdx) => (
+                          <tr key={rIdx} className="hover:bg-card/50 transition-colors">
+                            <td className="px-3 py-1.5 text-[11px] text-muted-foreground whitespace-nowrap">{row.date}</td>
+                            <td className="px-3 py-1.5 text-xs text-foreground">{row.description}</td>
+                            <td className="px-3 py-1.5 text-xs font-mono text-muted-foreground">{row.ref || '—'}</td>
+                            <td className="px-3 py-1.5 text-xs text-right text-foreground">{row.billDR > 0 ? fmtCurrency(row.billDR) : '—'}</td>
+                            <td className="px-3 py-1.5 text-xs text-right text-primary dark:text-primary">{row.receiptCR > 0 ? fmtCurrency(row.receiptCR) : '—'}</td>
+                            <td className="px-3 py-1.5 text-xs text-right font-semibold text-foreground">{row.balance > 0 ? fmtCurrency(row.balance) : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Sidebar footer with print */}
+            {individualReport && individualReport.length > 0 && (
+              <div className="px-4 py-3 border-t border-border bg-card/50">
+                <button onClick={() => {
+                  const stmt = individualReport[0];
+                  const sRows = stmt.rows.map(r => `<tr><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.date}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.description}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.ref||'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.billDR>0?fmtCurrency(r.billDR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.receiptCR>0?fmtCurrency(r.receiptCR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.balance>0?fmtCurrency(r.balance):'—'}</td></tr>`).join('');
+                  const w = window.open('', '_blank', 'width=794,height=1123');
+                  if (!w) return;
+                  w.document.write(`<!DOCTYPE html><html><head><title>Individual Report</title><style>@page{size:A4;margin:15mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:16px;}.header h1{font-size:18px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.report-title{text-align:center;font-size:15px;font-weight:600;margin-bottom:4px;color:#E31E24;}.report-meta{text-align:center;font-size:11px;color:#94a3b8;margin-bottom:20px;}</style></head><body><div class="header">${assemblyHeaderHTML('Revenue Management System')}</div><div class="report-title">Individual Report — ${indStmtType}</div><div class="report-meta">Generated: ${new Date().toLocaleString()}</div><div style="padding:6px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;margin-bottom:12px;"><strong style="font-size:12px;">${stmt.customer}</strong><span style="font-size:11px;color:#64748b;margin-left:8px;">${stmt.uniqueNumber}</span></div><div style="display:flex;gap:24px;padding:6px 8px;background:#f1f5f9;font-size:11px;margin-bottom:12px;"><span>Total Billed: <strong>${fmtCurrency(stmt.totalBilled)}</strong></span><span>Total Paid: <strong style="color:#E31E24;">${fmtCurrency(stmt.totalPaid)}</strong></span><span>Balance: <strong>${fmtCurrency(stmt.balance)}</strong></span></div><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f1f5f9;border-bottom:1px solid #e2e8f0;"><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Date</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Description</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Ref #</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Bill/DR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Receipt/CR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Balance</th></tr></thead><tbody>${sRows}</tbody></table><div style="margin-top:40px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`);
+                  w.document.close();
+                  w.onload = () => { w.print(); };
+                }} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-white px-3 py-2 text-sm font-medium hover:bg-destructive transition-colors cursor-pointer">
+                  <Printer className="w-4 h-4" />
+                  Print Individual Report
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
