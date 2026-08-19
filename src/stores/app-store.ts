@@ -21,6 +21,7 @@ type RMSPage =
   | 'building-permit'
   | 'bp-official'
   | 'fines-management'
+  | 'individual-report'
 
 /** All available RMS pages for the permission picker */
 const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
@@ -38,6 +39,7 @@ const ALL_RMS_PAGES: { page: RMSPage; label: string }[] = [
   { page: 'payment-history', label: 'Payment History' },
   { page: 'receipts', label: 'Receipts' },
   { page: 'reports', label: 'Reports' },
+  { page: 'individual-report', label: 'Individual Report' },
   { page: 'users', label: 'User Management' },
   { page: 'settings', label: 'Settings' },
   { page: 'audit-trail', label: 'Audit Trail' },
