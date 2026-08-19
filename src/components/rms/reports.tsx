@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import { LOCALITIES } from '@/lib/localities';
 import { assemblyHeaderHTML } from '@/lib/utils';
+import { REVENUE_CODE_MAP } from '@/lib/revenue-code-map';
 import {
   BarChart3,
   Download,
@@ -814,12 +815,44 @@ export function ReportsPage() {
                   {/* Revenue Code */}
                   <div className="flex items-center gap-3">
                     <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Revenue Code</label>
-                    <input type="text" value={filterRevenueCode} onChange={(e) => setFilterRevenueCode(e.target.value)} placeholder="Code..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <select
+                      value={filterRevenueCode}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFilterRevenueCode(val);
+                        if (val) {
+                          const match = REVENUE_CODE_MAP.find(([c]) => c === val);
+                          setFilterRevenueItem(match ? match[1] : '');
+                        }
+                      }}
+                      className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">All Revenue Codes</option>
+                      {REVENUE_CODE_MAP.map(([code, desc]) => (
+                        <option key={code} value={code}>{code} — {desc}</option>
+                      ))}
+                    </select>
                   </div>
                   {/* Revenue Item */}
                   <div className="flex items-center gap-3">
                     <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Revenue Item</label>
-                    <input type="text" value={filterRevenueItem} onChange={(e) => setFilterRevenueItem(e.target.value)} placeholder="Description..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <select
+                      value={filterRevenueItem}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFilterRevenueItem(val);
+                        if (val) {
+                          const match = REVENUE_CODE_MAP.find(([, d]) => d === val);
+                          setFilterRevenueCode(match ? match[0] : '');
+                        }
+                      }}
+                      className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">All Revenue Items</option>
+                      {REVENUE_CODE_MAP.map(([code, desc]) => (
+                        <option key={code} value={desc}>{desc} ({code})</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 {/* Clear button */}
