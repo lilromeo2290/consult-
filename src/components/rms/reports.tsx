@@ -70,7 +70,7 @@ const monthlyComparison: MonthlyComparison[] = [];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-type ReportView = 'overview' | 'revenue' | 'statements' | 'zones' | 'monthly';
+type ReportView = 'statements' | 'revenue';
 
 export function ReportsPage() {
   // Synced data for counts
@@ -91,12 +91,12 @@ export function ReportsPage() {
   const [filterDateTo, setFilterDateTo] = useState('');
   const [filterLocality, setFilterLocality] = useState('');
   const [filterRevenueItem, setFilterRevenueItem] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   const currentFY = financialSettings.currentFinancialYear || new Date().getFullYear().toString();
   const previousFY = String(Number(currentFY) - 1);
 
-  const [view, setView] = useState<ReportView>('overview');
+  const [view, setView] = useState<ReportView>('statements');
   const [period, setPeriod] = useState<'Monthly' | 'Quarterly' | 'Annually'>('Monthly');
   const [zoneFilter, setZoneFilter] = useState<string>('All');
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
@@ -291,26 +291,24 @@ export function ReportsPage() {
   }, [filteredBills, filteredPayments]);
 
   const handlePrintReport = () => {
-    const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Type' : view === 'statements' ? 'Customer Statements' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
+    const title = view === 'revenue' ? 'Revenue Type' : 'Customer Statements';
     let bodyContent = '';
 
     if (view === 'revenue') {
-      const rows = revenueBreakdown.map((r) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.category}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.officer}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(r.budget)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(r.collected)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(r.target)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:600;text-align:right;">${r.percentage}%</td></tr>`).join('');
-      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Category</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Officer</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Budget</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Collected</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Target</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Rate</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td colspan="2" style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(totalBudget)}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">${fmtCurrency(totalCollected)}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(revenueBreakdown.reduce((s,r)=>s+r.target,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${overallCompliance}%</td></tr></tfoot></table>`;
-    } else if (view === 'zones') {
-      const zoneData = zoneFilter === 'All' ? zoneReports : zoneReports.filter(z => z.zone.includes(zoneFilter));
-      const rows = zoneData.map((z) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:500;">${z.zone}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${z.businesses}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${z.properties}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(z.collected)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(z.target)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:600;text-align:right;">${z.compliance}%</td></tr>`).join('');
-      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Zone</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Businesses</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Properties</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Collected</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Target</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Compliance</th></tr></thead><tbody>${rows}</tbody></table>`;
-    } else if (view === 'monthly') {
-      const rows = monthlyComparison.map((m) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:500;">${m.month}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(m.currentYear)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${fmtCurrency(m.previousYear)}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;color:${m.change>=0?'#E31E24':'#dc2626'};font-weight:600;">${m.change>=0?'+':''}${m.change}%</td></tr>`).join('');
-      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Month</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${currentFY}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${previousFY}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Change</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">${fmtCurrency(monthlyComparison.reduce((s,m)=>s+m.currentYear,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(monthlyComparison.reduce((s,m)=>s+m.previousYear,0))}</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;color:#E31E24;">+9.8%</td></tr></tfoot></table>`;
+      const rows = customerList.map((r, i) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:center;">${i+1}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.col1||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${r.col2||'—'}</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">${r.amount>0?fmtCurrency(r.amount):'—'}</td></tr>`).join('');
+      bodyContent = `<table style="width:100%;border-collapse:collapse;margin-top:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">S/N</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${columnConfig.col1}</th><th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">${columnConfig.col2}</th><th style="text-align:right;padding:8px 10px;font-size:11px;text-transform:uppercase;color:#64748b;">Amount</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="border-top:2px solid #1e293b;background:#f8fafc;"><td colspan="3" style="padding:8px 10px;font-size:12px;font-weight:700;">Total</td><td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;">${fmtCurrency(customerList.reduce((s,r)=>s+r.amount,0))}</td></tr></tfoot></table>`;
     } else {
-      bodyContent = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;"><div style="padding:16px;border:1px solid #e2e8f0;border-radius:8px;"><p style="font-size:11px;color:#64748b;text-transform:uppercase;">Total Collected</p><p style="font-size:20px;font-weight:700;margin-top:4px;">${fmtCurrency(totalCollected)}</p><p style="font-size:11px;color:#94a3b8;margin-top:2px;">Budget: ${fmtCurrency(totalBudget)}</p></div><div style="padding:16px;border:1px solid #e2e8f0;border-radius:8px;"><p style="font-size:11px;color:#64748b;text-transform:uppercase;">Collection Rate</p><p style="font-size:20px;font-weight:700;margin-top:4px;">${overallCompliance}%</p><p style="font-size:11px;color:#94a3b8;margin-top:2px;">Target: 95%</p></div><div style="padding:16px;border:1px solid #e2e8f0;border-radius:8px;"><p style="font-size:11px;color:#64748b;text-transform:uppercase;">Registered Entities</p><p style="font-size:20px;font-weight:700;margin-top:4px;">${entityCount}</p><p style="font-size:11px;color:#94a3b8;margin-top:2px;">Businesses + Properties + Rents</p></div><div style="padding:16px;border:1px solid #e2e8f0;border-radius:8px;"><p style="font-size:11px;color:#64748b;text-transform:uppercase;">Receipts Issued</p><p style="font-size:20px;font-weight:700;margin-top:4px;">${receiptCount}</p><p style="font-size:11px;color:#94a3b8;margin-top:2px;">Total recorded</p></div></div><div style="margin-top:24px;"><h3 style="font-size:13px;font-weight:600;margin-bottom:12px;">Top Revenue Categories</h3><table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:1px solid #e2e8f0;"><th style="text-align:left;padding:6px 10px;font-size:11px;color:#64748b;">Category</th><th style="text-align:right;padding:6px 10px;font-size:11px;color:#64748b;">Budget</th><th style="text-align:right;padding:6px 10px;font-size:11px;color:#64748b;">Collected</th><th style="text-align:right;padding:6px 10px;font-size:11px;color:#64748b;">Rate</th></tr></thead><tbody>${revenueBreakdown.slice(0,5).map(r=>`<tr><td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;">${r.category}</td><td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;text-align:right;">${fmtCurrency(r.budget)}</td><td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;text-align:right;">${fmtCurrency(r.collected)}</td><td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;text-align:right;font-weight:600;">${r.percentage}%</td></tr>`).join('')}</tbody></table></div>`;
+      // Customer Statements
+      const stmtHtml = customerStatements.map(stmt => {
+        const rows = stmt.rows.map(r => `<tr><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.date}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.description}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.ref||'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.billDR>0?fmtCurrency(r.billDR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.receiptCR>0?fmtCurrency(r.receiptCR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.balance>0?fmtCurrency(r.balance):'—'}</td></tr>`).join('');
+        return `<div style="margin-bottom:16px;"><div style="padding:6px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;"><strong style="font-size:12px;">${stmt.customer}</strong><span style="font-size:11px;color:#64748b;margin-left:8px;">${stmt.uniqueNumber}</span></div><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f1f5f9;border-bottom:1px solid #e2e8f0;"><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Date</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Description</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Ref #</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Bill/DR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Receipt/CR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Balance</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      }).join('');
+      bodyContent = stmtHtml || '<p style="text-align:center;color:#94a3b8;padding:24px;">No statements found.</p>';
     }
 
     const w = window.open('', '_blank', 'width=794,height=1123');
     if (!w) return;
-    w.document.write(`<!DOCTYPE html><html><head><title>Report - ${title}</title><style>@page{size:A4;margin:15mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:16px;}.header h1{font-size:18px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.report-title{text-align:center;font-size:15px;font-weight:600;margin-bottom:4px;color:#E31E24;}.report-meta{text-align:center;font-size:11px;color:#94a3b8;margin-bottom:20px;}</style></head><body><div class="header"><h1>KPANDO MUNICIPAL ASSEMBLY</h1><p>Revenue Management System</p></div><div class="report-title">${title}</div><div class="report-meta">Period: ${period} | Generated: ${new Date().toLocaleString()}</div>${bodyContent}<div style="margin-top:40px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`);
+    w.document.write(`<!DOCTYPE html><html><head><title>Report - ${title}</title><style>@page{size:A4;margin:15mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:16px;}.header h1{font-size:18px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.report-title{text-align:center;font-size:15px;font-weight:600;margin-bottom:4px;color:#E31E24;}.report-meta{text-align:center;font-size:11px;color:#94a3b8;margin-bottom:20px;}</style></head><body><div class="header"><h1>KPANDO MUNICIPAL ASSEMBLY</h1><p>Revenue Management System</p></div><div class="report-title">${title}</div><div class="report-meta">Generated: ${new Date().toLocaleString()}</div>${bodyContent}<div style="margin-top:40px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`);
     w.document.close();
     w.onload = () => { w.print(); };
   };
@@ -320,11 +318,8 @@ export function ReportsPage() {
   const overallCompliance = totalBudget > 0 ? ((totalCollected / totalBudget) * 100).toFixed(1) : '0.0';
 
   const tabs: { key: ReportView; label: string; icon: React.ElementType }[] = [
-    { key: 'overview', label: 'Overview', icon: PieChart },
-    { key: 'revenue', label: 'Revenue Type', icon: DollarSign },
     { key: 'statements', label: 'Customer Statements', icon: FileText },
-    { key: 'zones', label: 'Zone Reports', icon: Building2 },
-    { key: 'monthly', label: 'Monthly Comparison', icon: BarChart3 },
+    { key: 'revenue', label: 'Revenue Type', icon: DollarSign },
   ];
 
   return (
@@ -338,33 +333,6 @@ export function ReportsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <button
-              onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
-              className="inline-flex items-center gap-2 rounded-lg border-border bg-white dark:bg-muted px-3 py-2 text-sm font-medium text-foreground hover:bg-card dark:hover:bg-slate-700 transition-colors"
-            >
-              <Calendar className="w-4 h-4" />
-              {period}
-              <ChevronDown className={`w-3 h-3 transition-transform ${showPeriodDropdown ? 'rotate-180' : ''}`} />
-            </button>
-            {showPeriodDropdown && (
-              <div className="absolute right-0 mt-1 w-36 rounded-lg border-border bg-white dark:bg-muted shadow-lg z-20 py-1">
-                {(['Monthly', 'Quarterly', 'Annually'] as const).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => { setPeriod(p); setShowPeriodDropdown(false); }}
-                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                      p === period
-                        ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
-                        : 'text-foreground hover:bg-card dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           <button onClick={handlePrintReport} className="inline-flex items-center gap-2 rounded-lg bg-primary text-white px-3 py-2 text-sm font-medium hover:bg-destructive transition-colors cursor-pointer">
             <Printer className="w-4 h-4" />
             Print Report
@@ -393,75 +361,6 @@ export function ReportsPage() {
           );
         })}
       </div>
-
-      {/* ── Overview Tab ──────────────────────────────────────────────────── */}
-      {view === 'overview' && (
-        <div className="space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiCard
-              icon={<DollarSign className="w-5 h-5 text-primary dark:text-primary" />}
-              label="Total Collected"
-              value={fmtCurrency(totalCollected)}
-              sub={`Budget: ${fmtCurrency(totalBudget)}`}
-              trend={14.3}
-            />
-            <KpiCard
-              icon={<Target className="w-5 h-5 text-primary dark:text-primary" />}
-              label="Collection Rate"
-              value={`${overallCompliance}%`}
-              sub="Target: 95%"
-              trend={2.1}
-            />
-            <KpiCard
-              icon={<Users className="w-5 h-5 text-primary dark:text-primary" />}
-              label="Registered Entities"
-              value={fmtNumber(entityCount)}
-              sub="Businesses + Properties + Rents"
-            />
-            <KpiCard
-              icon={<Receipt className="w-5 h-5 text-primary dark:text-primary" />}
-              label="Receipts Issued"
-              value={fmtNumber(receiptCount)}
-              sub="Total recorded"
-            />
-          </div>
-
-          {/* Two-column: Top Performers + Zone Summary */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Top Revenue Categories */}
-            <div className="rounded-xl bg-white dark:bg-muted border border-border p-5">
-              <h2 className="text-base font-semibold text-foreground mb-4">Top Revenue Categories</h2>
-              <div className="space-y-3">
-                {revenueBreakdown.slice(0, 5).map((item, i) => (
-                  <CategoryBar key={`rev-cat-${i}`} item={item} />
-                ))}
-              </div>
-            </div>
-
-            {/* Zone Summary */}
-            <div className="rounded-xl bg-white dark:bg-muted border border-border p-5">
-              <h2 className="text-base font-semibold text-foreground mb-4">Zone Compliance Summary</h2>
-              <div className="space-y-3">
-                {zoneReports.map((zone, i) => (
-                  <div key={`zone-bar-${i}`} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{zone.zone}</p>
-                      <p className="text-xs text-muted-foreground">{fmtCurrency(zone.collected)} of {fmtCurrency(zone.target)}</p>
-                    </div>
-                    <span className={`inline-flex items-center text-sm font-semibold ${
-                      zone.compliance >= 95 ? 'text-primary dark:text-primary' : zone.compliance >= 90 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {zone.compliance}%
-                      {zone.compliance >= 95 ? <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" /> : zone.compliance < 90 ? <TrendingDown className="w-3.5 h-3.5 ml-0.5" /> : null}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Revenue Type Tab ──────────────────────────────────────────── */}
       {view === 'revenue' && (
@@ -498,7 +397,7 @@ export function ReportsPage() {
                   </div>
                   {/* Customer */}
                   <div className="flex items-center gap-3">
-                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Customer</label>
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Customer Name</label>
                     <input type="text" value={filterCustomer} onChange={(e) => setFilterCustomer(e.target.value)} placeholder="Name..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                   {/* Unique Number */}
@@ -647,7 +546,7 @@ export function ReportsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   {/* Customer */}
                   <div className="flex items-center gap-3">
-                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Customer</label>
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Customer Name</label>
                     <input type="text" value={filterCustomer} onChange={(e) => setFilterCustomer(e.target.value)} placeholder="Name..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                   {/* Unique Number */}
@@ -735,127 +634,6 @@ export function ReportsPage() {
                 ))
               )}
             </div>
-          </div>
-        </div>
-      )}
-      {/* ── Zones Tab ─────────────────────────────────────────────────────── */}
-      {view === 'zones' && (
-        <div className="space-y-4">
-          {/* Zone Filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <select
-              value={zoneFilter}
-              onChange={(e) => setZoneFilter(e.target.value)}
-              className="rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="All">All Zones</option>
-              <option value="Zone A">Zone A</option>
-              <option value="Zone B">Zone B</option>
-              <option value="Zone C">Zone C</option>
-              <option value="Zone D">Zone D</option>
-            </select>
-          </div>
-
-          {/* Zone Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredZones.map((zone, i) => (
-              <div key={`zone-card-${i}`} className="rounded-xl bg-white dark:bg-muted border border-border p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-semibold text-foreground">{zone.zone}</h3>
-                  <ComplianceBadge percentage={zone.compliance} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <MiniStat icon={<Building2 className="w-4 h-4 text-destructive" />} label="Businesses" value={fmtNumber(zone.businesses)} />
-                  <MiniStat icon={<Home className="w-4 h-4 text-destructive" />} label="Properties" value={fmtNumber(zone.properties)} />
-                  <MiniStat icon={<DollarSign className="w-4 h-4 text-destructive" />} label="Collected" value={fmtCurrency(zone.collected)} />
-                  <MiniStat icon={<Target className="w-4 h-4 text-destructive" />} label="Target" value={fmtCurrency(zone.target)} />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs text-muted-foreground">Collection Progress</span>
-                    <span className="text-xs font-semibold text-foreground">{zone.target > 0 ? ((zone.collected / zone.target) * 100).toFixed(1) : '0.0'}%</span>
-                  </div>
-                  <div className="w-full h-2.5 rounded-full bg-muted dark:bg-slate-700">
-                    <div
-                      className={`h-2.5 rounded-full transition-all ${
-                        zone.compliance >= 95 ? 'bg-primary/100' : zone.compliance >= 90 ? 'bg-amber-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${Math.min((zone.collected / zone.target) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Monthly Comparison Tab ───────────────────────────────────────── */}
-      {view === 'monthly' && (
-        <div className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
-          <div className="p-5 border-b border-border">
-            <h2 className="text-base font-semibold text-foreground">Year-over-Year Monthly Revenue</h2>
-            <p className="text-sm text-muted-foreground mt-1">Comparing {currentFY} vs {previousFY} monthly collection figures</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-card/50">
-                <tr className="border-b border-border">
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Month</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">{currentFY}</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">{previousFY}</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3 text-right">Change</th>
-                  <th className="text-xs uppercase text-muted-foreground font-medium px-4 py-3">Visual</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {monthlyComparison.map((m) => (
-                  <tr key={m.month} className="hover:bg-card dark:hover:bg-slate-700/30 transition-colors">
-                    <td className="px-4 py-3 text-sm font-medium text-foreground">{m.month}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-foreground text-right">{fmtCurrency(m.currentYear)}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground text-right">{fmtCurrency(m.previousYear)}</td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={`inline-flex items-center gap-0.5 text-sm font-semibold ${
-                        m.change >= 0 ? 'text-primary dark:text-primary' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {m.change >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-                        {Math.abs(m.change)}%
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 h-2 rounded-full bg-muted dark:bg-slate-700 relative overflow-hidden">
-                          <div
-                            className="absolute inset-y-0 left-0 bg-slate-300 dark:bg-slate-600"
-                            style={{ width: `${(m.previousYear / 400000) * 100}%` }}
-                          />
-                          <div
-                            className="absolute inset-y-0 left-0 bg-primary/100"
-                            style={{ width: `${(m.currentYear / 400000) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-card/50">
-                <tr className="border-t-2 border-border">
-                  <td className="px-4 py-3 text-sm font-bold text-foreground">Total</td>
-                  <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">
-                    {fmtCurrency(monthlyComparison.reduce((s, m) => s + m.currentYear, 0))}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-bold text-muted-foreground text-right">
-                    {fmtCurrency(monthlyComparison.reduce((s, m) => s + m.previousYear, 0))}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-bold text-primary dark:text-primary text-right">
-                    +9.8%
-                  </td>
-                  <td />
-                </tr>
-              </tfoot>
-            </table>
           </div>
         </div>
       )}
