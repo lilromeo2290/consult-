@@ -384,7 +384,7 @@ export function ReportsPage() {
           </div>
           <button onClick={handlePrintReport} className="inline-flex items-center gap-2 rounded-lg bg-primary text-white px-3 py-2 text-sm font-medium hover:bg-destructive transition-colors cursor-pointer">
             <Printer className="w-4 h-4" />
-            Print Report
+            {view === 'overview' ? 'Print Overview' : view === 'revenue' ? 'Print Revenue Type' : view === 'statements' ? 'Print Customer Statements' : view === 'items' ? 'Print Revenue Items' : view === 'zones' ? 'Print Zone Reports' : 'Print Monthly Comparison'}
           </button>
         </div>
       </div>
