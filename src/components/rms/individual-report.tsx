@@ -97,13 +97,20 @@ export function IndividualReportPage() {
     return results;
   }, [indStmtType, indCustomer, indUniqueNo, indDateFrom, indDateTo, billsData, payData]);
 
-  const handlePrint = () => {
+  const handlePrint = (stmtIndex?: number) => {
     if (!individualReport || individualReport.length === 0) return;
-    const stmt = individualReport[0];
-    const sRows = stmt.rows.map(r => `<tr><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.date}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.description}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.ref||'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.billDR>0?fmtCurrency(r.billDR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.receiptCR>0?fmtCurrency(r.receiptCR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.balance>0?fmtCurrency(r.balance):'—'}</td></tr>`).join('');
+    const stmts = stmtIndex !== undefined ? [individualReport[stmtIndex]] : individualReport;
+
+    const filterMeta = `<div style="display:flex;flex-wrap:wrap;gap:6px 24px;padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;margin-bottom:16px;font-size:11px;color:#64748b;"><span><strong>Statement:</strong> ${indStmtType}</span>${indCustomer ? `<span><strong>Customer:</strong> ${indCustomer}</span>` : ''}${indUniqueNo ? `<span><strong>Unique #:</strong> ${indUniqueNo}</span>` : ''}${indDateFrom ? `<span><strong>From:</strong> ${indDateFrom}</span>` : ''}${indDateTo ? `<span><strong>To:</strong> ${indDateTo}</span>` : ''}</div>`;
+
+    const stmtsHtml = stmts.map(stmt => {
+      const sRows = stmt.rows.map(r => `<tr><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.date}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.description}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;">${r.ref||'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.billDR>0?fmtCurrency(r.billDR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.receiptCR>0?fmtCurrency(r.receiptCR):'—'}</td><td style="padding:4px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;text-align:right;">${r.balance>0?fmtCurrency(r.balance):'—'}</td></tr>`).join('');
+      return `<div style="margin-bottom:20px;"><div style="padding:6px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;margin-bottom:8px;"><strong style="font-size:12px;">${stmt.customer}</strong><span style="font-size:11px;color:#64748b;margin-left:8px;">${stmt.uniqueNumber}</span></div><div style="display:flex;gap:24px;padding:6px 8px;background:#f1f5f9;font-size:11px;margin-bottom:8px;"><span>Total Billed: <strong>${fmtCurrency(stmt.totalBilled)}</strong></span><span>Total Paid: <strong style="color:#E31E24;">${fmtCurrency(stmt.totalPaid)}</strong></span><span>Balance: <strong>${fmtCurrency(stmt.balance)}</strong></span></div><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f1f5f9;border-bottom:1px solid #e2e8f0;"><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Date</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Description</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Ref #</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Bill/DR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Receipt/CR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Balance</th></tr></thead><tbody>${sRows}</tbody></table></div>`;
+    }).join(stmts.length > 1 ? '<div style="page-break-before:always;"></div>' : '');
+
     const w = window.open('', '_blank', 'width=794,height=1123');
     if (!w) return;
-    w.document.write(`<!DOCTYPE html><html><head><title>Individual Report</title><style>@page{size:A4;margin:15mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:16px;}.header h1{font-size:18px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.report-title{text-align:center;font-size:15px;font-weight:600;margin-bottom:4px;color:#E31E24;}.report-meta{text-align:center;font-size:11px;color:#94a3b8;margin-bottom:20px;}</style></head><body><div class="header">${assemblyHeaderHTML('Revenue Management System')}</div><div class="report-title">Individual Report — ${indStmtType}</div><div class="report-meta">Generated: ${new Date().toLocaleString()}</div><div style="padding:6px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;margin-bottom:12px;"><strong style="font-size:12px;">${stmt.customer}</strong><span style="font-size:11px;color:#64748b;margin-left:8px;">${stmt.uniqueNumber}</span></div><div style="display:flex;gap:24px;padding:6px 8px;background:#f1f5f9;font-size:11px;margin-bottom:12px;"><span>Total Billed: <strong>${fmtCurrency(stmt.totalBilled)}</strong></span><span>Total Paid: <strong style="color:#E31E24;">${fmtCurrency(stmt.totalPaid)}</strong></span><span>Balance: <strong>${fmtCurrency(stmt.balance)}</strong></span></div><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f1f5f9;border-bottom:1px solid #e2e8f0;"><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Date</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Description</th><th style="text-align:left;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Ref #</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Bill/DR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Receipt/CR</th><th style="text-align:right;padding:4px 8px;font-size:10px;text-transform:uppercase;color:#64748b;">Balance</th></tr></thead><tbody>${sRows}</tbody></table><div style="margin-top:40px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`);
+    w.document.write(`<!DOCTYPE html><html><head><title>Individual Report</title><style>@page{size:A4;margin:15mm;}*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1e293b;}.header{text-align:center;border-bottom:3px double #1e293b;padding-bottom:12px;margin-bottom:16px;}.header h1{font-size:18px;font-weight:700;letter-spacing:0.05em;}.header p{font-size:11px;color:#64748b;margin-top:3px;}.report-title{text-align:center;font-size:15px;font-weight:600;margin-bottom:4px;color:#E31E24;}.report-meta{text-align:center;font-size:11px;color:#94a3b8;margin-bottom:16px;}</style></head><body><div class="header">${assemblyHeaderHTML('Revenue Management System')}</div><div class="report-title">Individual Report — ${indStmtType}</div><div class="report-meta">Generated: ${new Date().toLocaleString()}</div>${filterMeta}${stmtsHtml}<div style="margin-top:40px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;font-size:10px;color:#94a3b8;">This is a computer-generated document and does not require a signature.<br/>Designed, Developed &amp; Maintained by <strong>Clipe Consult</strong> | www.clipeconsult.com</div></body></html>`);
     w.document.close();
     w.onload = () => { w.print(); };
   };
@@ -119,9 +126,9 @@ export function IndividualReportPage() {
           </p>
         </div>
         {individualReport && individualReport.length > 0 && (
-          <button onClick={handlePrint} className="inline-flex items-center gap-2 rounded-lg bg-primary text-white px-3 py-2 text-sm font-medium hover:bg-destructive transition-colors cursor-pointer">
+          <button onClick={() => handlePrint()} className="inline-flex items-center gap-2 rounded-lg bg-primary text-white px-3 py-2 text-sm font-medium hover:bg-destructive transition-colors cursor-pointer">
             <Printer className="w-4 h-4" />
-            Print Report
+            Print All ({individualReport.length})
           </button>
         )}
       </div>
@@ -186,9 +193,15 @@ export function IndividualReportPage() {
         individualReport.map((stmt, sIdx) => (
           <div key={sIdx} className="rounded-xl bg-white dark:bg-muted border border-border overflow-hidden">
             {/* Customer header */}
-            <div className="px-5 py-3 bg-muted/40 dark:bg-slate-700/40 border-b border-border">
-              <span className="text-sm font-semibold text-foreground">{stmt.customer}</span>
-              <span className="text-xs text-muted-foreground ml-3">{stmt.uniqueNumber}</span>
+            <div className="px-5 py-3 bg-muted/40 dark:bg-slate-700/40 border-b border-border flex items-center justify-between">
+              <div>
+                <span className="text-sm font-semibold text-foreground">{stmt.customer}</span>
+                <span className="text-xs text-muted-foreground ml-3">{stmt.uniqueNumber}</span>
+              </div>
+              <button onClick={() => handlePrint(sIdx)} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white dark:bg-slate-700 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-card transition-colors cursor-pointer">
+                <Printer className="w-3.5 h-3.5" />
+                Print
+              </button>
             </div>
             {/* Summary bar */}
             <div className="flex gap-6 px-5 py-2.5 bg-card/50 dark:bg-slate-700/30 border-b border-border text-xs">
