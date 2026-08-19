@@ -829,7 +829,7 @@ export function ReportsPage() {
                     >
                       <option value="">All Revenue Codes</option>
                       {REVENUE_CODE_MAP.map(([code, desc]) => (
-                        <option key={code} value={code}>{code} — {desc}</option>
+                        <option key={code} value={code}>{code}</option>
                       ))}
                     </select>
                   </div>
@@ -850,7 +850,7 @@ export function ReportsPage() {
                     >
                       <option value="">All Revenue Items</option>
                       {REVENUE_CODE_MAP.map(([code, desc]) => (
-                        <option key={code} value={desc}>{desc} ({code})</option>
+                        <option key={code} value={desc}>{desc}</option>
                       ))}
                     </select>
                   </div>
