@@ -811,15 +811,15 @@ export function ReportsPage() {
                     <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Date To</label>
                     <input type="date" value={filterDateTo} onChange={(e) => setFilterDateTo(e.target.value)} className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
-                  {/* Revenue Item */}
-                  <div className="flex items-center gap-3">
-                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Revenue Item</label>
-                    <input type="text" value={filterRevenueItem} onChange={(e) => setFilterRevenueItem(e.target.value)} placeholder="Description..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                  </div>
                   {/* Revenue Code */}
                   <div className="flex items-center gap-3">
                     <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Revenue Code</label>
                     <input type="text" value={filterRevenueCode} onChange={(e) => setFilterRevenueCode(e.target.value)} placeholder="Code..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  {/* Revenue Item */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs text-muted-foreground font-medium w-28 shrink-0">Revenue Item</label>
+                    <input type="text" value={filterRevenueItem} onChange={(e) => setFilterRevenueItem(e.target.value)} placeholder="Description..." className="flex-1 rounded-lg border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                 </div>
                 {/* Clear button */}
