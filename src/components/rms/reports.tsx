@@ -5,6 +5,7 @@ import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import { LOCALITIES } from '@/lib/localities';
 import { assemblyHeaderHTML } from '@/lib/utils';
 import { REVENUE_CODE_MAP } from '@/lib/revenue-code-map';
+import { FINE_CLASS_TO_FIRST_CODE, FINE_CODE_TO_CLASS } from '@/lib/fines-class-code-map';
 import {
   BarChart3,
   Download,
@@ -299,6 +300,30 @@ export function ReportsPage() {
 
   // C. Detailed Collection by Revenue Items (uses filteredBills + filteredPayments)
   const revenueItems = useMemo(() => {
+    // Build entity → revenueCode lookup from all data sources
+    const entityCodeMap = new Map<string, { code: string; description: string }>();
+
+    (bizData as any[]).forEach((b) => {
+      const num = b.businessUniqueNumber || b.regNumber || '';
+      const code = b.revenueCode || '';
+      if (num && code) entityCodeMap.set(num, { code, description: b.revenueDescription || b.businessClassDesc || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || '' });
+    });
+    (propData as any[]).forEach((p) => {
+      const num = p.propertyUniqueNumber || p.propNumber || '';
+      const code = p.revenueCode || '';
+      if (num && code) entityCodeMap.set(num, { code, description: p.revenueDescription || p.type || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || '' });
+    });
+    (rentData as any[]).forEach((r) => {
+      const num = r.rentPropertyUniqueNumber || r.rentPropertyNumber || '';
+      const code = r.rentRevenueCode || '';
+      if (num && code) entityCodeMap.set(num, { code, description: r.rentRevenueDescription || r.rentPropertyType || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || '' });
+    });
+    (finesData as any[]).forEach((f) => {
+      const cls = f.classDescription || '';
+      const code = f.fineCode || FINE_CLASS_TO_FIRST_CODE[cls] || '';
+      if (code) entityCodeMap.set(f.id || '', { code, description: cls || FINE_CODE_TO_CLASS[code] || '' });
+    });
+
     // When 'All' is selected, start with every code from REVENUE_CODE_MAP
     const map = new Map<string, { code: string; description: string; target: number; collected: number }>();
 
@@ -308,7 +333,7 @@ export function ReportsPage() {
       });
     }
 
-    // Match payments to bills by billNo, then aggregate by revenueCode
+    // Match payments to bills by billNo
     const billPaymentMap = new Map<string, number>();
     filteredPayments.forEach((p: any) => {
       const billNo = p.billNo || '';
@@ -318,9 +343,25 @@ export function ReportsPage() {
     });
 
     filteredBills.forEach((b: any) => {
-      const code = b.revenueCode || '';
-      const desc = b.revenueDescription || b.description || '';
+      // Look up revenue code from bill first, then from entity
+      let code = b.revenueCode || '';
+      let desc = b.revenueDescription || b.description || '';
+
+      if (!code) {
+        const entity = entityCodeMap.get(b.uniqueNumber || '');
+        if (entity) {
+          code = entity.code;
+          desc = entity.description || desc;
+        }
+      }
+
       if (!code) return;
+
+      // Resolve description from REVENUE_CODE_MAP if still empty
+      if (!desc) {
+        const mapped = REVENUE_CODE_MAP.find(([c]) => c === code);
+        if (mapped) desc = mapped[1];
+      }
 
       const existing = map.get(code);
       const billAmt = b.amountDue || b.charge || 0;
@@ -346,7 +387,7 @@ export function ReportsPage() {
     }
 
     return result.sort((a, b) => a.code.localeCompare(b.code));
-  }, [filteredBills, filteredPayments, revenueTypeFilter, filterRevenueCode, filterRevenueItem]);
+  }, [filteredBills, filteredPayments, revenueTypeFilter, filterRevenueCode, filterRevenueItem, bizData, propData, rentData, finesData]);
 
   const handlePrintReport = () => {
     const title = view === 'overview' ? 'Revenue Overview' : view === 'revenue' ? 'Revenue Type' : view === 'statements' ? 'Customer Statements' : view === 'items' ? 'Revenue Items' : view === 'zones' ? 'Zone Reports' : 'Monthly Comparison';
