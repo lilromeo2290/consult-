@@ -5,7 +5,7 @@ import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import { LOCALITIES } from '@/lib/localities';
 import { assemblyHeaderHTML } from '@/lib/utils';
 import { REVENUE_CODE_MAP } from '@/lib/revenue-code-map';
-import { FINE_CLASS_TO_FIRST_CODE, FINE_CODE_TO_CLASS } from '@/lib/fines-class-code-map';
+import { FINE_CODE_TO_CLASS } from '@/lib/fines-class-code-map';
 import {
   BarChart3,
   Download,
@@ -298,35 +298,52 @@ export function ReportsPage() {
     return statements;
   }, [filteredBills, filteredPayments]);
 
-  // C. Detailed Collection by Revenue Items (uses filteredBills + filteredPayments)
+  // C. Detailed Collection by Revenue Items
   const revenueItems = useMemo(() => {
     // Build entity → revenueCode lookup from all data sources
     const entityCodeMap = new Map<string, { code: string; description: string }>();
 
+    // Businesses: revenueCode || businessClassCode
     (bizData as any[]).forEach((b) => {
       const num = b.businessUniqueNumber || b.regNumber || '';
-      const code = b.revenueCode || '';
-      if (num && code) entityCodeMap.set(num, { code, description: b.revenueDescription || b.businessClassDesc || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || '' });
+      const code = b.revenueCode || b.businessClassCode || '';
+      if (num && code) {
+        const desc = b.revenueDescription || b.businessClassDesc || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || b.type || '';
+        entityCodeMap.set(num, { code, description: desc });
+      }
     });
+    // Also index by regNumber for bills that use regNumber as uniqueNumber
+    (bizData as any[]).forEach((b) => {
+      const num = b.regNumber || '';
+      const code = b.revenueCode || b.businessClassCode || '';
+      if (num && code && !entityCodeMap.has(num)) {
+        const desc = b.revenueDescription || b.businessClassDesc || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || b.type || '';
+        entityCodeMap.set(num, { code, description: desc });
+      }
+    });
+
+    // Properties
     (propData as any[]).forEach((p) => {
       const num = p.propertyUniqueNumber || p.propNumber || '';
       const code = p.revenueCode || '';
-      if (num && code) entityCodeMap.set(num, { code, description: p.revenueDescription || p.type || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || '' });
+      if (num && code) {
+        const desc = p.revenueDescription || p.type || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || '';
+        entityCodeMap.set(num, { code, description: desc });
+      }
     });
+
+    // Rents: key is rentPropertyNumber (rentPropertyUniqueNumber often empty)
     (rentData as any[]).forEach((r) => {
-      const num = r.rentPropertyUniqueNumber || r.rentPropertyNumber || '';
+      const num = r.rentPropertyNumber || r.rentPropertyUniqueNumber || '';
       const code = r.rentRevenueCode || '';
-      if (num && code) entityCodeMap.set(num, { code, description: r.rentRevenueDescription || r.rentPropertyType || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || '' });
-    });
-    (finesData as any[]).forEach((f) => {
-      const cls = f.classDescription || '';
-      const code = f.fineCode || FINE_CLASS_TO_FIRST_CODE[cls] || '';
-      if (code) entityCodeMap.set(f.id || '', { code, description: cls || FINE_CODE_TO_CLASS[code] || '' });
+      if (num && code) {
+        const desc = r.rentRevenueDescription || r.rentPropertyType || REVENUE_CODE_MAP.find(([c]) => c === code)?.[1] || '';
+        entityCodeMap.set(num, { code, description: desc });
+      }
     });
 
-    // When 'All' is selected, start with every code from REVENUE_CODE_MAP
+    // Start with all codes when 'All' selected
     const map = new Map<string, { code: string; description: string; target: number; collected: number }>();
-
     if (revenueTypeFilter === 'All') {
       REVENUE_CODE_MAP.forEach(([code, desc]) => {
         map.set(code, { code, description: desc, target: 0, collected: 0 });
@@ -338,34 +355,28 @@ export function ReportsPage() {
     filteredPayments.forEach((p: any) => {
       const billNo = p.billNo || '';
       if (!billNo) return;
-      const existing = billPaymentMap.get(billNo) || 0;
-      billPaymentMap.set(billNo, existing + (p.amount || 0));
+      billPaymentMap.set(billNo, (billPaymentMap.get(billNo) || 0) + (p.amount || 0));
     });
 
+    // Aggregate from bills (Business/Property/Rent/BP)
     filteredBills.forEach((b: any) => {
-      // Look up revenue code from bill first, then from entity
       let code = b.revenueCode || '';
       let desc = b.revenueDescription || b.description || '';
 
       if (!code) {
         const entity = entityCodeMap.get(b.uniqueNumber || '');
-        if (entity) {
-          code = entity.code;
-          desc = entity.description || desc;
-        }
+        if (entity) { code = entity.code; desc = entity.description || desc; }
       }
 
       if (!code) return;
-
-      // Resolve description from REVENUE_CODE_MAP if still empty
       if (!desc) {
         const mapped = REVENUE_CODE_MAP.find(([c]) => c === code);
         if (mapped) desc = mapped[1];
       }
 
-      const existing = map.get(code);
       const billAmt = b.amountDue || b.charge || 0;
       const paid = billPaymentMap.get(b.billNumber) || 0;
+      const existing = map.get(code);
 
       if (existing) {
         existing.target += billAmt;
@@ -375,7 +386,26 @@ export function ReportsPage() {
       }
     });
 
-    // If filtering by specific code or item, narrow results
+    // Aggregate fines directly (no bills for fines)
+    if (revenueTypeFilter === 'All' || revenueTypeFilter === 'Fines') {
+      (finesData as any[]).forEach((f) => {
+        const code = f.code || '';
+        const fineClass = f.fineClass || f.classDescription || '';
+        if (!code) return;
+
+        const desc = fineClass || FINE_CODE_TO_CLASS[code] || '';
+        const amt = parseFloat(f.fineAmount) || f.amountDue || 0;
+        const existing = map.get(code);
+
+        if (existing) {
+          existing.target += amt;
+        } else {
+          map.set(code, { code, description: desc, target: amt, collected: 0 });
+        }
+      });
+    }
+
+    // Filter by code/item if specified
     let result = Array.from(map.values());
     if (filterRevenueCode.trim()) {
       const q = filterRevenueCode.toLowerCase();
