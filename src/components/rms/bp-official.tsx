@@ -240,46 +240,40 @@ export function BPOfficialPage() {
     [records],
   );
 
-  // ── Auto-fill applicant from Business Register ────────────────────────
-  const handleAutoFill = useCallback((biz: BusinessLookup) => {
+  // ── Auto-fill applicant from Building Permit Register ──────────────
+  const handleAutoFill = useCallback((permit: BuildingPermitItem) => {
     setForm((prev) => ({
       ...prev,
-      applicantFullName: biz.owner || '',
-      applicantAddress: `${biz.streetName || ''}, ${biz.houseNo || ''}, ${biz.locality || ''}`.replace(/^,\s*/, '').replace(/,\s*$/, ''),
-      applicantPhone: biz.phone || '',
-      applicantEmail: biz.email || '',
-      applicantNationalId: biz.ghanaCard || '',
-      applicantTin: biz.ownerTin || '',
-      businessName: biz.name || '',
-      businessRegNumber: biz.regNumber || '',
-      businessLocation: `${biz.locality || ''} - ${biz.areaCode || ''}`.trim(),
-      businessUniqueNumber: biz.businessUniqueNumber || '',
-      businessClassDesc: biz.businessClassDesc || '',
-      businessCategory: biz.category || '',
-      businessAmount: biz.amount || 0,
+      applicationNumber: permit.permitNumber,
+      applicationDate: permit.applicationDate,
+      applicantFullName: permit.applicantFullName || '',
+      applicantAddress: permit.residentialAddress || permit.postalAddress || '',
+      applicantPhone: permit.telephoneNumber || '',
+      applicantEmail: permit.emailAddress || '',
+      applicantNationalId: permit.nationalIdNumber || '',
     }));
     setBizSearch('');
     setBizDropdownOpen(false);
-    toast.success('Applicant information auto-filled');
+    toast.success('Applicant information auto-filled from building permit register');
   }, []);
 
-  // ── Business search results (used by Applicant Search) ─────────────────
+  // ── Building permit search results (used by Applicant Search) ──────
   const bizSearchResults = useMemo(() => {
     if (!bizSearch.trim()) return [];
     const q = bizSearch.toLowerCase();
-    return businesses
+    return buildingPermits
       .filter(
-        (b) =>
-          b.name?.toLowerCase().includes(q) ||
-          b.owner?.toLowerCase().includes(q) ||
-          b.regNumber?.toLowerCase().includes(q) ||
-          b.businessUniqueNumber?.toLowerCase().includes(q) ||
-          b.phone?.includes(q) ||
-          b.ghanaCard?.toLowerCase().includes(q) ||
-          b.ownerTin?.toLowerCase().includes(q),
+        (p) =>
+          p.applicantFullName?.toLowerCase().includes(q) ||
+          p.permitNumber?.toLowerCase().includes(q) ||
+          p.telephoneNumber?.includes(q) ||
+          p.nationalIdNumber?.toLowerCase().includes(q) ||
+          p.applicationDate?.includes(q) ||
+          p.siteLocation?.toLowerCase().includes(q) ||
+          p.plotNumber?.toLowerCase().includes(q),
       )
       .slice(0, 8);
-  }, [bizSearch, businesses]);
+  }, [bizSearch, buildingPermits]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -487,7 +481,7 @@ export function BPOfficialPage() {
                       value={bizSearch}
                       onChange={(e) => { setBizSearch(e.target.value); setBizDropdownOpen(true); }}
                       onFocus={() => setBizDropdownOpen(true)}
-                      placeholder="Search by Name, Phone, Ghana Card, TIN..."
+                      placeholder="Search by Name, Permit #, Phone, Ghana Card..."
                       className={`${inputClass} pl-9 pr-8`}
                     />
                     {bizSearch && (
@@ -501,16 +495,16 @@ export function BPOfficialPage() {
                     )}
                     {bizDropdownOpen && bizSearchResults.length > 0 && (
                       <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
-                        {bizSearchResults.map((biz, idx) => (
+                        {bizSearchResults.map((permit, idx) => (
                           <button
                             key={idx}
                             type="button"
-                            onClick={() => handleAutoFill(biz)}
+                            onClick={() => handleAutoFill(permit)}
                             className="w-full px-3 py-2.5 text-left text-sm hover:bg-accent transition-colors border-b last:border-0"
                           >
-                            <div className="font-medium">{biz.name || 'Unnamed Business'}</div>
+                            <div className="font-medium">{permit.applicantFullName || 'Unnamed Applicant'}</div>
                             <div className="text-xs text-muted-foreground mt-0.5">
-                              Owner: {biz.owner || 'N/A'} &middot; Phone: {biz.phone || 'N/A'} &middot; {biz.regNumber || ''}
+                              Permit #: {permit.permitNumber || 'N/A'} &middot; Phone: {permit.telephoneNumber || 'N/A'} &middot; {permit.typeOfDevelopment || ''}
                             </div>
                           </button>
                         ))}
