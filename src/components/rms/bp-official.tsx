@@ -578,19 +578,7 @@ export function BPOfficialPage() {
                     className={inputClass}
                   />
                 </div>
-                <div>
-                  <label className={`${labelClass} block`}>TIN</label>
-                  <input
-                    type="text"
-                    name="applicantTin"
-                    value={form.applicantTin}
-                    onChange={handleFormChange}
-                    placeholder="Tax Identification Number"
-                    className={inputClass}
-                  />
-                </div>
               </div>
-
             </FormSection>
 
             {/* ── SECTION 3: ROUTING TO PHYSICAL PLANNING DEPARTMENT ── */}
