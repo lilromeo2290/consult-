@@ -24,8 +24,6 @@ import {
   FileText,
   Hash,
 } from 'lucide-react';
-import QRCode from 'qrcode';
-import { encodeBarcodeData, getVerificationUrl } from '@/lib/barcode-utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -283,30 +281,8 @@ export function PaymentsPage() {
     setViewingPayment(p);
   };
 
-  // ── Barcode helpers ──────────────────────────────────────
-  // Generate QR code data URL for receipt verification
-  const getPayQrDataUrl = async (p: Payment, asmName: string): Promise<string> => {
-    const encoded = encodeBarcodeData({
-      type: 'PAYMENT',
-      refNo: p.receiptNo,
-      issuedTo: p.business,
-      entityType: 'Business',
-      amount: p.amount,
-      date: p.date,
-      revenueItem: 'Revenue Payment',
-      method: p.method,
-      status: p.status,
-      assemblyName: asmName,
-    });
-    const verifyUrl = getVerificationUrl(encoded);
-    try {
-      return await QRCode.toDataURL(verifyUrl, { width: 200, margin: 1, color: { dark: '#000000', light: '#ffffff' } });
-    } catch { return ''; }
-  };
-
-  const handlePrintPayment = async (p: Payment) => {
+  const handlePrintPayment = (p: Payment) => {
     const _asmName = (() => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; } })();
-    const qrDataUrl = await getPayQrDataUrl(p, _asmName);
     const printWin = window.open('', '_blank', 'width=800,height=600');
     if (!printWin) return;
     printWin.document.write(`
@@ -339,9 +315,6 @@ export function PaymentsPage() {
           .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8; }
           .watermark-footer { position: relative; margin-top: 30px; padding: 20px 0; text-align: center; }
           .watermark-footer img.seal { width: 140px; height: 140px; opacity: 0.85; filter: contrast(1.5); }
-          .watermark-footer .qr-section { margin-top: 12px; }
-          .watermark-footer .qr-section img { width: 100px; height: 100px; }
-          .watermark-footer .qr-hint { font-size: 9px; color: #94a3b8; margin-top: 4px; }
           @media print { body { padding: 20px; } }
         </style>
       </head>
@@ -382,10 +355,6 @@ export function PaymentsPage() {
         </div>
         <div class="watermark-footer">
           <img class="seal" src="/seal.jpeg" alt="Official Seal" />
-          <div class="qr-section">
-            ${qrDataUrl ? '<img src="' + qrDataUrl + '" alt="Scan to verify receipt" />' : ''}
-            <div class="qr-hint">Scan QR code to view original colored receipt</div>
-          </div>
         </div>
       </body>
       </html>
@@ -726,14 +695,10 @@ export function PaymentsPage() {
               </div>
             )}
 
-            {/* Seal Watermark + QR Code */}
+            {/* Seal Watermark */}
             <div className="flex flex-col items-center py-5 border-t border-dashed border-gray-200 dark:border-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/seal.jpeg" alt="Official Seal" className="w-28 h-28 opacity-90 contrast-150" />
-              <div className="mt-3 flex flex-col items-center">
-                <ReceiptQrCode payment={viewingPayment} />
-                <p className="text-[9px] text-gray-400 dark:text-muted-foreground mt-1.5">Scan QR code to view original colored receipt</p>
-              </div>
             </div>
 
             {/* Actions */}
@@ -996,33 +961,3 @@ export function PaymentsPage() {
   );
 }
 
-// ─── QR Code Component for Receipt Modal ─────────────────────────────────
-function ReceiptQrCode({ payment, asmName }: { payment: Payment; asmName?: string }) {
-  const [qrSrc, setQrSrc] = useState<string>('');
-  const _asm = asmName || (() => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; } })();
-
-  useEffect(() => {
-    const encoded = encodeBarcodeData({
-      type: 'PAYMENT',
-      refNo: payment.receiptNo,
-      issuedTo: payment.business,
-      entityType: 'Business',
-      amount: payment.amount,
-      date: payment.date,
-      revenueItem: 'Revenue Payment',
-      method: payment.method,
-      status: payment.status,
-      assemblyName: _asm,
-    });
-    const verifyUrl = getVerificationUrl(encoded);
-    QRCode.toDataURL(verifyUrl, { width: 160, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
-      .then(setQrSrc)
-      .catch(() => {});
-  }, [payment, _asm]);
-
-  if (!qrSrc) return null;
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={qrSrc} alt="Scan to verify" className="w-20 h-20" />
-  );
-}
