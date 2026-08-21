@@ -404,11 +404,6 @@ export function PaymentsPage() {
           </tbody>
         </table>
         ${p.remarks ? '<div style="margin-top:20px"><div class="section-title">Remarks</div><p style="font-size:13px;color:#475569;">' + p.remarks + '</p></div>' : ''}
-        <div style="text-align:center;margin-top:30px;padding:16px;border:1px solid #e2e8f0;border-radius:8px;">
-          <p style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Scan to Verify</p>
-          ${barcodeSvg}
-          <p style="font-size:9px;color:#94a3b8;margin-top:6px;">${getVerificationUrl(barcodeData)}</p>
-        </div>
         <div class="footer">
           Thank you for your payment.<br/>
           This receipt is computer generated and does not require a signature.<br/><br/>
@@ -753,20 +748,6 @@ export function PaymentsPage() {
                 <p className="text-sm text-gray-600 dark:text-muted-foreground">{viewingPayment.remarks}</p>
               </div>
             )}
-
-            {/* Barcode Verification */}
-            <div className="px-6 pb-4">
-              <div className="rounded-xl border-border p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <ScanBarcode className="w-4 h-4 text-muted-foreground" />
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Verification Barcode</p>
-                </div>
-                <div className="flex justify-center">
-                  <canvas ref={payBarcodeRef} className="max-w-full" />
-                </div>
-                <p className="text-[9px] text-muted-foreground dark:text-muted-foreground mt-2 break-all">{viewingPayment ? getVerificationUrl(getPayBarcodeData(viewingPayment, asmName)) : ''}</p>
-              </div>
-            </div>
 
             {/* Actions */}
             <div className="flex items-center justify-between gap-3 border-t border-gray-200 dark:border-border px-6 py-4">
