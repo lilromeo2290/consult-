@@ -465,7 +465,7 @@ export function BPOfficialPage() {
                       </div>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">Search business register to auto-fill applicant details</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Search building permit register to auto-fill applicant details</p>
                 </div>
               </div>
               {/* Hidden application number */}
