@@ -252,6 +252,8 @@ export function BPOfficialPage() {
         (r) =>
           r.applicantFullName.toLowerCase().includes(q) ||
           r.applicantPhone.toLowerCase().includes(q) ||
+          r.applicationDate.toLowerCase().includes(q) ||
+          r.applicantTin.toLowerCase().includes(q) ||
           r.applicantNationalId.toLowerCase().includes(q),
       );
     }
@@ -829,7 +831,7 @@ export function BPOfficialPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-            placeholder="Search by Name, Phone Number, Ghana Card..."
+            placeholder="Search by Name, Phone, Date, TIN, Ghana Card..."
             className={`${inputClass} pl-9`}
           />
         </div>
