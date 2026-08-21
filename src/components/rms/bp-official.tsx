@@ -213,10 +213,10 @@ export function BPOfficialPage() {
     }));
     setBizSearch('');
     setBizDropdownOpen(false);
-    toast.success('Applicant information auto-filled from Business Register');
+    toast.success('Applicant information auto-filled');
   }, []);
 
-  // ── Business search results ───────────────────────────────────────────
+  // ── Business search results (used by Applicant Search) ─────────────────
   const bizSearchResults = useMemo(() => {
     if (!bizSearch.trim()) return [];
     const q = bizSearch.toLowerCase();
@@ -227,7 +227,9 @@ export function BPOfficialPage() {
           b.owner?.toLowerCase().includes(q) ||
           b.regNumber?.toLowerCase().includes(q) ||
           b.businessUniqueNumber?.toLowerCase().includes(q) ||
-          b.phone?.includes(q),
+          b.phone?.includes(q) ||
+          b.ghanaCard?.toLowerCase().includes(q) ||
+          b.ownerTin?.toLowerCase().includes(q),
       )
       .slice(0, 8);
   }, [bizSearch, businesses]);
@@ -421,70 +423,57 @@ export function BPOfficialPage() {
           <div className="p-6 space-y-8">
             {/* ── SECTION 1: APPLICATION HEADER ──────────────────────── */}
             <FormSection number="1" title="Application Information" icon={<FileText size={16} />}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
                   <label className={`${labelClass} block`}>
                     Applicant Search <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    name="applicationNumber"
-                    value={form.applicationNumber}
-                    onChange={handleFormChange}
-                    placeholder="BP-26-0001"
-                    className={inputClass}
-                    readOnly={!!editingId}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">Auto-generated on creation</p>
+                  <div ref={bizSearchRef} className="relative">
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={bizSearch}
+                      onChange={(e) => { setBizSearch(e.target.value); setBizDropdownOpen(true); }}
+                      onFocus={() => setBizDropdownOpen(true)}
+                      placeholder="Search by Name, Phone, Ghana Card, TIN..."
+                      className={`${inputClass} pl-9 pr-8`}
+                    />
+                    {bizSearch && (
+                      <button
+                        type="button"
+                        onClick={() => { setBizSearch(''); setBizDropdownOpen(false); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                    {bizDropdownOpen && bizSearchResults.length > 0 && (
+                      <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
+                        {bizSearchResults.map((biz, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleAutoFill(biz)}
+                            className="w-full px-3 py-2.5 text-left text-sm hover:bg-accent transition-colors border-b last:border-0"
+                          >
+                            <div className="font-medium">{biz.name || 'Unnamed Business'}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              Owner: {biz.owner || 'N/A'} &middot; Phone: {biz.phone || 'N/A'} &middot; {biz.regNumber || ''}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">Search business register to auto-fill applicant details</p>
                 </div>
               </div>
+              {/* Hidden application number */}
+              <input type="hidden" name="applicationNumber" value={form.applicationNumber} />
             </FormSection>
 
-            {/* ── SECTION 2: APPLICANT INFORMATION (Auto-fill from Business Register) ── */}
+            {/* ── SECTION 2: APPLICANT INFORMATION ── */}
             <FormSection number="2" title="Applicant Information" icon={<User size={16} />}>
-              {/* Auto-fill search bar */}
-              <div className="mb-4 p-3 rounded-lg bg-muted/40 border border-dashed border-border">
-                <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <Briefcase size={13} /> Auto-fill from Business Register — search by business name, owner, or registration number
-                </p>
-                <div ref={bizSearchRef} className="relative">
-                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={bizSearch}
-                    onChange={(e) => { setBizSearch(e.target.value); setBizDropdownOpen(true); }}
-                    onFocus={() => setBizDropdownOpen(true)}
-                    placeholder="Type business name, owner name, or registration number..."
-                    className={`${inputClass} pl-9 pr-8`}
-                  />
-                  {bizSearch && (
-                    <button
-                      onClick={() => { setBizSearch(''); setBizDropdownOpen(false); }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                  {bizDropdownOpen && bizSearchResults.length > 0 && (
-                    <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
-                      {bizSearchResults.map((biz, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleAutoFill(biz)}
-                          className="w-full px-3 py-2.5 text-left text-sm hover:bg-accent transition-colors border-b last:border-0"
-                        >
-                          <div className="font-medium">{biz.name || 'Unnamed Business'}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            Owner: {biz.owner || 'N/A'} &middot; Reg #: {biz.regNumber || 'N/A'} &middot; {biz.phone || 'No phone'}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Applicant fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className={`${labelClass} block`}>
@@ -495,7 +484,7 @@ export function BPOfficialPage() {
                     name="applicantFullName"
                     value={form.applicantFullName}
                     onChange={handleFormChange}
-                    placeholder="Enter or auto-fill applicant name"
+                    placeholder="Applicant full name"
                     className={inputClass}
                   />
                 </div>
@@ -506,7 +495,7 @@ export function BPOfficialPage() {
                     name="applicantAddress"
                     value={form.applicantAddress}
                     onChange={handleFormChange}
-                    placeholder="Enter or auto-fill applicant address"
+                    placeholder="Applicant address"
                     className={inputClass}
                   />
                 </div>
