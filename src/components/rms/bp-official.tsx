@@ -403,7 +403,7 @@ export function BPOfficialPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold">
-                  {editingId ? 'Edit' : 'New'} Business Permit Application
+                  {editingId ? 'Edit' : 'New'} Permit Application
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Business Permit (BP) Official — Review Application Processing
