@@ -250,10 +250,9 @@ export function BPOfficialPage() {
       const q = searchTerm.toLowerCase();
       list = list.filter(
         (r) =>
-          r.applicationNumber.toLowerCase().includes(q) ||
           r.applicantFullName.toLowerCase().includes(q) ||
-          r.businessName.toLowerCase().includes(q) ||
-          r.businessRegNumber.toLowerCase().includes(q),
+          r.applicantPhone.toLowerCase().includes(q) ||
+          r.applicantNationalId.toLowerCase().includes(q),
       );
     }
     if (statusFilter) list = list.filter((r) => r.status === statusFilter);
@@ -840,7 +839,7 @@ export function BPOfficialPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-            placeholder="Search by application #, applicant, business name, reg #..."
+            placeholder="Search by Name, Phone Number, Ghana Card..."
             className={`${inputClass} pl-9`}
           />
         </div>
