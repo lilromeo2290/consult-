@@ -420,9 +420,9 @@ export function BPOfficialPage() {
             {/* ── SECTION 1: APPLICATION HEADER ──────────────────────── */}
             <FormSection number="1" title="Application Information" icon={<FileText size={16} />}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="md:col-span-2">
                   <label className={`${labelClass} block`}>
-                    Application Number <span className="text-red-500">*</span>
+                    Applicant Search <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -434,16 +434,6 @@ export function BPOfficialPage() {
                     readOnly={!!editingId}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">Auto-generated on creation</p>
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Application Date</label>
-                  <input
-                    type="date"
-                    name="applicationDate"
-                    value={form.applicationDate}
-                    onChange={handleFormChange}
-                    className={inputClass}
-                  />
                 </div>
               </div>
             </FormSection>
