@@ -545,42 +545,6 @@ export function BPOfficialPage() {
                 </div>
               </div>
 
-              {/* Business reference fields */}
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={`${labelClass} block`}>Business Name</label>
-                  <input
-                    type="text"
-                    name="businessName"
-                    value={form.businessName}
-                    onChange={handleFormChange}
-                    placeholder="Auto-filled from Business Register"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Business Registration Number</label>
-                  <input
-                    type="text"
-                    name="businessRegNumber"
-                    value={form.businessRegNumber}
-                    onChange={handleFormChange}
-                    placeholder="Auto-filled from Business Register"
-                    className={inputClass}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className={`${labelClass} block`}>Business Location</label>
-                  <input
-                    type="text"
-                    name="businessLocation"
-                    value={form.businessLocation}
-                    onChange={handleFormChange}
-                    placeholder="Auto-filled from Business Register"
-                    className={inputClass}
-                  />
-                </div>
-              </div>
             </FormSection>
 
             {/* ── SECTION 3: ROUTING TO PHYSICAL PLANNING DEPARTMENT ── */}
