@@ -4,63 +4,35 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 import {
-  Search, ArrowLeft, ChevronLeft, ChevronRight,
-  Save, Stamp, Eye, User, MapPin, FileText, Building2,
-  Flame, Leaf, ClipboardCheck, X, CalendarDays, MapPinned,
+  Search, Plus, ArrowLeft, Pencil, Trash2, ChevronLeft, ChevronRight,
+  Save, Stamp, Download, Upload, User, MapPin, FileText, Building2,
+  ShieldCheck, Flame, Leaf, ClipboardCheck, CalendarDays, Briefcase,
+  Loader2, X, Eye,
 } from 'lucide-react';
+import { exportToExcel, importFromExcel, BP_OFFICIAL_FIELDS } from '@/lib/import-export';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-// Building Permit as stored in rms-building-permits
-interface BuildingPermit {
+interface BPOfficial {
   id: string;
-  permitNumber: string;
+  // Application Header
+  applicationNumber: string;
   applicationDate: string;
+  // Applicant Information (auto-filled from Business Register)
   applicantFullName: string;
-  postalAddress: string;
-  residentialAddress: string;
-  telephoneNumber: string;
-  emailAddress: string;
-  nationalIdNumber: string;
-  plotNumber: string;
-  blockNumber: string;
-  siteLocation: string;
-  streetName: string;
-  gpsAddress: string;
-  landSize: string;
-  landOwnershipStatus: string;
-  typeOfDevelopment: string;
-  natureOfApplication: string;
-  numberOfFloors: string;
-  totalFloorArea: string;
-  estimatedCost: string;
-  architectName: string;
-  architectRegNumber: string;
-  architectTelephone: string;
-  structuralEngName: string;
-  structuralEngRegNumber: string;
-  structuralEngTelephone: string;
-  quantitySurveyorName: string;
-  quantitySurveyorTelephone: string;
-  docSitePlan: boolean;
-  docLandTitle: boolean;
-  docStructuralDrawings: boolean;
-  docArchitecturalDrawings: boolean;
-  docStructuralReport: boolean;
-  docFireServiceReport: boolean;
-  docEnvironmentalPermit: boolean;
-  docPropertyRateClearance: boolean;
-  docDevelopmentLevy: boolean;
-  docPassportPhoto: boolean;
-  permitStatus: string;
-  remarks: string;
-}
-
-// Official review data stored per permit
-interface BPReview {
-  id: string;
-  permitId: string;
-  permitNumber: string;
+  applicantAddress: string;
+  applicantPhone: string;
+  applicantEmail: string;
+  applicantNationalId: string;
+  applicantTin: string;
+  businessName: string;
+  businessRegNumber: string;
+  businessLocation: string;
+  // Business details (from Business Register, for table display)
+  businessUniqueNumber: string;
+  businessClassDesc: string;
+  businessCategory: string;
+  businessAmount: number;
   // Physical Planning Department
   routingStatus: string;
   physicalPlanningComments: string;
@@ -79,10 +51,49 @@ interface BPReview {
   status: string;
 }
 
+// Simplified Business type for auto-fill lookup
+interface BusinessLookup {
+  regNumber: string;
+  name: string;
+  owner: string;
+  ghanaCard: string;
+  phone: string;
+  email: string;
+  ownerTin: string;
+ locality: string;
+  streetName: string;
+  houseNo: string;
+  areaCode: string;
+  businessUniqueNumber: string;
+  businessClassDesc: string;
+  category: string;
+  amount: number;
+}
+
+// Building Permit from the register (for list display)
+interface BuildingPermitItem {
+  id: string;
+  permitNumber: string;
+  applicationDate: string;
+  applicantFullName: string;
+  postalAddress: string;
+  residentialAddress: string;
+  telephoneNumber: string;
+  emailAddress: string;
+  nationalIdNumber: string;
+  plotNumber: string;
+  siteLocation: string;
+  typeOfDevelopment: string;
+  natureOfApplication: string;
+  estimatedCost: string;
+  permitStatus: string;
+}
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const PERMITS_STORAGE_KEY = 'rms-building-permits';
-const REVIEWS_STORAGE_KEY = 'rms-bp-official';
+const STORAGE_KEY = 'rms-bp-official';
+const BIZ_STORAGE_KEY = 'rms-businesses';
+const BP_STORAGE_KEY = 'rms-building-permits';
 
 const ROUTING_STATUSES = [
   'Pending Submission',
@@ -123,17 +134,7 @@ const APPROVAL_STATUSES = [
   'Requires Resubmission',
 ];
 
-const PERMIT_STATUS_COLORS: Record<string, string> = {
-  'Pending Review': 'bg-yellow-100 text-yellow-800',
-  'Under Review': 'bg-blue-100 text-blue-800',
-  'Approved': 'bg-primary/10 text-primary',
-  'Rejected': 'bg-red-100 text-red-800',
-  'Issued': 'bg-green-100 text-green-800',
-  'Expired': 'bg-gray-100 text-gray-800',
-  'Revoked': 'bg-orange-100 text-orange-800',
-};
-
-const REVIEW_STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<string, string> = {
   'In Progress': 'bg-blue-100 text-blue-800',
   'Approved': 'bg-primary/10 text-primary',
   'Approved with Conditions': 'bg-amber-100 text-amber-800',
@@ -148,10 +149,23 @@ const REVIEW_STATUS_COLORS: Record<string, string> = {
   'All Reviews Complete': 'bg-teal-100 text-teal-800',
 };
 
-const EMPTY_REVIEW: BPReview = {
+const EMPTY_FORM: BPOfficial = {
   id: '',
-  permitId: '',
-  permitNumber: '',
+  applicationNumber: '',
+  applicationDate: new Date().toISOString().split('T')[0],
+  applicantFullName: '',
+  applicantAddress: '',
+  applicantPhone: '',
+  applicantEmail: '',
+  applicantNationalId: '',
+  applicantTin: '',
+  businessName: '',
+  businessRegNumber: '',
+  businessLocation: '',
+  businessUniqueNumber: '',
+  businessClassDesc: '',
+  businessCategory: '',
+  businessAmount: 0,
   routingStatus: 'Pending Submission',
   physicalPlanningComments: '',
   physicalPlanningDate: '',
@@ -173,30 +187,114 @@ const textareaClass = 'mt-1 w-full rounded-md border border-input bg-background 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function BPOfficialPage() {
-  // Read building permits from the register
-  const [permits] = useSyncedStorage<BuildingPermit[]>(PERMITS_STORAGE_KEY, []);
-  // Official review data (linked by permitId)
-  const [reviews, setReviews] = useSyncedStorage<BPReview[]>(REVIEWS_STORAGE_KEY, []);
-
+  const [records, setRecords] = useSyncedStorage<BPOfficial[]>(STORAGE_KEY, []);
+  const [businesses] = useSyncedStorage<BusinessLookup[]>(BIZ_STORAGE_KEY, []);
+  const [buildingPermits] = useSyncedStorage<BuildingPermitItem[]>(BP_STORAGE_KEY, []);
   const [view, setView] = useState<'list' | 'form'>('list');
-  const [selectedPermit, setSelectedPermit] = useState<BuildingPermit | null>(null);
-  const [form, setForm] = useState<BPReview>({ ...EMPTY_REVIEW });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<BPOfficial>({ ...EMPTY_FORM });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [routingFilter, setRoutingFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const pageSize = 10;
 
-  // ── Build a lookup map: permitId → review ──────────────────────────────
-  const reviewMap = useMemo(() => {
-    const m = new Map<string, BPReview>();
-    for (const r of reviews) m.set(r.permitId, r);
-    return m;
-  }, [reviews]);
+  // Business search for auto-fill
+  const [bizSearch, setBizSearch] = useState('');
+  const [bizDropdownOpen, setBizDropdownOpen] = useState(false);
+  const [bizLoading, setBizLoading] = useState(false);
+  const bizSearchRef = useRef<HTMLDivElement>(null);
 
-  // ── Filtered & paginated permits ───────────────────────────────────────
+  // ── Auto-generate Application Number ──────────────────────────────────
+  const generateApplicationNumber = useCallback(() => {
+    const yearSuffix = String(new Date().getFullYear()).slice(-2);
+    const nextNum = records.length + 1;
+    return `BP-${yearSuffix}-${String(nextNum).padStart(4, '0')}`;
+  }, [records.length]);
+
+  // ── Open review from building permit register ────────────────────────
+  const openReviewFromPermit = useCallback(
+    (p: BuildingPermitItem) => {
+      // Check if there's an existing review for this permit
+      const existing = records.find((r) => r.applicationNumber === p.permitNumber);
+      if (existing) {
+        setForm({ ...existing });
+        setEditingId(existing.id);
+      } else {
+        setForm({
+          ...EMPTY_FORM,
+          applicationNumber: p.permitNumber,
+          applicationDate: p.applicationDate,
+          applicantFullName: p.applicantFullName,
+          applicantAddress: p.residentialAddress || p.postalAddress,
+          applicantPhone: p.telephoneNumber,
+          applicantEmail: p.emailAddress,
+          applicantNationalId: p.nationalIdNumber,
+        });
+        setEditingId(null);
+      }
+      setView('form');
+    },
+    [records],
+  );
+
+  // ── Auto-fill applicant from Business Register ────────────────────────
+  const handleAutoFill = useCallback((biz: BusinessLookup) => {
+    setForm((prev) => ({
+      ...prev,
+      applicantFullName: biz.owner || '',
+      applicantAddress: `${biz.streetName || ''}, ${biz.houseNo || ''}, ${biz.locality || ''}`.replace(/^,\s*/, '').replace(/,\s*$/, ''),
+      applicantPhone: biz.phone || '',
+      applicantEmail: biz.email || '',
+      applicantNationalId: biz.ghanaCard || '',
+      applicantTin: biz.ownerTin || '',
+      businessName: biz.name || '',
+      businessRegNumber: biz.regNumber || '',
+      businessLocation: `${biz.locality || ''} - ${biz.areaCode || ''}`.trim(),
+      businessUniqueNumber: biz.businessUniqueNumber || '',
+      businessClassDesc: biz.businessClassDesc || '',
+      businessCategory: biz.category || '',
+      businessAmount: biz.amount || 0,
+    }));
+    setBizSearch('');
+    setBizDropdownOpen(false);
+    toast.success('Applicant information auto-filled');
+  }, []);
+
+  // ── Business search results (used by Applicant Search) ─────────────────
+  const bizSearchResults = useMemo(() => {
+    if (!bizSearch.trim()) return [];
+    const q = bizSearch.toLowerCase();
+    return businesses
+      .filter(
+        (b) =>
+          b.name?.toLowerCase().includes(q) ||
+          b.owner?.toLowerCase().includes(q) ||
+          b.regNumber?.toLowerCase().includes(q) ||
+          b.businessUniqueNumber?.toLowerCase().includes(q) ||
+          b.phone?.includes(q) ||
+          b.ghanaCard?.toLowerCase().includes(q) ||
+          b.ownerTin?.toLowerCase().includes(q),
+      )
+      .slice(0, 8);
+  }, [bizSearch, businesses]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (bizSearchRef.current && !bizSearchRef.current.contains(e.target as Node)) {
+        setBizDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // ── Filtered & paginated (building permits from register) ──────────
   const filtered = useMemo(() => {
-    let list = [...permits];
+    let list = [...buildingPermits];
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       list = list.filter(
@@ -212,13 +310,11 @@ export function BPOfficialPage() {
     }
     if (statusFilter) list = list.filter((p) => p.permitStatus === statusFilter);
     if (routingFilter) {
-      list = list.filter((p) => {
-        const rev = reviewMap.get(p.id);
-        return rev && rev.routingStatus === routingFilter;
-      });
+      const reviewIds = new Set(records.filter((r) => r.routingStatus === routingFilter).map((r) => r.applicationNumber));
+      list = list.filter((p) => reviewIds.has(p.permitNumber));
     }
     return list;
-  }, [permits, searchTerm, statusFilter, routingFilter, reviewMap]);
+  }, [buildingPermits, searchTerm, statusFilter, routingFilter, records]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const paginated = useMemo(
@@ -235,65 +331,114 @@ export function BPOfficialPage() {
   );
 
   const resetForm = useCallback(() => {
-    setForm({ ...EMPTY_REVIEW });
-    setSelectedPermit(null);
+    setForm({ ...EMPTY_FORM, applicationDate: new Date().toISOString().split('T')[0] });
+    setEditingId(null);
+    setBizSearch('');
   }, []);
 
-  const openReview = useCallback(
-    (permit: BuildingPermit) => {
-      setSelectedPermit(permit);
-      // Load existing review if any
-      const existing = reviewMap.get(permit.id);
-      if (existing) {
-        setForm({ ...existing });
-      } else {
-        setForm({
-          ...EMPTY_REVIEW,
-          id: crypto.randomUUID(),
-          permitId: permit.id,
-          permitNumber: permit.permitNumber,
-        });
-      }
+  const openNew = useCallback(() => {
+    resetForm();
+    setForm((prev) => ({ ...prev, applicationNumber: generateApplicationNumber() }));
+    setView('form');
+  }, [resetForm, generateApplicationNumber]);
+
+  const openEdit = useCallback(
+    (r: BPOfficial) => {
+      setForm({ ...r });
+      setEditingId(r.id);
       setView('form');
     },
-    [reviewMap],
+    [],
   );
 
   const handleSave = useCallback(() => {
-    if (!selectedPermit) return;
-    const updated = { ...form, permitId: selectedPermit.id, permitNumber: selectedPermit.permitNumber };
-    if (form.id && reviews.some((r) => r.id === form.id)) {
-      setReviews((prev) => prev.map((r) => (r.id === form.id ? updated : r)));
-      toast.success('Review updated successfully');
+    if (!form.applicationNumber.trim()) {
+      toast.error('Application Number is required');
+      return;
+    }
+    if (!form.applicantFullName.trim()) {
+      toast.error('Applicant Name is required. Search and select a business to auto-fill.');
+      return;
+    }
+    if (editingId) {
+      setRecords((prev) => prev.map((r) => (r.id === editingId ? { ...form } : r)));
+      toast.success('Business Permit application updated successfully');
     } else {
-      setReviews((prev) => [...prev, { ...updated, id: crypto.randomUUID() }]);
-      toast.success('Review saved successfully');
+      setRecords((prev) => [...prev, { ...form, id: crypto.randomUUID() }]);
+      toast.success('Business Permit application saved');
     }
     resetForm();
     setView('list');
-  }, [form, selectedPermit, reviews, setReviews, resetForm]);
+  }, [form, editingId, setRecords, resetForm]);
+
+  const handleDelete = useCallback(
+    (id: string) => {
+      setRecords((prev) => prev.filter((r) => r.id !== id));
+      setDeleteConfirm(null);
+      toast.success('Application deleted');
+    },
+    [setRecords],
+  );
+
+  // ── Import / Export ───────────────────────────────────────────────────
+  const handleExport = useCallback(() => {
+    if (records.length === 0) {
+      toast.error('No applications to export');
+      return;
+    }
+    exportToExcel(
+      records as unknown as Record<string, unknown>[],
+      BP_OFFICIAL_FIELDS,
+      'BP_Official_Applications',
+    );
+    toast.success('Exported successfully');
+  }, [records]);
+
+  const handleImport = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const imported = await importFromExcel<BPOfficial>(file, BP_OFFICIAL_FIELDS);
+        if (imported.length === 0) {
+          toast.error('No data found in the file');
+          return;
+        }
+        const existing = new Map(records.map((r) => [r.applicationNumber, r]));
+        for (const item of imported) {
+          const key =
+            item.applicationNumber || `BP-IMP-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          item.applicationNumber = key;
+          item.id = crypto.randomUUID();
+          existing.set(key, item);
+        }
+        setRecords(Array.from(existing.values()));
+        toast.success(`${imported.length} application(s) imported successfully`);
+      } catch {
+        toast.error('Failed to import file. Ensure it is a valid Excel file exported from this system.');
+      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    },
+    [records, setRecords],
+  );
 
   // ── Route to Physical Planning ────────────────────────────────────────
   const handleRouteToPhysicalPlanning = useCallback(() => {
-    if (!selectedPermit) return;
+    if (!form.applicantFullName.trim()) {
+      toast.error('Please fill in applicant information before routing');
+      return;
+    }
     setForm((prev) => ({
       ...prev,
       routingStatus: 'Submitted to Physical Planning',
       physicalPlanningDate: new Date().toISOString().split('T')[0],
     }));
     toast.success('Application routed to Physical Planning Department');
-  }, [selectedPermit]);
-
-  // Get routing status for a permit
-  const getRoutingStatus = useCallback(
-    (permitId: string) => reviewMap.get(permitId)?.routingStatus || 'Pending Submission',
-    [reviewMap],
-  );
+  }, [form.applicantFullName]);
 
   // ─── FORM VIEW ────────────────────────────────────────────────────────
 
-  if (view === 'form' && selectedPermit) {
-    const p = selectedPermit;
+  if (view === 'form') {
     return (
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Back button */}
@@ -313,7 +458,7 @@ export function BPOfficialPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold">
-                  {form.id && reviews.some((r) => r.id === form.id) ? 'Edit' : ''} Permit Application
+                  {editingId ? 'Edit' : ''} Permit Application
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Building Permit (BP) Official — Review Application Processing
@@ -321,77 +466,137 @@ export function BPOfficialPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${REVIEW_STATUS_COLORS[form.routingStatus] || 'bg-gray-100 text-gray-700'}`}>
+              <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${STATUS_COLORS[form.routingStatus] || 'bg-gray-100 text-gray-700'}`}>
                 {form.routingStatus}
               </span>
             </div>
           </div>
 
           <div className="p-6 space-y-8">
-            {/* ── SECTION 1: PERMIT INFORMATION (read-only from register) ── */}
-            <FormSection number="1" title="Permit Information" icon={<FileText size={16} />}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* ── SECTION 1: APPLICATION HEADER ──────────────────────── */}
+            <FormSection number="1" title="Application Information" icon={<FileText size={16} />}>
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className={`${labelClass} block`}>Permit Number</label>
-                  <input type="text" value={p.permitNumber} readOnly className={`${inputClass} bg-muted/50`} />
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Application Date</label>
-                  <input type="text" value={p.applicationDate} readOnly className={`${inputClass} bg-muted/50`} />
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Type of Development</label>
-                  <input type="text" value={p.typeOfDevelopment} readOnly className={`${inputClass} bg-muted/50`} />
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Nature of Application</label>
-                  <input type="text" value={p.natureOfApplication} readOnly className={`${inputClass} bg-muted/50`} />
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Plot Number</label>
-                  <input type="text" value={p.plotNumber || '—'} readOnly className={`${inputClass} bg-muted/50`} />
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Site Location</label>
-                  <input type="text" value={p.siteLocation || '—'} readOnly className={`${inputClass} bg-muted/50`} />
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Estimated Cost</label>
-                  <input type="text" value={p.estimatedCost ? `GHS ${p.estimatedCost}` : '—'} readOnly className={`${inputClass} bg-muted/50`} />
-                </div>
-                <div>
-                  <label className={`${labelClass} block`}>Permit Status</label>
-                  <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium mt-2 ${PERMIT_STATUS_COLORS[p.permitStatus] || 'bg-gray-100 text-gray-800'}`}>
-                    {p.permitStatus}
-                  </span>
+                  <label className={`${labelClass} block`}>
+                    Applicant Search <span className="text-red-500">*</span>
+                  </label>
+                  <div ref={bizSearchRef} className="relative">
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={bizSearch}
+                      onChange={(e) => { setBizSearch(e.target.value); setBizDropdownOpen(true); }}
+                      onFocus={() => setBizDropdownOpen(true)}
+                      placeholder="Search by Name, Phone, Ghana Card, TIN..."
+                      className={`${inputClass} pl-9 pr-8`}
+                    />
+                    {bizSearch && (
+                      <button
+                        type="button"
+                        onClick={() => { setBizSearch(''); setBizDropdownOpen(false); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                    {bizDropdownOpen && bizSearchResults.length > 0 && (
+                      <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
+                        {bizSearchResults.map((biz, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleAutoFill(biz)}
+                            className="w-full px-3 py-2.5 text-left text-sm hover:bg-accent transition-colors border-b last:border-0"
+                          >
+                            <div className="font-medium">{biz.name || 'Unnamed Business'}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              Owner: {biz.owner || 'N/A'} &middot; Phone: {biz.phone || 'N/A'} &middot; {biz.regNumber || ''}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">Search building permit register to auto-fill applicant details</p>
                 </div>
               </div>
+              {/* Hidden application number */}
+              <input type="hidden" name="applicationNumber" value={form.applicationNumber} />
             </FormSection>
 
-            {/* ── SECTION 2: APPLICANT INFORMATION (read-only from register) ── */}
+            {/* ── SECTION 2: APPLICANT INFORMATION ── */}
             <FormSection number="2" title="Applicant Information" icon={<User size={16} />}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className={`${labelClass} block`}>Applicant Full Name</label>
-                  <input type="text" value={p.applicantFullName} readOnly className={`${inputClass} bg-muted/50`} />
+                  <label className={`${labelClass} block`}>
+                    Applicant Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="applicantFullName"
+                    value={form.applicantFullName}
+                    onChange={handleFormChange}
+                    placeholder="Applicant full name"
+                    className={inputClass}
+                  />
                 </div>
                 <div className="md:col-span-2">
-                  <label className={`${labelClass} block`}>Residential Address</label>
-                  <input type="text" value={p.residentialAddress || '—'} readOnly className={`${inputClass} bg-muted/50`} />
+                  <label className={`${labelClass} block`}>Applicant Address</label>
+                  <input
+                    type="text"
+                    name="applicantAddress"
+                    value={form.applicantAddress}
+                    onChange={handleFormChange}
+                    placeholder="Applicant address"
+                    className={inputClass}
+                  />
                 </div>
                 <div>
                   <label className={`${labelClass} block`}>Phone Number</label>
-                  <input type="text" value={p.telephoneNumber || '—'} readOnly className={`${inputClass} bg-muted/50`} />
+                  <input
+                    type="text"
+                    name="applicantPhone"
+                    value={form.applicantPhone}
+                    onChange={handleFormChange}
+                    placeholder="e.g. 024 XXX XXXX"
+                    className={inputClass}
+                  />
                 </div>
                 <div>
                   <label className={`${labelClass} block`}>Email Address</label>
-                  <input type="text" value={p.emailAddress || '—'} readOnly className={`${inputClass} bg-muted/50`} />
+                  <input
+                    type="text"
+                    name="applicantEmail"
+                    value={form.applicantEmail}
+                    onChange={handleFormChange}
+                    placeholder="email@example.com"
+                    className={inputClass}
+                  />
                 </div>
                 <div>
                   <label className={`${labelClass} block`}>National ID (Ghana Card)</label>
-                  <input type="text" value={p.nationalIdNumber || '—'} readOnly className={`${inputClass} bg-muted/50`} />
+                  <input
+                    type="text"
+                    name="applicantNationalId"
+                    value={form.applicantNationalId}
+                    onChange={handleFormChange}
+                    placeholder="GHA-XXXXXXXXX"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={`${labelClass} block`}>TIN</label>
+                  <input
+                    type="text"
+                    name="applicantTin"
+                    value={form.applicantTin}
+                    onChange={handleFormChange}
+                    placeholder="Tax Identification Number"
+                    className={inputClass}
+                  />
                 </div>
               </div>
+
             </FormSection>
 
             {/* ── SECTION 3: ROUTING TO PHYSICAL PLANNING DEPARTMENT ── */}
@@ -567,7 +772,7 @@ export function BPOfficialPage() {
                 onClick={handleSave}
                 className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                <Save size={16} /> {form.id && reviews.some((r) => r.id === form.id) ? 'Update Review' : 'Save Review'}
+                <Save size={16} /> {editingId ? 'Update Application' : 'Save Application'}
               </button>
             </div>
           </div>
@@ -591,8 +796,35 @@ export function BPOfficialPage() {
             <p className="text-xs text-muted-foreground">BP Official — Review Application Processing</p>
           </div>
           <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-            {permits.length}
+            {buildingPermits.length}
           </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          >
+            <Download size={14} /> Export
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          >
+            <Upload size={14} /> Import
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleImport}
+            className="hidden"
+          />
+          <button
+            onClick={openNew}
+            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <Eye size={14} /> Review Application
+          </button>
         </div>
       </div>
 
@@ -609,22 +841,22 @@ export function BPOfficialPage() {
           />
         </div>
         <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-          className={`${selectClass} w-full sm:w-44`}
-        >
-          <option value="">All Permit Statuses</option>
-          {['Pending Review', 'Under Review', 'Approved', 'Rejected', 'Issued', 'Expired', 'Revoked'].map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <select
           value={routingFilter}
           onChange={(e) => { setRoutingFilter(e.target.value); setCurrentPage(1); }}
           className={`${selectClass} w-full sm:w-52`}
         >
           <option value="">All Routing Statuses</option>
           {ROUTING_STATUSES.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+          className={`${selectClass} w-full sm:w-44`}
+        >
+          <option value="">All Permit Statuses</option>
+          {['Pending Review', 'Under Review', 'Approved', 'Rejected', 'Issued', 'Expired', 'Revoked'].map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
@@ -639,58 +871,49 @@ export function BPOfficialPage() {
               <th className="px-4 py-3 text-left font-medium">Applicant</th>
               <th className="px-4 py-3 text-left font-medium hidden md:table-cell">Plot #</th>
               <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Development Type</th>
-              <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Routing Status</th>
-              <th className="px-4 py-3 text-left font-medium">Permit Status</th>
-              <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Date</th>
+              <th className="px-4 py-3 text-right font-medium">Est. Cost</th>
+              <th className="px-4 py-3 text-left font-medium">Status</th>
               <th className="px-4 py-3 text-right font-medium">Action</th>
             </tr>
           </thead>
           <tbody>
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Stamp size={32} className="text-muted-foreground/40" />
                     <span>No building permit applications found</span>
-                    <span className="text-xs">Applications will appear here once they are submitted via the Building Permit module</span>
+                    <span className="text-xs">Applications will appear here once submitted via the Building Permit module</span>
                   </div>
                 </td>
               </tr>
             )}
-            {paginated.map((p) => {
-              const routing = getRoutingStatus(p.id);
-              return (
-                <tr
-                  key={p.id}
-                  className="border-b last:border-0 hover:bg-background transition-colors"
-                >
-                  <td className="px-4 py-3 font-mono text-xs font-medium">{p.permitNumber || '—'}</td>
-                  <td className="px-4 py-3 font-medium">{p.applicantFullName || '—'}</td>
-                  <td className="px-4 py-3 hidden md:table-cell">{p.plotNumber || '—'}</td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{p.typeOfDevelopment || '—'}</td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${REVIEW_STATUS_COLORS[routing] || 'bg-gray-100 text-gray-700'}`}>
-                      {routing}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${PERMIT_STATUS_COLORS[p.permitStatus] || 'bg-gray-100 text-gray-800'}`}>
-                      {p.permitStatus}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{p.applicationDate || '—'}</td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => openReview(p)}
-                      className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                      title="Review Application"
-                    >
-                      <Eye size={15} />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+            {paginated.map((p) => (
+              <tr
+                key={p.id}
+                className="border-b last:border-0 hover:bg-background transition-colors"
+              >
+                <td className="px-4 py-3 font-mono text-xs font-medium">{p.permitNumber || '—'}</td>
+                <td className="px-4 py-3 font-medium">{p.applicantFullName || '—'}</td>
+                <td className="px-4 py-3 hidden md:table-cell">{p.plotNumber || '—'}</td>
+                <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{p.typeOfDevelopment || '—'}</td>
+                <td className="px-4 py-3 text-right font-semibold">{p.estimatedCost ? `GHS ${p.estimatedCost}` : '—'}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[p.permitStatus] || 'bg-gray-100 text-gray-800'}`}>
+                    {p.permitStatus}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    onClick={() => openReviewFromPermit(p)}
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                    title="Review Application"
+                  >
+                    <Eye size={15} />
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
