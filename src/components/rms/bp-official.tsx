@@ -7,7 +7,7 @@ import {
   Search, Plus, ArrowLeft, Pencil, Trash2, ChevronLeft, ChevronRight,
   Save, Stamp, Download, Upload, User, MapPin, FileText, Building2,
   ShieldCheck, Flame, Leaf, ClipboardCheck, CalendarDays, Briefcase,
-  Loader2, X,
+  Loader2, X, Eye,
 } from 'lucide-react';
 import { exportToExcel, importFromExcel, BP_OFFICIAL_FIELDS } from '@/lib/import-export';
 
@@ -406,7 +406,7 @@ export function BPOfficialPage() {
                   {editingId ? 'Edit' : 'New'} Business Permit Application
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Business Permit (BP) Official — New Application Processing
+                  Business Permit (BP) Official — Review Application Processing
                 </p>
               </div>
             </div>
@@ -797,7 +797,7 @@ export function BPOfficialPage() {
           </div>
           <div>
             <h2 className="text-lg font-semibold">Business Permit Applications</h2>
-            <p className="text-xs text-muted-foreground">BP Official — New Application Processing</p>
+            <p className="text-xs text-muted-foreground">BP Official — Review Application Processing</p>
           </div>
           <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
             {records.length}
@@ -827,7 +827,7 @@ export function BPOfficialPage() {
             onClick={openNew}
             className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            <Plus size={14} /> New Application
+            <Eye size={14} /> Review Application
           </button>
         </div>
       </div>
@@ -888,7 +888,7 @@ export function BPOfficialPage() {
                   <div className="flex flex-col items-center gap-2">
                     <Stamp size={32} className="text-muted-foreground/40" />
                     <span>No business permit applications found</span>
-                    <span className="text-xs">Click &quot;New Application&quot; to create one</span>
+                    <span className="text-xs">Click &quot;Review Application&quot; to review one</span>
                   </div>
                 </td>
               </tr>
