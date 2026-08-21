@@ -409,7 +409,7 @@ export function BPOfficialPage() {
                   {editingId ? 'Edit' : ''} Permit Application
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Business Permit (BP) Official — Review Application Processing
+                  Building Permit (BP) Official — Review Application Processing
                 </p>
               </div>
             </div>
