@@ -64,6 +64,7 @@ interface BuildingPermit {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'rms-building-permits';
+const BP_OFFICIAL_KEY = 'rms-bp-official';
 
 const DEVELOPMENT_TYPES = ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Mixed Use'];
 const NATURE_OF_APPLICATION = ['New Building', 'Extension', 'Renovation', 'Change of Use', 'Demolition'];
@@ -74,10 +75,18 @@ const STATUS_COLORS: Record<string, string> = {
   'Pending Review': 'bg-yellow-100 text-yellow-800',
   'Under Review': 'bg-blue-100 text-blue-800',
   'Approved': 'bg-primary/10 text-primary',
+  'Approved with Conditions': 'bg-amber-100 text-amber-800',
   'Rejected': 'bg-red-100 text-red-800',
   'Issued': 'bg-green-100 text-green-800',
   'Expired': 'bg-gray-100 text-gray-800',
   'Revoked': 'bg-orange-100 text-orange-800',
+  // BP Official routing statuses
+  'Submitted to Physical Planning': 'bg-indigo-100 text-indigo-800',
+  'Under Review - Physical Planning': 'bg-blue-100 text-blue-800',
+  'Under Review - EPA': 'bg-green-100 text-green-800',
+  'Under Review - GNFS': 'bg-orange-100 text-orange-800',
+  'All Reviews Complete': 'bg-teal-100 text-teal-800',
+  'Deferred': 'bg-orange-100 text-orange-800',
 };
 
 const DOCUMENTS_CHECKLIST = [
@@ -128,8 +137,20 @@ const selectClass = 'mt-1 w-full rounded-md border border-input bg-background px
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+/** If a BP Official review exists for this permit, show the review's routing status */
+function getEffectiveStatus(permitNumber: string, permitStatus: string, reviews?: Record<string, string>[]): string {
+  if (!reviews || !reviews.length) return permitStatus;
+  const review = reviews.find((r) => r.applicationNumber === permitNumber);
+  if (!review) return permitStatus;
+  const routing = review.routingStatus;
+  // Only override if the review has a meaningful status
+  if (routing && routing !== 'Pending Submission') return routing;
+  return permitStatus;
+}
+
 export function BuildingPermitPage() {
   const [permits, setPermits] = useSyncedStorage<BuildingPermit[]>(STORAGE_KEY, []);
+  const [reviews] = useSyncedStorage<Record<string, string>[]>(BP_OFFICIAL_KEY, []);
   const [view, setView] = useState<'list' | 'form' | 'detail'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<BuildingPermit>(EMPTY_FORM);
@@ -151,9 +172,9 @@ export function BuildingPermitPage() {
         p.siteLocation.toLowerCase().includes(q)
       );
     }
-    if (statusFilter) list = list.filter((p) => p.permitStatus === statusFilter);
+    if (statusFilter) list = list.filter((p) => getEffectiveStatus(p.permitNumber, p.permitStatus, reviews) === statusFilter);
     return list;
-  }, [permits, searchTerm, statusFilter]);
+  }, [permits, searchTerm, statusFilter, reviews]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const paginated = useMemo(() => filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize), [filtered, currentPage]);
@@ -638,8 +659,8 @@ export function BuildingPermitPage() {
                 <td className="px-4 py-3 hidden md:table-cell">{p.plotNumber || '\u2014'}</td>
                 <td className="px-4 py-3 hidden lg:table-cell">{p.typeOfDevelopment || '\u2014'}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[p.permitStatus] || 'bg-gray-100 text-gray-800'}`}>
-                    {p.permitStatus}
+                    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[getEffectiveStatus(p.permitNumber, p.permitStatus, reviews)] || 'bg-gray-100 text-gray-800'}`}>
+                    {getEffectiveStatus(p.permitNumber, p.permitStatus, reviews)}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">{p.applicationDate || '\u2014'}</td>
