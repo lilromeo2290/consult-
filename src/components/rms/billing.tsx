@@ -122,6 +122,7 @@ function searchEntities(
   properties: any[],
   rents: any[],
   buildingPermits: any[],
+  fines: any[],
 ): EntityResult[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
@@ -228,6 +229,29 @@ function searchEntities(
         });
       }
     });
+  } else if (billType === 'Fine') {
+    fines.forEach((f) => {
+      const fineNum = (f.fineNumber || '').toLowerCase();
+      const offName = (f.offenderName || '').toLowerCase();
+      const bizName = (f.businessName || '').toLowerCase();
+      if (fineNum.includes(q) || offName.includes(q) || bizName.includes(q)) {
+        results.push({
+          uniqueNumber: f.fineNumber || '',
+          businessName: f.offenderName || '',
+          owner: f.offenderName || '',
+          businessClass: f.fineRevenueCode || '',
+          businessClassDesc: f.fineRevenueClass || f.fineClass || '',
+          category: f.category || '',
+          location: f.address || f.violationLocation || '',
+          phone: f.phoneNumber || '',
+          gpsCoordinates: '',
+          locality: '',
+          revenueCode: f.fineRevenueCode || '',
+          amount: f.fineAmount || '',
+          _raw: f,
+        });
+      }
+    });
   }
   return results.slice(0, 20);
 }
@@ -250,6 +274,7 @@ export function BillingPage() {
   const [propData] = useSyncedStorage<any[]>('rms-properties', []);
   const [rentData] = useSyncedStorage<any[]>('rms-rents', []);
   const [bpData] = useSyncedStorage<any[]>('rms-building-permits', []);
+  const [finesData] = useSyncedStorage<any[]>('rms-fines', []);
   // Payments data for arrears calculation
   const [paymentsData] = useSyncedStorage<any[]>('rms-payments', []);
   // Rate overrides for auto-charge lookup
@@ -341,8 +366,8 @@ export function BillingPage() {
 
   const entitySearchResults = useMemo(() => {
     if (!entitySearch.trim()) return [];
-    return searchEntities(entitySearch, formData.billType, bizData, propData, rentData, bpData);
-  }, [entitySearch, formData.billType, bizData, propData, rentData, bpData]);
+    return searchEntities(entitySearch, formData.billType, bizData, propData, rentData, bpData, finesData);
+  }, [entitySearch, formData.billType, bizData, propData, rentData, bpData, finesData]);
 
   const handleSelectEntity = (entity: EntityResult) => {
     // Auto-calculate charge from business registration (rate overrides / fee lookup)
