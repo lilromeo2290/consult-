@@ -189,7 +189,7 @@ const textareaClass = 'mt-1 w-full rounded-md border border-input bg-background 
 export function BPOfficialPage() {
   const [records, setRecords] = useSyncedStorage<BPOfficial[]>(STORAGE_KEY, []);
   const [businesses] = useSyncedStorage<BusinessLookup[]>(BIZ_STORAGE_KEY, []);
-  const [buildingPermits] = useSyncedStorage<BuildingPermitItem[]>(BP_STORAGE_KEY, []);
+  const [buildingPermits, setBuildingPermits] = useSyncedStorage<BuildingPermitItem[]>(BP_STORAGE_KEY, []);
   const [view, setView] = useState<'list' | 'form'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<BPOfficial>({ ...EMPTY_FORM });
@@ -365,9 +365,19 @@ export function BPOfficialPage() {
       setRecords((prev) => [...prev, { ...form, id: crypto.randomUUID() }]);
       toast.success('Business Permit application saved');
     }
+    // Sync permit status to building permit register when routing status is Approved
+    if (form.routingStatus === 'Approved') {
+      setBuildingPermits((prev) =>
+        prev.map((p) =>
+          p.permitNumber === form.applicationNumber
+            ? { ...p, permitStatus: 'Approved' }
+            : p
+        )
+      );
+    }
     resetForm();
     setView('list');
-  }, [form, editingId, setRecords, resetForm]);
+  }, [form, editingId, setRecords, setBuildingPermits, resetForm]);
 
   const handleDelete = useCallback(
     (id: string) => {
