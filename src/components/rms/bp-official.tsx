@@ -365,8 +365,7 @@ export function BPOfficialPage() {
       setRecords((prev) => [...prev, { ...form, id: crypto.randomUUID() }]);
       toast.success('Business Permit application saved');
     }
-    // Sync status back to the building permit register
-    // Check BOTH routingStatus and status fields so no approval is missed
+    // Sync status back to building permit register via direct API call
     const routingToPermitStatus: Record<string, string> = {
       'Approved': 'Approved',
       'Approved with Conditions': 'Approved',
@@ -382,13 +381,34 @@ export function BPOfficialPage() {
     const effectiveStatus = form.routingStatus || form.status;
     const newPermitStatus = routingToPermitStatus[effectiveStatus] || routingToPermitStatus[form.status];
     if (newPermitStatus && form.applicationNumber) {
-      setBuildingPermits((prev) =>
-        prev.map((p) =>
-          p.permitNumber === form.applicationNumber
-            ? { ...p, permitStatus: newPermitStatus }
-            : p
-        )
-      );
+      const appNumber = form.applicationNumber;
+      (async () => {
+        try {
+          const getRes = await fetch('/api/rms-data?key=rms-building-permits');
+          const getJson = await getRes.json();
+          if (getJson.data && Array.isArray(getJson.data)) {
+            const updated = getJson.data.map((p: Record<string, unknown>) =>
+              p.permitNumber === appNumber
+                ? { ...p, permitStatus: newPermitStatus }
+                : p
+            );
+            const putRes = await fetch('/api/rms-data', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: 'rms-building-permits', data: updated }),
+            });
+            if (putRes.ok) {
+              setBuildingPermits(updated as unknown as BuildingPermitItem[]);
+              toast.success(`Permit status updated to "${newPermitStatus}"`);
+            } else {
+              toast.error('Failed to sync permit status');
+            }
+          }
+        } catch (err) {
+          console.error('Permit status sync error:', err);
+          toast.error('Error syncing permit status');
+        }
+      })();
     }
     resetForm();
     setView('list');
