@@ -483,7 +483,7 @@ export function RentPage() {
   };
 
   // ── Shared classes ──────────────────────────────────────────────────────
-  const inputClass =     'w-full rounded-lg border-border bg-white dark:bg-muted px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
+  const inputClass =     'w-full rounded-lg border border-slate-300 dark:border-slate-500 bg-white dark:bg-muted px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
   const labelClass =     'block text-xs font-medium text-muted-foreground dark:text-muted-foreground mb-1.5';
 
   // ══════════════════════════════════════════════════════════════════════════

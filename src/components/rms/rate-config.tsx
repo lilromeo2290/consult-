@@ -638,7 +638,7 @@ export function RateConfigPage() {
           <label className="text-xs font-medium text-foreground whitespace-nowrap">Search:</label>
           <input
             type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-48 rounded border border-border bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
+            className="w-48 rounded border border-slate-300 dark:border-slate-500 bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
             placeholder="Search rates..."
           />
           <button onClick={handleExportRates} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm" title="Export to Excel">
@@ -653,7 +653,7 @@ export function RateConfigPage() {
               <Plus className="w-3.5 h-3.5" /> Add Rate
             </button>
             {showAddForm && (
-              <div className="absolute right-0 top-full mt-1 z-50 w-80 bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-xl p-4">
+              <div className="absolute right-0 top-full mt-1 z-50 w-80 bg-white dark:bg-muted border border-slate-300 dark:border-slate-500 dark:border-border rounded-lg shadow-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-foreground">New Rate Entry</h3>
                   <button onClick={() => setShowAddForm(false)} className="text-muted-foreground hover:text-foreground dark:hover:text-slate-300 transition-colors"><X className="w-4 h-4" /></button>
@@ -664,33 +664,33 @@ export function RateConfigPage() {
                     {hasPredefinedCodes ? (
                       <Combobox name="addRateCode" value={newCode} onChange={(e) => handleCodeSelect(e.target.value)} options={tabConfig.codes.map((c) => ({ value: c, label: c }))} placeholder="Select or search code..." />
                     ) : (
-                      <input type="text" value={newCode} onChange={(e) => setNewCode(e.target.value)} className="w-full rounded border border-border bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Enter code (e.g. FINE-001)" />
+                      <input type="text" value={newCode} onChange={(e) => setNewCode(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-500 bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Enter code (e.g. FINE-001)" />
                     )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground mb-0.5">{tabConfig.classLabel}</label>
                     {hasPredefinedCodes ? (
-                      <input type="text" value={newClass} readOnly className="w-full rounded border border-border dark:border-border bg-card/50 px-2.5 py-1.5 text-xs text-muted-foreground dark:text-foreground outline-none" placeholder="Auto-filled from code" />
+                      <input type="text" value={newClass} readOnly className="w-full rounded border border-slate-300 dark:border-slate-500 dark:border-border bg-card/50 px-2.5 py-1.5 text-xs text-muted-foreground dark:text-foreground outline-none" placeholder="Auto-filled from code" />
                     ) : (
-                      <input type="text" value={newClass} onChange={(e) => setNewClass(e.target.value)} className="w-full rounded border border-border bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Enter class name" />
+                      <input type="text" value={newClass} onChange={(e) => setNewClass(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-500 bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Enter class name" />
                     )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground mb-0.5">Category</label>
                     {hasPredefinedCodes ? (
-                      <input type="text" value={newCategory} readOnly className="w-full rounded border border-border dark:border-border bg-card/50 px-2.5 py-1.5 text-xs text-muted-foreground dark:text-foreground outline-none" placeholder="Auto-filled from code" />
+                      <input type="text" value={newCategory} readOnly className="w-full rounded border border-slate-300 dark:border-slate-500 dark:border-border bg-card/50 px-2.5 py-1.5 text-xs text-muted-foreground dark:text-foreground outline-none" placeholder="Auto-filled from code" />
                     ) : (
-                      <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full rounded border border-border bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Enter category" />
+                      <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-500 bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Enter category" />
                     )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground mb-0.5">{activeTab === 'Property' ? 'Unassessed Rate' : isValuedProperty ? 'Rate Impost' : 'Amount'}</label>
-                    <input type="number" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} className="w-full rounded border border-border bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="0.00" step="0.01" min="0" />
+                    <input type="number" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-500 bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="0.00" step="0.01" min="0" />
                   </div>
                   {!isValuedProperty && (
                   <div>
                     <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground mb-0.5">{activeTab === 'Property' ? 'Minimum Rate' : 'Ceiling'}</label>
-                    <input type="number" value={newCeiling} onChange={(e) => setNewCeiling(e.target.value)} className="w-full rounded border border-border bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="0.00 (max limit)" step="0.01" min="0" />
+                    <input type="number" value={newCeiling} onChange={(e) => setNewCeiling(e.target.value)} className="w-full rounded border border-slate-300 dark:border-slate-500 bg-card px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="0.00 (max limit)" step="0.01" min="0" />
                   </div>
                   )}
                   <button onClick={handleAddRate} disabled={!newCode.trim() || !newAmount.trim()} className="w-full mt-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-primary text-white hover:bg-destructive disabled:opacity-40 disabled:cursor-not-allowed transition-colors">

@@ -203,6 +203,15 @@
   background: var(--muted-foreground);
 }
 
+/* ─── Form field borders (global safety net) ─────────────────────── */
+
+input:not([type='radio']):not([type='checkbox']):not([type='hidden']):not([type='file']),
+select,
+textarea {
+  border-width: 1px;
+  border-style: solid;
+}
+
 /* ─── Focus ───────────────────────────────────────────────────────────── */
 
 *:focus-visible {

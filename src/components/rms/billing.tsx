@@ -867,7 +867,7 @@ export function BillingPage() {
   // ── CSS classes ──────────────────────────────────────────────────────────
 
   const inputClass =
-    'w-full rounded-lg border-border bg-white dark:bg-muted px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
+    'w-full rounded-lg border border-slate-300 dark:border-slate-500 bg-white dark:bg-muted px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
   const labelClass =
     'block text-sm font-medium text-foreground mb-1.5';
   const btnPrimary =

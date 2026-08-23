@@ -314,11 +314,15 @@ export function BusinessRegisterPage() {
       if (name === 'revenueCode' && BIZ_CODE_TO_DESC[updated.revenueCode]) {
         updated.revenueDescription = BIZ_CODE_TO_DESC[updated.revenueCode];
       }
-      // Link Business Class Code <-> Business Class Description
+      // Link Business Class Code -> Business Class Description + Category
       if (name === 'businessClassCode') {
         const code = updated.businessClassCode;
         if (CODE_TO_CLASS[code]) {
           updated.businessClassDesc = CODE_TO_CLASS[code];
+          updated.category = CODE_TO_CLASS[code];
+        } else {
+          updated.businessClassDesc = '';
+          updated.category = '';
         }
         // Fetch amount from rate config when code changes
         setTimeout(() => fetchAmountForCode(code), 0);
@@ -402,7 +406,7 @@ export function BusinessRegisterPage() {
 
   // ── Form Helpers ─────────────────────────────────────────────────────────
   const inputClass =
-    'w-full rounded-lg border-border bg-white dark:bg-muted px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
+    'w-full rounded-lg border border-slate-300 dark:border-slate-500 bg-white dark:bg-muted px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition';
   const labelClass =
     'text-sm font-medium text-foreground mb-1.5';
 
@@ -762,7 +766,14 @@ export function BusinessRegisterPage() {
               {/* Business Class Category */}
               <div>
                 <label className={`${labelClass} block`}>Business Class Category</label>
-                <input type="text" name="category" value={form.category} onChange={handleFormChange} placeholder="Enter category" className={inputClass} />
+                <input
+                  type="text"
+                  name="category"
+                  value={form.category}
+                  readOnly
+                  placeholder="Auto-filled from Class Code"
+                  className={`${inputClass} bg-slate-50 dark:bg-slate-700/50 text-muted-foreground dark:text-muted-foreground cursor-not-allowed`}
+                />
               </div>
               {/* Amount (from rate configuration) */}
               <div>

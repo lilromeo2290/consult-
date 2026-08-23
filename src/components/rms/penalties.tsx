@@ -136,7 +136,7 @@ const FINE_SECTION_TO_CLASSES: Record<string, string[]> = {
 };
 
 const inputClass =
-  'w-full h-[42px] px-3 text-sm border border-border rounded-lg bg-card text-foreground dark:text-slate-100 placeholder:text-muted-foreground dark:placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors';
+  'w-full h-[42px] px-3 text-sm border border-slate-300 dark:border-slate-500 rounded-lg bg-card text-foreground dark:text-slate-100 placeholder:text-muted-foreground dark:placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors';
 const labelClass =
   'text-xs font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-1.5';
 
