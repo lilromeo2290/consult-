@@ -25,6 +25,7 @@ import {
   FINE_CLASS_CODES,
   FINE_CLASS_NAMES,
 } from '@/lib/fines-class-code-map';
+import { FINE_REVENUE_CODES, FINE_REVENUE_CODE_TO_DESC } from '@/lib/fine-revenue-code-map';
 import { Combobox } from '@/components/ui/combobox';
 import { useSyncedStorage } from '@/hooks/use-synced-storage';
 
@@ -341,6 +342,9 @@ export function PenaltiesPage() {
         } else {
           setForm((prev) => ({ ...prev, category: value }));
         }
+      } else if (name === 'fineRevenueCode') {
+        const desc = FINE_REVENUE_CODE_TO_DESC[value] || '';
+        setForm((prev) => ({ ...prev, fineRevenueCode: value, fineRevenueClass: desc }));
       } else {
         setForm((prev) => ({ ...prev, [name]: value }));
       }
@@ -999,13 +1003,14 @@ export function PenaltiesPage() {
           {/* Fine Revenue Code */}
           <div>
             <label className={`block ${labelClass}`}>Fine Revenue Code</label>
-            <input
-              type="text"
+            <Combobox
               name="fineRevenueCode"
               value={form.fineRevenueCode}
               onChange={handleFormChange}
+              options={FINE_REVENUE_CODES.map((item) => ({ value: item.code, label: item.code }))}
+              placeholder="Select fine revenue code..."
+              emptyMessage="No code found"
               className={inputClass}
-              placeholder="Enter fine revenue code"
             />
           </div>
 
@@ -1018,7 +1023,8 @@ export function PenaltiesPage() {
               value={form.fineRevenueClass}
               onChange={handleFormChange}
               className={inputClass}
-              placeholder="Enter fine revenue description"
+              placeholder="Auto-populated from revenue code"
+              readOnly
             />
           </div>
 
