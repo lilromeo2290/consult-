@@ -53,6 +53,9 @@ interface Fine {
   violationDetails: string;
   evidenceFileName: string;
   status: string;
+  fineRevenueCode: string;
+  fineRevenueClass: string;
+  fineRevenueCategory: string;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -184,6 +187,9 @@ const emptyFine = (): Fine => ({
   violationDetails: '',
   evidenceFileName: '',
   status: 'Pending',
+  fineRevenueCode: '',
+  fineRevenueClass: '',
+  fineRevenueCategory: '',
 });
 
 function generateFineNumber(existingFines: Fine[]): string {
@@ -931,7 +937,7 @@ export function PenaltiesPage() {
 
           {/* Code */}
           <div>
-            <label className={`block ${labelClass}`}>Fine Revenue Code</label>
+            <label className={`block ${labelClass}`}>Code</label>
             <Combobox
               name="code"
               value={form.code}
@@ -953,7 +959,7 @@ export function PenaltiesPage() {
           {/* Class */}
           <div>
             <label className={`block ${labelClass}`}>
-              Fine Revenue Class <span className="text-red-500">*</span>
+              Class <span className="text-red-500">*</span>
             </label>
             <Combobox
               name="fineClass"
@@ -971,7 +977,7 @@ export function PenaltiesPage() {
 
           {/* Category */}
           <div>
-            <label className={`block ${labelClass}`}>Fine Revenue Category</label>
+            <label className={`block ${labelClass}`}>Category</label>
             <Combobox
               name="category"
               value={form.category}
@@ -987,6 +993,45 @@ export function PenaltiesPage() {
               }
               emptyMessage="No categories available"
               className={inputClass}
+            />
+          </div>
+
+          {/* Fine Revenue Code */}
+          <div>
+            <label className={`block ${labelClass}`}>Fine Revenue Code</label>
+            <input
+              type="text"
+              name="fineRevenueCode"
+              value={form.fineRevenueCode}
+              onChange={handleFormChange}
+              className={inputClass}
+              placeholder="Enter fine revenue code"
+            />
+          </div>
+
+          {/* Fine Revenue Class */}
+          <div>
+            <label className={`block ${labelClass}`}>Fine Revenue Class</label>
+            <input
+              type="text"
+              name="fineRevenueClass"
+              value={form.fineRevenueClass}
+              onChange={handleFormChange}
+              className={inputClass}
+              placeholder="Enter fine revenue class"
+            />
+          </div>
+
+          {/* Fine Revenue Category */}
+          <div>
+            <label className={`block ${labelClass}`}>Fine Revenue Category</label>
+            <input
+              type="text"
+              name="fineRevenueCategory"
+              value={form.fineRevenueCategory}
+              onChange={handleFormChange}
+              className={inputClass}
+              placeholder="Enter fine revenue category"
             />
           </div>
 
