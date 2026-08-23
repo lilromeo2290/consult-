@@ -931,7 +931,7 @@ export function PenaltiesPage() {
 
           {/* Code */}
           <div>
-            <label className={`block ${labelClass}`}>Code</label>
+            <label className={`block ${labelClass}`}>Fine Revenue Code</label>
             <Combobox
               name="code"
               value={form.code}
@@ -953,7 +953,7 @@ export function PenaltiesPage() {
           {/* Class */}
           <div>
             <label className={`block ${labelClass}`}>
-              Class <span className="text-red-500">*</span>
+              Fine Revenue Class <span className="text-red-500">*</span>
             </label>
             <Combobox
               name="fineClass"
@@ -971,7 +971,7 @@ export function PenaltiesPage() {
 
           {/* Category */}
           <div>
-            <label className={`block ${labelClass}`}>Category</label>
+            <label className={`block ${labelClass}`}>Fine Revenue Category</label>
             <Combobox
               name="category"
               value={form.category}
