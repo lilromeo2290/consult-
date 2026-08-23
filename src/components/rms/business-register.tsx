@@ -746,7 +746,7 @@ export function BusinessRegisterPage() {
                   name="businessClassCode"
                   value={form.businessClassCode}
                   onChange={handleFormChange}
-                  options={classCodes.map((c) => ({ value: c, label: `${c} \u2013 ${CODE_TO_CLASS[c] || ''}` }))}
+                  options={classCodes.map((c) => ({ value: c, label: c }))}
                   placeholder="Select code..."
                   emptyMessage="No matching code"
                   className={inputClass}
@@ -765,14 +765,14 @@ export function BusinessRegisterPage() {
               </div>
               {/* Business Class Category */}
               <div>
-                <label className={`${labelClass} block`}>Business Class Category</label>
+                <label className={`${labelClass} block`}>Business Category</label>
                 <input
                   type="text"
                   name="category"
                   value={form.category}
-                  readOnly
-                  placeholder="Auto-filled from Class Code"
-                  className={`${inputClass} bg-slate-50 dark:bg-slate-700/50 text-muted-foreground dark:text-muted-foreground cursor-not-allowed`}
+                  onChange={handleFormChange}
+                  placeholder="Enter category"
+                  className={inputClass}
                 />
               </div>
               {/* Amount (from rate configuration) */}
