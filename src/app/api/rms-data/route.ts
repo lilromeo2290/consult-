@@ -34,9 +34,14 @@ async function syncPermitStatusesFromReviews(): Promise<boolean> {
 
     for (const review of reviews) {
       const appNum = review.applicationNumber as string;
-      const effectiveStatus = (review.routingStatus as string) || (review.status as string);
-      const newStatus = ROUTING_TO_PERMIT_STATUS[effectiveStatus]
-        || ROUTING_TO_PERMIT_STATUS[review.status as string];
+      const routing = review.routingStatus as string;
+      const status = review.status as string;
+      let newStatus: string | undefined;
+      if (routing && routing !== 'Pending Submission' && routing !== 'In Progress') {
+        newStatus = ROUTING_TO_PERMIT_STATUS[routing] || ROUTING_TO_PERMIT_STATUS[status || ''];
+      } else if (status && status !== 'In Progress') {
+        newStatus = ROUTING_TO_PERMIT_STATUS[status];
+      }
       if (!newStatus || !appNum) continue;
 
       for (const permit of permits) {

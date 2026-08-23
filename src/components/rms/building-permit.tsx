@@ -137,14 +137,16 @@ const selectClass = 'mt-1 w-full rounded-md border border-input bg-background px
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-/** If a BP Official review exists for this permit, show the review's routing status */
+/** If a BP Official review exists for this permit, show the review's status */
 function getEffectiveStatus(permitNumber: string, permitStatus: string, reviews?: Record<string, string>[]): string {
   if (!reviews || !reviews.length) return permitStatus;
   const review = reviews.find((r) => r.applicationNumber === permitNumber);
   if (!review) return permitStatus;
+  // Check routingStatus first, then status field — whichever has a meaningful value
   const routing = review.routingStatus;
-  // Only override if the review has a meaningful status
-  if (routing && routing !== 'Pending Submission') return routing;
+  const appStatus = review.status;
+  if (routing && routing !== 'Pending Submission' && routing !== 'In Progress') return routing;
+  if (appStatus && appStatus !== 'In Progress') return appStatus;
   return permitStatus;
 }
 

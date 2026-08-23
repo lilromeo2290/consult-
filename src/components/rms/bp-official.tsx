@@ -380,8 +380,14 @@ export function BPOfficialPage() {
       'Under Review - GNFS': 'Under Review',
       'All Reviews Complete': 'Under Review',
     };
-    const effective = (form.routingStatus || form.status || '').trim();
-    const mapped = statusMap[effective] || statusMap[form.status || ''];
+    const effective = (form.routingStatus || '').trim();
+    const appStat = (form.status || '').trim();
+    let mapped: string | undefined;
+    if (effective && effective !== 'Pending Submission' && effective !== 'In Progress') {
+      mapped = statusMap[effective] || statusMap[appStat];
+    } else if (appStat && appStat !== 'In Progress') {
+      mapped = statusMap[appStat];
+    }
     if (mapped && form.applicationNumber) {
       const appNum = form.applicationNumber;
       setBuildingPermits((prev) =>
@@ -969,7 +975,13 @@ export function BPOfficialPage() {
 
 function StatusCell({ permitNumber, permitStatus, records }: { permitNumber: string; permitStatus: string; records: BpOfficialRecord[] }) {
   const review = records.find((r) => r.applicationNumber === permitNumber);
-  const displayStatus = review ? review.routingStatus : permitStatus;
+  let displayStatus = permitStatus;
+  if (review) {
+    const routing = review.routingStatus;
+    const appStatus = review.status;
+    if (routing && routing !== 'Pending Submission' && routing !== 'In Progress') displayStatus = routing;
+    else if (appStatus && appStatus !== 'In Progress') displayStatus = appStatus;
+  }
   return (
     <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[displayStatus] || 'bg-gray-100 text-gray-800'}`}>
       {displayStatus || '—'}
