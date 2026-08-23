@@ -260,35 +260,40 @@ export function RentPage() {
     if (type === 'checkbox') {
       setForm((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
     } else if (name === 'rentPropertyType') {
-      // Class changed → auto-fill code and generate property number
+      // Class changed → auto-fill code, generate property number & unique number
       const typeCode = RENT_CLASS_TO_FIRST_CODE[value] || '';
       const existingCount = rents.filter((r) => r.rentPropertyType === value).length;
       const nextNum = String(existingCount + 1).padStart(4, '0');
       const propertyNumber = typeCode ? `${typeCode}${nextNum}` : '';
+      const uniquePrefix = PROPERTY_TYPE_CODE_MAP[value] || '';
+      const uniqueNumber = uniquePrefix ? `${uniquePrefix}${nextNum}` : '';
       const defaultCat = typeCode ? (RENT_CODE_TO_CATEGORY[typeCode] || '') : '';
       setForm((prev) => ({
         ...prev,
         rentPropertyType: value,
         rentPropertyTypeCode: typeCode,
         rentPropertyNumber: propertyNumber,
+        rentPropertyUniqueNumber: uniqueNumber,
         rentPropertyTypeCategory: defaultCat,
         amount: '',
       }));
       rentCodeDialogTriggered.current = '';
     } else if (name === 'rentPropertyTypeCode') {
-      // Code changed → auto-fill Class and Category
+      // Code changed → auto-fill Class, Category, and Unique Number
       const cls = RENT_CODE_TO_CLASS[value] || '';
       const cat = RENT_CODE_TO_CATEGORY[value] || '';
       const existingCount = rents.filter((r) => r.rentPropertyType === cls).length;
       const nextNum = String(existingCount + 1).padStart(4, '0');
       const typeCode = PROPERTY_TYPE_CODE_MAP[cls] || '';
       const propertyNumber = typeCode ? `${typeCode}${nextNum}` : '';
+      const uniqueNumber = typeCode ? `${typeCode}${nextNum}` : '';
       setForm((prev) => ({
         ...prev,
         rentPropertyTypeCode: value,
         rentPropertyType: cls,
         rentPropertyTypeCategory: cat,
         rentPropertyNumber: propertyNumber,
+        rentPropertyUniqueNumber: uniqueNumber,
         amount: '',
       }));
       rentCodeDialogTriggered.current = '';
