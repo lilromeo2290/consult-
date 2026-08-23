@@ -896,7 +896,7 @@ export function BillingPage() {
   const labelClass =
     'block text-sm font-medium text-foreground mb-1.5';
   const btnPrimary =
-    'inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap';
+    'inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed';
   const btnSecondary =
     'inline-flex items-center gap-2 bg-muted dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-foreground dark:text-foreground text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap';
 
@@ -1657,6 +1657,17 @@ export function BillingPage() {
                         <ReadOnlyField label="Rent Revenue Code" value={formData.revenueCode} />
                         <ReadOnlyField label="Class" value={formData.businessClassDesc} />
                         <ReadOnlyField label="Category" value={formData.category} />
+                        <ReadOnlyField label="Amount" value={formData.charge ? formatCurrency(formData.charge) : '—'} />
+                      </>
+                    )}
+
+                    {formData.billType === 'Fine' && (
+                      <>
+                        <ReadOnlyField label="Offender Name" value={formData.businessName} />
+                        <ReadOnlyField label="Business Name" value={selectedRawEntity?.businessName || ''} />
+                        <ReadOnlyField label="Fine Revenue Code" value={formData.businessClass} />
+                        <ReadOnlyField label="Fine Revenue Description" value={formData.businessClassDesc} />
+                        <ReadOnlyField label="Address" value={formData.location} />
                         <ReadOnlyField label="Amount" value={formData.charge ? formatCurrency(formData.charge) : '—'} />
                       </>
                     )}
