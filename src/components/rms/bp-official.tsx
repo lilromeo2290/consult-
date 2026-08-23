@@ -360,59 +360,17 @@ export function BPOfficialPage() {
     }
     if (editingId) {
       setRecords((prev) => prev.map((r) => (r.id === editingId ? { ...form } : r)));
-      toast.success('Business Permit application updated successfully');
+      toast.success('Application updated successfully');
     } else {
       setRecords((prev) => [...prev, { ...form, id: crypto.randomUUID() }]);
-      toast.success('Business Permit application saved');
+      toast.success('Application saved');
     }
-    // Sync status back to building permit register via direct API call
-    const routingToPermitStatus: Record<string, string> = {
-      'Approved': 'Approved',
-      'Approved with Conditions': 'Approved',
-      'Rejected': 'Rejected',
-      'Deferred': 'Deferred',
-      'Requires Resubmission': 'Pending Review',
-      'Submitted to Physical Planning': 'Under Review',
-      'Under Review - Physical Planning': 'Under Review',
-      'Under Review - EPA': 'Under Review',
-      'Under Review - GNFS': 'Under Review',
-      'All Reviews Complete': 'Under Review',
-    };
-    const effectiveStatus = form.routingStatus || form.status;
-    const newPermitStatus = routingToPermitStatus[effectiveStatus] || routingToPermitStatus[form.status];
-    if (newPermitStatus && form.applicationNumber) {
-      const appNumber = form.applicationNumber;
-      (async () => {
-        try {
-          const getRes = await fetch('/api/rms-data?key=rms-building-permits');
-          const getJson = await getRes.json();
-          if (getJson.data && Array.isArray(getJson.data)) {
-            const updated = getJson.data.map((p: Record<string, unknown>) =>
-              p.permitNumber === appNumber
-                ? { ...p, permitStatus: newPermitStatus }
-                : p
-            );
-            const putRes = await fetch('/api/rms-data', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ key: 'rms-building-permits', data: updated }),
-            });
-            if (putRes.ok) {
-              setBuildingPermits(updated as unknown as BuildingPermitItem[]);
-              toast.success(`Permit status updated to "${newPermitStatus}"`);
-            } else {
-              toast.error('Failed to sync permit status');
-            }
-          }
-        } catch (err) {
-          console.error('Permit status sync error:', err);
-          toast.error('Error syncing permit status');
-        }
-      })();
-    }
+    // Note: permit status sync is handled server-side in /api/rms-data
+    // When bp-official records are saved, the server automatically
+    // updates the matching building permit's permitStatus.
     resetForm();
     setView('list');
-  }, [form, editingId, setRecords, setBuildingPermits, resetForm]);
+  }, [form, editingId, setRecords, resetForm]);
 
   const handleDelete = useCallback(
     (id: string) => {

@@ -2,6 +2,66 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth, getClientIp } from '@/lib/api-auth';
 
+// ── BP Official → Building Permit status mapping ──
+const ROUTING_TO_PERMIT_STATUS: Record<string, string> = {
+  'Approved': 'Approved',
+  'Approved with Conditions': 'Approved',
+  'Rejected': 'Rejected',
+  'Deferred': 'Deferred',
+  'Requires Resubmission': 'Pending Review',
+  'Submitted to Physical Planning': 'Under Review',
+  'Under Review - Physical Planning': 'Under Review',
+  'Under Review - EPA': 'Under Review',
+  'Under Review - GNFS': 'Under Review',
+  'All Reviews Complete': 'Under Review',
+};
+
+/**
+ * Sync building permit statuses from BP official review records.
+ * Returns true if any permits were updated.
+ */
+async function syncPermitStatusesFromReviews(): Promise<boolean> {
+  try {
+    const [bpOfficialRow, bpPermitsRow] = await Promise.all([
+      db.rmsData.findUnique({ where: { key: 'rms-bp-official' } }),
+      db.rmsData.findUnique({ where: { key: 'rms-building-permits' } }),
+    ]);
+    if (!bpOfficialRow || !bpPermitsRow) return false;
+
+    const reviews: Record<string, unknown>[] = JSON.parse(bpOfficialRow.data);
+    const permits: Record<string, unknown>[] = JSON.parse(bpPermitsRow.data);
+    let changed = false;
+
+    for (const review of reviews) {
+      const appNum = review.applicationNumber as string;
+      const effectiveStatus = (review.routingStatus as string) || (review.status as string);
+      const newStatus = ROUTING_TO_PERMIT_STATUS[effectiveStatus]
+        || ROUTING_TO_PERMIT_STATUS[review.status as string];
+      if (!newStatus || !appNum) continue;
+
+      for (const permit of permits) {
+        if (permit.permitNumber === appNum && permit.permitStatus !== newStatus) {
+          permit.permitStatus = newStatus;
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) {
+      await db.rmsData.upsert({
+        where: { key: 'rms-building-permits' },
+        update: { data: JSON.stringify(permits) },
+        create: { key: 'rms-building-permits', data: JSON.stringify(permits) },
+      });
+      console.log('[bp-sync] Auto-synced permit statuses from BP official reviews');
+    }
+    return changed;
+  } catch (err) {
+    console.error('[bp-sync] Error:', err);
+    return false;
+  }
+}
+
 /**
  * GET /api/rms-data?key=rms-businesses
  *
@@ -30,6 +90,11 @@ export async function GET(request: NextRequest) {
       } catch {
         // Assembly table doesn't exist yet → fall through to RmsData
       }
+    }
+
+    // ── Auto-sync: when reading building permits, ensure statuses match reviews ──
+    if (key === 'rms-building-permits') {
+      await syncPermitStatusesFromReviews();
     }
 
     // ── Default: read from RmsData (unchanged behaviour) ──
@@ -87,6 +152,11 @@ export async function PUT(request: NextRequest) {
     if (key === 'rms-rate-overrides') {
       const entryCount = data && typeof data === 'object' ? Object.keys(data).length : 0;
       console.log(`[rate-overrides] SAVED ${entryCount} entries`);
+    }
+
+    // ── Sync: when saving BP official reviews, update building permit statuses ──
+    if (key === 'rms-bp-official' && Array.isArray(data)) {
+      await syncPermitStatusesFromReviews();
     }
 
     return NextResponse.json({ success: true, key });
