@@ -1009,29 +1009,16 @@ export function PenaltiesPage() {
             />
           </div>
 
-          {/* Fine Revenue Class */}
+          {/* Fine Revenue Description */}
           <div>
-            <label className={`block ${labelClass}`}>Fine Revenue Class</label>
+            <label className={`block ${labelClass}`}>Fine Revenue Description</label>
             <input
               type="text"
               name="fineRevenueClass"
               value={form.fineRevenueClass}
               onChange={handleFormChange}
               className={inputClass}
-              placeholder="Enter fine revenue class"
-            />
-          </div>
-
-          {/* Fine Revenue Category */}
-          <div>
-            <label className={`block ${labelClass}`}>Fine Revenue Category</label>
-            <input
-              type="text"
-              name="fineRevenueCategory"
-              value={form.fineRevenueCategory}
-              onChange={handleFormChange}
-              className={inputClass}
-              placeholder="Enter fine revenue category"
+              placeholder="Enter fine revenue description"
             />
           </div>
 
