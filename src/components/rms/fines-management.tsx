@@ -388,11 +388,11 @@ export function FinesManagementPage() {
             </div>
           </FormSection>
 
-          {/* Section 3: Classification & Revenue Code */}
-          <FormSection number={3} title='Classification & Revenue Code' icon={Tag}>
+          {/* Section 3: Fine Details */}
+          <FormSection number={3} title='Fine Details' icon={Tag}>
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
               <div className='sm:col-span-2 lg:col-span-1'>
-                <label className={labelClass}>Class Description <span className='text-red-500'>*</span></label>
+                <label className={labelClass}>Fine Revenue Class <span className='text-red-500'>*</span></label>
                 <select
                   value={form.classDescription}
                   onChange={(e) => handleFieldChange('classDescription', e.target.value)}
@@ -429,7 +429,7 @@ export function FinesManagementPage() {
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Category</label>
+                <label className={labelClass}>Fine Revenue Category</label>
                 <input
                   type='text'
                   value={form.category}
