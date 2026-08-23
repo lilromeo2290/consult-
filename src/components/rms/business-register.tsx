@@ -741,7 +741,7 @@ export function BusinessRegisterPage() {
               </div>
               {/* Business Class Code */}
               <div>
-                <label className={`${labelClass} block`}>Business Class Code</label>
+                <label className={`${labelClass} block`}>Business Code</label>
                 <Combobox
                   name="businessClassCode"
                   value={form.businessClassCode}
@@ -754,7 +754,7 @@ export function BusinessRegisterPage() {
               </div>
               {/* Business Class Description */}
               <div>
-                <label className={`${labelClass} block`}>Business Class Description</label>
+                <label className={`${labelClass} block`}>Business Class</label>
                 <input
                   type="text"
                   value={form.businessClassDesc}
