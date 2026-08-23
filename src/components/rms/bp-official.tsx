@@ -365,12 +365,23 @@ export function BPOfficialPage() {
       setRecords((prev) => [...prev, { ...form, id: crypto.randomUUID() }]);
       toast.success('Business Permit application saved');
     }
-    // Sync permit status to building permit register when routing status is Approved
-    if (form.routingStatus === 'Approved') {
+    // Sync routing status back to the building permit register
+    const routingToPermitStatus: Record<string, string> = {
+      'Approved': 'Approved',
+      'Rejected': 'Rejected',
+      'Deferred': 'Deferred',
+      'Submitted to Physical Planning': 'Under Review',
+      'Under Review - Physical Planning': 'Under Review',
+      'Under Review - EPA': 'Under Review',
+      'Under Review - GNFS': 'Under Review',
+      'All Reviews Complete': 'Under Review',
+    };
+    const newPermitStatus = routingToPermitStatus[form.routingStatus];
+    if (newPermitStatus && form.applicationNumber) {
       setBuildingPermits((prev) =>
         prev.map((p) =>
           p.permitNumber === form.applicationNumber
-            ? { ...p, permitStatus: 'Approved' }
+            ? { ...p, permitStatus: newPermitStatus }
             : p
         )
       );
