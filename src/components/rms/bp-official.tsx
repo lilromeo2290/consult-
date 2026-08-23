@@ -365,12 +365,34 @@ export function BPOfficialPage() {
       setRecords((prev) => [...prev, { ...form, id: crypto.randomUUID() }]);
       toast.success('Application saved');
     }
-    // Note: permit status sync is handled server-side in /api/rms-data
-    // When bp-official records are saved, the server automatically
-    // updates the matching building permit's permitStatus.
+    // Immediately update the building permit's status in local state
+    // so the user sees the change right away without waiting for server poll.
+    // Server-side sync in /api/rms-data also handles this as a backup.
+    const statusMap: Record<string, string> = {
+      'Approved': 'Approved',
+      'Approved with Conditions': 'Approved',
+      'Rejected': 'Rejected',
+      'Deferred': 'Deferred',
+      'Requires Resubmission': 'Pending Review',
+      'Submitted to Physical Planning': 'Under Review',
+      'Under Review - Physical Planning': 'Under Review',
+      'Under Review - EPA': 'Under Review',
+      'Under Review - GNFS': 'Under Review',
+      'All Reviews Complete': 'Under Review',
+    };
+    const effective = (form.routingStatus || form.status || '').trim();
+    const mapped = statusMap[effective] || statusMap[form.status || ''];
+    if (mapped && form.applicationNumber) {
+      const appNum = form.applicationNumber;
+      setBuildingPermits((prev) =>
+        prev.map((p) =>
+          p.permitNumber === appNum ? { ...p, permitStatus: mapped } : p
+        )
+      );
+    }
     resetForm();
     setView('list');
-  }, [form, editingId, setRecords, resetForm]);
+  }, [form, editingId, setRecords, setBuildingPermits, resetForm]);
 
   const handleDelete = useCallback(
     (id: string) => {
