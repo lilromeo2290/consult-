@@ -302,7 +302,11 @@ export function BPOfficialPage() {
           p.typeOfDevelopment?.toLowerCase().includes(q),
       );
     }
-    if (statusFilter) list = list.filter((p) => p.permitStatus === statusFilter);
+    if (statusFilter) list = list.filter((p) => {
+      const review = records.find((r) => r.applicationNumber === p.permitNumber);
+      const displayStatus = review ? review.routingStatus : p.permitStatus;
+      return displayStatus === statusFilter;
+    });
     if (routingFilter) {
       const reviewIds = new Set(records.filter((r) => r.routingStatus === routingFilter).map((r) => r.applicationNumber));
       list = list.filter((p) => reviewIds.has(p.permitNumber));
@@ -881,9 +885,7 @@ export function BPOfficialPage() {
                 <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">{p.typeOfDevelopment || '—'}</td>
                 <td className="px-4 py-3 text-right font-semibold">{p.estimatedCost ? `GHS ${p.estimatedCost}` : '—'}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[p.permitStatus] || 'bg-gray-100 text-gray-800'}`}>
-                    {p.permitStatus}
-                  </span>
+                  <StatusCell permitNumber={p.permitNumber} permitStatus={p.permitStatus} records={records} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button
@@ -939,6 +941,16 @@ export function BPOfficialPage() {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+function StatusCell({ permitNumber, permitStatus, records }: { permitNumber: string; permitStatus: string; records: BpOfficialRecord[] }) {
+  const review = records.find((r) => r.applicationNumber === permitNumber);
+  const displayStatus = review ? review.routingStatus : permitStatus;
+  return (
+    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[displayStatus] || 'bg-gray-100 text-gray-800'}`}>
+      {displayStatus || '—'}
+    </span>
+  );
+}
 
 function FormSection({
   number,
