@@ -126,7 +126,7 @@ export function BusinessRegisterPage() {
   const generateBusinessUniqueNumber = (areaCode?: string) => {
     const nextNum = businesses.length + 1;
     const prefix = areaCode || 'KpMA/KZC/ABX';
-    return `${prefix}/BZ/${String(nextNum).padStart(4, '0')}`;
+    return `${prefix}/BP/${String(nextNum).padStart(4, '0')}`;
   };
 
   const generateBusinessCertNo = () => {
@@ -137,7 +137,7 @@ export function BusinessRegisterPage() {
   const generateDaAssignmentNo = () => {
     const yearSuffix = String(new Date().getFullYear()).slice(-2);
     const nextNum = businesses.length + 1;
-    return `KpMA-${yearSuffix}-${String(nextNum).padStart(4, '0')}/BZ`;
+    return `KpMA-${yearSuffix}-${String(nextNum).padStart(4, '0')}/BP`;
   };
 
   // ── Form State ───────────────────────────────────────────────────────────
@@ -306,7 +306,7 @@ export function BusinessRegisterPage() {
       // Update business unique number when area code changes
       if ((name === 'locality' || name === 'areaCode') && updated.areaCode) {
         const nextNum = businesses.length + 1;
-        updated.businessUniqueNumber = `${updated.areaCode}/BZ/${String(nextNum).padStart(4, '0')}`;
+        updated.businessUniqueNumber = `${updated.areaCode}/BP/${String(nextNum).padStart(4, '0')}`;
       }
       // Link Revenue Description <-> Revenue Code
       if (name === 'revenueDescription' && BIZ_DESC_TO_CODE[updated.revenueDescription]) {
