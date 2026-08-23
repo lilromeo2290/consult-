@@ -30,6 +30,7 @@ import {
   CLASS_TO_CODES,
   CODE_TO_CLASS,
 } from '@/lib/business-class-code-map';
+import { CODE_TO_CATEGORY } from '@/lib/business-code-to-category';
 import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
 import { Combobox } from '@/components/ui/combobox';
 import { AutoSuggestInput } from '@/components/ui/auto-suggest-input';
@@ -314,16 +315,11 @@ export function BusinessRegisterPage() {
       if (name === 'revenueCode' && BIZ_CODE_TO_DESC[updated.revenueCode]) {
         updated.revenueDescription = BIZ_CODE_TO_DESC[updated.revenueCode];
       }
-      // Link Business Class Code -> Business Class Description + Category
+      // Link Business Code -> Business Class + Business Category
       if (name === 'businessClassCode') {
         const code = updated.businessClassCode;
-        if (CODE_TO_CLASS[code]) {
-          updated.businessClassDesc = CODE_TO_CLASS[code];
-          updated.category = CODE_TO_CLASS[code];
-        } else {
-          updated.businessClassDesc = '';
-          updated.category = '';
-        }
+        updated.businessClassDesc = CODE_TO_CLASS[code] || '';
+        updated.category = CODE_TO_CATEGORY[code] || '';
         // Fetch amount from rate config when code changes
         setTimeout(() => fetchAmountForCode(code), 0);
       }
