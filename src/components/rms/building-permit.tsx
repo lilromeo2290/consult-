@@ -382,7 +382,7 @@ export function BuildingPermitPage() {
             <HardHat className="text-primary" size={24} />
             <div>
               <h2 className="text-lg font-semibold">{editingId ? 'Edit' : 'New'} Building Permit Application</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Kpando Municipal Assembly</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Clipe Revenue Management System</p>
             </div>
           </div>
           <div className="p-6 space-y-8">

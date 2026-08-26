@@ -1,5 +1,5 @@
 // ─── Business Operating Permit Certificate PDF Generator ────────────────────────
-// Matches the Kpando Municipal Assembly permit design template
+// Matches the Clipe Revenue Management System permit design template
 import PDFDocument from 'pdfkit';
 import path from 'path';
 import fs from 'fs';
@@ -122,7 +122,7 @@ export function generateCertificatePDF(data: CertificateData): Promise<Buffer> {
       margins: { top: 0, bottom: 0, left: 0, right: 0 },
       info: {
         Title: `Business Operating Permit - ${data.businessName}`,
-        Author: data.assemblyName || 'Kpando Municipal Assembly',
+        Author: data.assemblyName || 'Clipe Revenue Management System',
         Subject: 'Business Operating Permit Certificate',
       },
     });
@@ -134,7 +134,7 @@ export function generateCertificatePDF(data: CertificateData): Promise<Buffer> {
 
     const pageW = doc.page.width;
     const pageH = doc.page.height;
-    const assemblyName = data.assemblyName || 'Kpando Municipal Assembly';
+    const assemblyName = data.assemblyName || 'Clipe Revenue Management System';
 
     // ─── Background watermark seal ───────────────────────────
     doc.save();

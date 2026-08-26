@@ -259,7 +259,7 @@ function EmptyState({ icon, message }: { icon: React.ReactNode; message: string 
 export function DashboardPage() {
   // Assembly info from synced storage
   const [assemblyInfo] = useSyncedStorage<{ name: string; code: string; address: string }>('rms-settings-assembly', { name: '', code: '', address: '' });
-  const assemblyName = assemblyInfo.name || 'Kpando Municipal Assembly';
+  const assemblyName = assemblyInfo.name || 'Clipe Revenue Management System';
 
   // All data from server-synced storage
   const [businesses] = useSyncedStorage<LSBusiness[]>('rms-businesses', []);

@@ -33,7 +33,7 @@ export function encodeBarcodeData(payload: Omit<BarcodePayload, 'checksum'>): st
     payload.revenueItem,
     payload.method || '',
     payload.status,
-    payload.assemblyName || 'Kpando Municipal Assembly',
+    payload.assemblyName || 'Clipe Revenue Management System',
   ];
 
   // Generate simple checksum from all parts
@@ -91,7 +91,7 @@ export function decodeBarcodeData(encoded: string): BarcodePayload | null {
         revenueItem,
         method: method || undefined,
         status,
-        assemblyName: 'Kpando Municipal Assembly',
+        assemblyName: 'Clipe Revenue Management System',
         checksum: checksumHex,
       };
     }

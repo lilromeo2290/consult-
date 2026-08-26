@@ -23,7 +23,7 @@ export interface EmailResult {
 export async function sendEmail({ to, subject, html, pdfBuffer, pdfFilename }: { to: string; subject: string; html: string; pdfBuffer?: Buffer; pdfFilename?: string; }): Promise<EmailResult> {
   const transporter = getTransporter();
   const fromAddress = process.env.SMTP_FROM || 'noreply@kpandoma.gov.gh';
-  const fromName = process.env.SMTP_FROM_NAME || 'Kpando Municipal Assembly';
+  const fromName = process.env.SMTP_FROM_NAME || 'Clipe Revenue Management System';
   const attachments: nodemailer.Attachment[] = [];
   if (pdfBuffer && pdfFilename) {
     attachments.push({ filename: pdfFilename, content: pdfBuffer, contentType: 'application/pdf' });

@@ -1,4 +1,4 @@
-// Property Class Code mapping based on Kpando Municipal Assembly rate schedule
+// Property Class Code mapping based on Clipe Revenue Management System rate schedule
 // Maps Code ↔ Property Class ↔ Category
 
 // Code → Property Class name

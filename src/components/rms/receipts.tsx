@@ -119,7 +119,7 @@ export function ReceiptsPage() {
 
   // ── Generate Barcode SVG as string ─────────────────────────────────
   const getBarcodeSvg = (r: Receipt): string => {
-    const _aName = (() => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; } })();
+    const _aName = (() => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Clipe Revenue Management System'; } catch { return 'Clipe Revenue Management System'; } })();
     const encoded = encodeBarcodeData({
       type: 'RECEIPT',
       refNo: r.receiptNo,
@@ -149,7 +149,7 @@ export function ReceiptsPage() {
   };
 
   const getBarcodeData = (r: Receipt): string => {
-    const _aName = (() => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; } })();
+    const _aName = (() => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Clipe Revenue Management System'; } catch { return 'Clipe Revenue Management System'; } })();
     return encodeBarcodeData({
       type: 'RECEIPT',
       refNo: r.receiptNo,
@@ -182,7 +182,7 @@ export function ReceiptsPage() {
     }
   }, [selectedReceipt]);
 
-  const _asmName = () => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Kpando Municipal Assembly'; } catch { return 'Kpando Municipal Assembly'; } };
+  const _asmName = () => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.name || 'Clipe Revenue Management System'; } catch { return 'Clipe Revenue Management System'; } };
   const _asmDesc = () => { try { const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}'); return r.description || ''; } catch { return ''; } };
   const handlePrintReceipt = (r: Receipt) => {
     const barcodeSvg = getBarcodeSvg(r);

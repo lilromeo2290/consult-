@@ -1,7 +1,7 @@
 {
-  "name": "Kpando Municipal Assembly RMS",
-  "short_name": "Kpando MA RMS",
-  "description": "Revenue Management System for Kpando Municipal Assembly",
+  "name": "Clipe Revenue Management System RMS",
+  "short_name": "Clipe RMS",
+  "description": "Revenue Management System for Clipe Revenue Management System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B2940",

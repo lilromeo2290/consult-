@@ -56,7 +56,7 @@ function fmtDateParts(d: string) {
 
 function CertificateView({ data }: { data: CertData }) {
   const { cert, assemblySettings, financialYear } = data;
-  const asmName = assemblySettings.name || cert.assemblyName || 'Kpando Municipal Assembly';
+  const asmName = assemblySettings.name || cert.assemblyName || 'Clipe Revenue Management System';
   const asmLogo = assemblySettings.logo || '';
   const asmSig = assemblySettings.signature || '';
   const asmSigTitle = assemblySettings.signatureTitle || '';

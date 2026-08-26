@@ -303,7 +303,7 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-foreground">Assembly Name</label>
-          <input type="text" value={data.name} onChange={(e) => onChange('name', e.target.value)} placeholder="e.g. Kpando Municipal Assembly" className={inputCls} />
+          <input type="text" value={data.name} onChange={(e) => onChange('name', e.target.value)} placeholder="e.g. Clipe Revenue Management System" className={inputCls} />
         </div>
         <div className="space-y-2">
           <label className="block text-sm font-medium text-foreground">Assembly Code</label>
@@ -327,7 +327,7 @@ function AssemblySettings({ data, onChange }: { data: AssemblyInfo; onChange: (f
         </div>
         <div className="lg:col-span-2 space-y-2">
           <label className="block text-sm font-medium text-foreground">Assembly Description</label>
-          <textarea rows={6} value={data.description} onChange={(e) => onChange('description', e.target.value)} placeholder="Enter full assembly description (e.g. Kpando Municipal Assembly, Volta Region, Ghana)" className={inputCls + ' resize-y min-h-[100px]'} />
+          <textarea rows={6} value={data.description} onChange={(e) => onChange('description', e.target.value)} placeholder="Enter full assembly description (e.g. Clipe Revenue Management System, Volta Region, Ghana)" className={inputCls + ' resize-y min-h-[100px]'} />
         </div>
         <div className="lg:col-span-2 space-y-2">
           <label className="block text-sm font-medium text-foreground flex items-center gap-1.5"><Pen className="w-3.5 h-3.5" /> Authorized Signature</label>

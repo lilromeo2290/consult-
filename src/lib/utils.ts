@@ -10,11 +10,11 @@ export function getAssemblyInfo(): { name: string; description: string } {
   try {
     const r = JSON.parse(localStorage.getItem('rms-settings-assembly') || '{}');
     return {
-      name: r.name || 'Kpando Municipal Assembly',
+      name: r.name || 'Clipe Revenue Management System',
       description: r.description || '',
     };
   } catch {
-    return { name: 'Kpando Municipal Assembly', description: '' };
+    return { name: 'Clipe Revenue Management System', description: '' };
   }
 }
 

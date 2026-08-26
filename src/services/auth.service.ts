@@ -45,7 +45,7 @@ export class AuthService {
     const assembly = await db.assembly.upsert({
       where: { code: 'KPMA' },
       update: {},
-      create: { code: 'KPMA', name: 'Kpando Municipal Assembly', region: 'Oti', district: 'Kpando' },
+      create: { code: 'KPMA', name: 'Clipe Revenue Management System', region: 'Oti', district: 'Kpando' },
     });
 
     // Seed admin user
