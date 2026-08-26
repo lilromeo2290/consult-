@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { useAppStore, type AppUser } from '@/stores/app-store';
-import { ParticleBackground } from './particle-background';
-import { ThemeToggle } from './theme-toggle';
+import { usePwaInstall } from '@/components/pwa-install-prompt';
 import {
   Eye,
   EyeOff,
@@ -16,12 +15,17 @@ import {
   Shield,
   UserX,
   Download,
+  Wifi,
+  Cloud,
+  FileText,
+  Smartphone,
+  BarChart3,
+  Database,
+  Globe,
+  Zap,
 } from 'lucide-react';
-import { usePwaInstall } from '@/components/pwa-install-prompt';
 
 const USERS_STORAGE_KEY = 'rms-users';
-
-// Must match ALL_RMS_PAGES in app-store.ts exactly
 const ALL_PAGES = ['dashboard','businesses','rates','billing','payments','payment-history','receipts','reports','users','settings','search','audit-trail'];
 
 interface StoredUser {
@@ -50,11 +54,10 @@ function migrateStoredUsers(raw: unknown): StoredUser[] {
       status: u.status || 'Active',
       accessiblePages: u.accessiblePages || [],
     };
-    // Only auto-add new pages for Administrators
     if (base.role === 'Administrator') {
       const missing = ALL_PAGES.filter((p) => !base.accessiblePages.includes(p));
       if (missing.length > 0) {
-      base.accessiblePages = [...base.accessiblePages, ...missing];
+        base.accessiblePages = [...base.accessiblePages, ...missing];
       }
     }
     return base;
@@ -73,6 +76,117 @@ const defaultAdmin: StoredUser = {
   accessiblePages: ALL_PAGES,
 };
 
+// Floating tech icons
+const FLOATING_ICONS = [
+  { Icon: Wifi, x: '8%', y: '15%', size: 20, delay: 0, duration: 6 },
+  { Icon: Cloud, x: '88%', y: '12%', size: 22, delay: 1, duration: 7 },
+  { Icon: FileText, x: '12%', y: '78%', size: 18, delay: 2, duration: 5.5 },
+  { Icon: Smartphone, x: '85%', y: '80%', size: 20, delay: 0.5, duration: 6.5 },
+  { Icon: BarChart3, x: '5%', y: '45%', size: 16, delay: 1.5, duration: 7.5 },
+  { Icon: Database, x: '92%', y: '48%', size: 18, delay: 3, duration: 6 },
+  { Icon: Globe, x: '15%', y: '30%', size: 14, delay: 2.5, duration: 5 },
+  { Icon: Zap, x: '80%', y: '30%', size: 16, delay: 0.8, duration: 8 },
+];
+
+function FloatingIcon({ Icon, x, y, size, delay, duration }: { Icon: React.ElementType; x: string; y: string; size: number; delay: number; duration: number }) {
+  return (
+    <motion.div
+      className="absolute pointer-events-none hidden lg:flex items-center justify-center"
+      style={{ left: x, top: y, width: size + 16, height: size + 16 }}
+      animate={{
+        y: [0, -12, 0],
+        opacity: [0.3, 0.7, 0.3],
+      }}
+      transition={{
+        duration,
+        delay,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      }}
+    >
+      <div
+        className="flex items-center justify-center rounded-full"
+        style={{
+          width: size + 16,
+          height: size + 16,
+          border: '1px solid rgba(6, 182, 212, 0.3)',
+          boxShadow: '0 0 12px rgba(6, 182, 212, 0.15), inset 0 0 8px rgba(6, 182, 212, 0.08)',
+        }}
+      >
+        <Icon size={size} style={{ color: 'rgba(6, 182, 212, 0.6)' }} strokeWidth={1.5} />
+      </div>
+    </motion.div>
+  );
+}
+
+// Connection lines canvas
+function ConnectionCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.scale(dpr, dpr);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Draw static connection lines
+    const drawLines = () => {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const cx = w / 2;
+      const cy = h / 2;
+
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.06)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 8]);
+
+      // Lines from center to corners/edges
+      const points = [
+        [w * 0.1, h * 0.2], [w * 0.9, h * 0.15],
+        [w * 0.08, h * 0.5], [w * 0.92, h * 0.5],
+        [w * 0.12, h * 0.8], [w * 0.88, h * 0.82],
+        [w * 0.5, h * 0.05], [w * 0.5, h * 0.95],
+      ];
+
+      for (const [px, py] of points) {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+      }
+
+      // Small dots at intersections
+      ctx.setLineDash([]);
+      for (const [px, py] of points) {
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.25)';
+        ctx.fill();
+      }
+    };
+
+    drawLines();
+    window.addEventListener('resize', drawLines);
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', drawLines);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none hidden lg:block" />;
+}
+
 export function LoginPage() {
   const { resolvedTheme } = useTheme();
   const loginSuccess = useAppStore((s) => s.loginSuccess);
@@ -86,7 +200,6 @@ export function LoginPage() {
   const [storedUsers, setStoredUsers] = useState<StoredUser[]>([]);
   const [usersReady, setUsersReady] = useState(false);
 
-  // Load users from server first, then localStorage fallback
   useEffect(() => {
     const initUsers = async () => {
       try {
@@ -104,7 +217,6 @@ export function LoginPage() {
         }
       } catch { /* fallback to localStorage */ }
 
-      // Fallback: localStorage
       try {
         const raw = localStorage.getItem(USERS_STORAGE_KEY);
         if (raw) {
@@ -112,7 +224,6 @@ export function LoginPage() {
           const migrated = migrateStoredUsers(parsed);
           if (migrated.length > 0) {
             setStoredUsers(migrated);
-            // Sync to server
             fetch('/api/rms-data', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
@@ -122,7 +233,6 @@ export function LoginPage() {
         }
       } catch { /* ignore */ }
 
-      // If still no users, seed default admin
       if (storedUsers.length === 0) {
         const seed = [defaultAdmin];
         setStoredUsers(seed);
@@ -138,9 +248,7 @@ export function LoginPage() {
     initUsers();
   }, []);
 
-  const isDark = resolvedTheme === 'dark';
   const mounted = resolvedTheme !== undefined;
-  // Don't render login form until users are loaded from server
   if (!usersReady || !mounted) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -154,28 +262,23 @@ export function LoginPage() {
 
     setLoading(true);
 
-    // Simulate authentication delay
     setTimeout(() => {
-      // Try to find the user in stored users
       const matched = storedUsers.find(
         (u) => u.username === username.trim() && u.password === password
       );
 
       if (matched) {
-        // Check if user is suspended
         if (matched.status === 'Suspended') {
           setError('Your account has been suspended. Contact the administrator.');
           setLoading(false);
           return;
         }
-        // Check if user is inactive
         if (matched.status === 'Inactive') {
           setError('Your account is inactive. Contact the administrator to activate it.');
           setLoading(false);
           return;
         }
 
-        // Login with the user's stored permissions
         const appUser: AppUser = {
           id: matched.id,
           staffId: matched.staffId,
@@ -192,50 +295,74 @@ export function LoginPage() {
     }, 800);
   };
 
-  const inputCls = (hasError: boolean) =>
-    `w-full rounded-xl border ${hasError ? 'border-red-400 dark:border-red-500' : 'border-slate-300 dark:border-slate-600'} bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-[#0B1D3E] focus:border-[#0B1D3E] outline-none transition-all duration-200`;
-
-  if (!mounted) return null;
-
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden">
-      {/* Background */}
+      {/* Dark tech gradient background */}
       <div
-        className="fixed inset-0 -z-10 transition-colors duration-700"
+        className="fixed inset-0 -z-20"
         style={{
-          background: isDark
-            ? 'linear-gradient(160deg, #060d1f 0%, #0b1d3e 35%, #091733 65%, #050c1a 100%)'
-            : 'linear-gradient(160deg, #f0f4fa 0%, #f8fafc 35%, #eef2f9 65%, #f0f4fa 100%)',
+          background: 'linear-gradient(135deg, #0a0e27 0%, #0d1b3e 30%, #0c2d48 60%, #064e6e 85%, #0891b2 100%)',
         }}
       />
 
-      {/* Ambient glow */}
+      {/* Animated glow orbs */}
       <div
-        className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none -z-10"
+        className="fixed pointer-events-none -z-10"
         style={{
-          background: isDark
-            ? 'radial-gradient(circle, rgba(11,29,62,0.12) 0%, transparent 70%)'
-            : 'radial-gradient(circle, rgba(11,29,62,0.08) 0%, transparent 70%)',
+          top: '10%',
+          left: '15%',
+          width: 500,
+          height: 500,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%)',
+          filter: 'blur(40px)',
         }}
       />
       <div
-        className="fixed bottom-[-15%] right-[-10%] w-[400px] h-[400px] rounded-full pointer-events-none -z-10"
+        className="fixed pointer-events-none -z-10"
         style={{
-          background: isDark
-            ? 'radial-gradient(circle, rgba(227,30,36,0.04) 0%, transparent 70%)'
-            : 'radial-gradient(circle, rgba(227,30,36,0.06) 0%, transparent 70%)',
+          bottom: '5%',
+          right: '10%',
+          width: 450,
+          height: 450,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, transparent 70%)',
+          filter: 'blur(50px)',
+        }}
+      />
+      <div
+        className="fixed pointer-events-none -z-10"
+        style={{
+          top: '50%',
+          left: '55%',
+          width: 350,
+          height: 350,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)',
+          filter: 'blur(45px)',
+          transform: 'translate(-50%, -50%)',
         }}
       />
 
-      {/* Particles */}
-      <div className="fixed inset-0 -z-10">
-        <ParticleBackground />
+      {/* Connection lines */}
+      <ConnectionCanvas />
+
+      {/* Floating icons */}
+      <div className="fixed inset-0 pointer-events-none -z-5">
+        {FLOATING_ICONS.map((props, i) => (
+          <FloatingIcon key={i} {...props} />
+        ))}
       </div>
 
-      {/* Header */}
-      <header className="flex items-center justify-end px-6 py-4 sm:px-8 relative z-10">
-        <ThemeToggle />
-      </header>
+      {/* Grid overlay */}
+      <div
+        className="fixed inset-0 -z-10 pointer-events-none hidden lg:block"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+        }}
+      />
 
       {/* Login Form */}
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 relative z-10">
@@ -252,19 +379,28 @@ export function LoginPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <img
-              src="/logo.png"
-              alt="CLIPE CONSULT Logo"
-              className="w-full h-full object-contain"
-              draggable={false}
-            />
+            <div
+              className="w-full h-full flex items-center justify-center rounded-2xl"
+              style={{
+                background: 'rgba(6, 182, 212, 0.08)',
+                border: '1px solid rgba(6, 182, 212, 0.2)',
+                boxShadow: '0 0 30px rgba(6, 182, 212, 0.15)',
+              }}
+            >
+              <img
+                src="/logo.png"
+                alt="RMS Logo"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
+                draggable={false}
+              />
+            </div>
           </motion.div>
 
           {/* Title */}
           <div className="text-center mb-8">
             <motion.h1
-              className="text-2xl sm:text-3xl font-bold tracking-tight mb-2"
-              style={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
+              className="text-2xl sm:text-3xl font-bold tracking-wider mb-2"
+              style={{ color: '#f0f9ff' }}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -272,8 +408,8 @@ export function LoginPage() {
               Revenue Management System
             </motion.h1>
             <motion.p
-              className="text-sm"
-              style={{ color: isDark ? 'rgba(148,163,184,0.85)' : 'rgba(71,85,105,0.8)' }}
+              className="text-sm tracking-wide"
+              style={{ color: 'rgba(165, 211, 233, 0.7)' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -286,16 +422,11 @@ export function LoginPage() {
           <motion.div
             className="rounded-2xl p-6 sm:p-8"
             style={{
-              background: isDark
-                ? 'rgba(15,23,42,0.6)'
-                : 'rgba(255,255,255,0.6)',
-              backdropFilter: 'blur(20px)',
-              border: isDark
-                ? '1px solid rgba(51,65,85,0.5)'
-                : '1px solid rgba(226,232,240,0.8)',
-              boxShadow: isDark
-                ? '0 25px 50px rgba(0,0,0,0.3)'
-                : '0 25px 50px rgba(0,0,0,0.08)',
+              background: 'rgba(255, 255, 255, 0.04)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 60px rgba(6, 182, 212, 0.06)',
             }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -309,27 +440,34 @@ export function LoginPage() {
                     initial={{ opacity: 0, y: -10, height: 0 }}
                     animate={{ opacity: 1, y: 0, height: 'auto' }}
                     exit={{ opacity: 0, y: -10, height: 0 }}
-                    className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40"
+                    className="flex items-start gap-2.5 p-3 rounded-xl"
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                    }}
                   >
                     {error.includes('suspended') || error.includes('inactive') ? (
-                      <UserX className="w-4 h-4 text-red-500 dark:text-red-400 mt-0.5 shrink-0" />
+                      <UserX className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
                     ) : (
-                      <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 mt-0.5 shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
                     )}
-                    <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                    <p className="text-sm text-red-300">{error}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
 
               {/* Username */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: isDark ? '#e2e8f0' : '#334155' }}>
+                <label
+                  className="block text-xs font-medium mb-2 uppercase tracking-widest"
+                  style={{ color: 'rgba(165, 211, 233, 0.7)' }}
+                >
                   Username
                 </label>
                 <div className="relative">
                   <User
                     className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4"
-                    style={{ color: 'rgba(148,163,184,0.6)' }}
+                    style={{ color: 'rgba(6, 182, 212, 0.5)' }}
                   />
                   <input
                     type="text"
@@ -337,20 +475,23 @@ export function LoginPage() {
                     onChange={(e) => { setUsername(e.target.value); setError(''); }}
                     placeholder="Enter your username"
                     autoComplete="username"
-                    className={`${inputCls(!!error && !username)} pl-11`}
+                    className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 pl-11 text-sm text-white placeholder:text-slate-500 outline-none transition-all duration-300 focus:border-cyan-500/40 focus:shadow-[0_0_16px_rgba(6,182,212,0.12)]"
                   />
                 </div>
               </div>
 
               {/* Password */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: isDark ? '#e2e8f0' : '#334155' }}>
+                <label
+                  className="block text-xs font-medium mb-2 uppercase tracking-widest"
+                  style={{ color: 'rgba(165, 211, 233, 0.7)' }}
+                >
                   Password
                 </label>
                 <div className="relative">
                   <Lock
                     className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4"
-                    style={{ color: 'rgba(148,163,184,0.6)' }}
+                    style={{ color: 'rgba(6, 182, 212, 0.5)' }}
                   />
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -358,13 +499,13 @@ export function LoginPage() {
                     onChange={(e) => { setPassword(e.target.value); setError(''); }}
                     placeholder="Enter your password"
                     autoComplete="current-password"
-                    className={`${inputCls(!!error && !password)} pl-11 pr-11`}
+                    className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 pl-11 pr-11 text-sm text-white placeholder:text-slate-500 outline-none transition-all duration-300 focus:border-cyan-500/40 focus:shadow-[0_0_16px_rgba(6,182,212,0.12)]"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded cursor-pointer"
-                    style={{ color: 'rgba(148,163,184,0.6)' }}
+                    style={{ color: 'rgba(165, 211, 233, 0.4)' }}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -375,12 +516,12 @@ export function LoginPage() {
               <motion.button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
-                  background: 'linear-gradient(135deg, #0B1D3E 0%, #E31E24 100%)',
-                  boxShadow: '0 4px 14px rgba(11,29,62,0.35)',
+                  background: 'linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #06b6d4 100%)',
+                  boxShadow: '0 4px 20px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
                 }}
-                whileHover={!loading ? { scale: 1.01, boxShadow: '0 6px 20px rgba(11,29,62,0.45)' } : undefined}
+                whileHover={!loading ? { scale: 1.01, boxShadow: '0 6px 28px rgba(6, 182, 212, 0.45), inset 0 1px 0 rgba(255,255,255,0.1)' } : undefined}
                 whileTap={!loading ? { scale: 0.99 } : undefined}
               >
                 {loading ? (
@@ -397,18 +538,16 @@ export function LoginPage() {
               </motion.button>
             </form>
 
-            {/* Install App Button (Android) */}
+            {/* Install App Button */}
             {isInstallable && (
               <motion.button
                 type="button"
                 onClick={promptInstall}
                 className="w-full mt-3 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer active:scale-[0.98]"
                 style={{
-                  background: isDark
-                    ? 'rgba(31,122,140,0.15)'
-                    : 'rgba(31,122,140,0.08)',
-                  color: '#1F7A8C',
-                  border: '1px solid rgba(31,122,140,0.25)',
+                  background: 'rgba(6, 182, 212, 0.08)',
+                  color: 'rgba(165, 211, 233, 0.8)',
+                  border: '1px solid rgba(6, 182, 212, 0.15)',
                 }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -418,18 +557,17 @@ export function LoginPage() {
                 Install App on Your Phone
               </motion.button>
             )}
-
           </motion.div>
 
-          {/* Footer text */}
+          {/* Footer */}
           <motion.p
-            className="text-center text-xs mt-6"
-            style={{ color: isDark ? 'rgba(100,116,139,0.5)' : 'rgba(100,116,139,0.4)' }}
+            className="text-center text-xs mt-6 tracking-wide"
+            style={{ color: 'rgba(100, 150, 180, 0.4)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            CLIPE CONSULT Revenue Management System
+            Revenue Management System
           </motion.p>
         </motion.div>
       </main>
