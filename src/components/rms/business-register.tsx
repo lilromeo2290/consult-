@@ -173,39 +173,19 @@ export function BusinessRegisterPage() {
   const [form, setForm] = useState({ ...defaultForm });
   const [locating, setLocating] = useState(false);
 
-  // ── Auto-fill: Business Code → Revenue Desc + Class + Category ──────────
-  const prevRevenueCodeRef = useRef(form.revenueCode);
-  useEffect(() => {
-    if (form.revenueCode && form.revenueCode !== prevRevenueCodeRef.current) {
-      const classes = BIZ_CODE_TO_CLASSES[form.revenueCode] || [];
-      const firstClass = classes[0] || '';
-      const firstCategory = firstClass
-        ? (BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${firstClass}`] || [])[0] || ''
-        : '';
-      setForm((prev) => ({
-        ...prev,
-        revenueDescription: BIZ_CODE_TO_REVENUE_DESC[form.revenueCode] || '',
-        businessClassCode: firstClass ? (Object.entries(CODE_TO_CLASS).find(([, v]) => v === firstClass)?.[0] || '') : '',
-        businessClassDesc: firstClass,
-        category: firstCategory,
-      }));
-    }
-    prevRevenueCodeRef.current = form.revenueCode;
-  }, [form.revenueCode]);
-
-  // ── Auto-fill: Business Class → Category ────────────────────────────────
-  const prevClassRef = useRef(form.businessClassDesc);
-  useEffect(() => {
-    if (form.businessClassDesc && form.revenueCode && form.businessClassDesc !== prevClassRef.current) {
-      const cats = BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${form.businessClassDesc}`] || [];
-      const firstCat = cats[0] || '';
-      setForm((prev) => ({
-        ...prev,
-        category: firstCat,
-      }));
-    }
-    prevClassRef.current = form.businessClassDesc;
-  }, [form.businessClassDesc, form.revenueCode]);
+  // ── Auto-fill helper ────────────────────────────────────────────────────
+  const autofillFromCode = (code: string) => {
+    console.log('[AUTO-FILL] Business Code selected:', code);
+    const desc = BIZ_CODE_TO_REVENUE_DESC[code] || '';
+    const classes = BIZ_CODE_TO_CLASSES[code] || [];
+    console.log('[AUTO-FILL] Classes found:', classes);
+    const firstClass = classes[0] || '';
+    const firstCategory = firstClass
+      ? (BIZ_CODE_CLASS_TO_CATEGORIES[`${code}|${firstClass}`] || [])[0] || ''
+      : '';
+    console.log('[AUTO-FILL] First class:', firstClass, '| First category:', firstCategory);
+    return { desc, firstClass, firstCategory };
+  };
 
   // ── Fetch amount from rate config ──────────────────────────────────────
   const fetchAmountForCode = async (code: string) => {
@@ -661,7 +641,16 @@ export function BusinessRegisterPage() {
                   name="revenueCode"
                   value={form.revenueCode}
                   onValueChange={(value) => {
-                    setForm((prev) => ({ ...prev, revenueCode: value }));
+                    console.log('[COMBOBOX] onValueChange fired with:', value);
+                    const { desc, firstClass, firstCategory } = autofillFromCode(value);
+                    setForm((prev) => ({
+                      ...prev,
+                      revenueCode: value,
+                      revenueDescription: desc,
+                      businessClassCode: firstClass ? (Object.entries(CODE_TO_CLASS).find(([, v]) => v === firstClass)?.[0] || '') : '',
+                      businessClassDesc: firstClass,
+                      category: firstCategory,
+                    }));
                   }}
                   options={BIZ_CODE_OPTIONS.map((c) => ({ value: c, label: `${c} - ${BIZ_CODE_TO_REVENUE_DESC[c] || ''}` }))}
                   placeholder="Select business code..."

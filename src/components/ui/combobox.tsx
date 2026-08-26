@@ -74,6 +74,7 @@ export function Combobox({
   }, [highlighted]);
 
   const selectOption = useCallback((optionValue: string) => {
+    console.log('[COMBOBOX] selectOption called:', optionValue, 'onValueChange:', !!onValueChange);
     if (onValueChange) {
       onValueChange(optionValue);
     } else if (onChange) {
