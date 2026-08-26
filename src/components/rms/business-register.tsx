@@ -173,6 +173,40 @@ export function BusinessRegisterPage() {
   const [form, setForm] = useState({ ...defaultForm });
   const [locating, setLocating] = useState(false);
 
+  // ── Auto-fill: Business Code → Revenue Desc + Class + Category ──────────
+  const prevRevenueCodeRef = useRef(form.revenueCode);
+  useEffect(() => {
+    if (form.revenueCode && form.revenueCode !== prevRevenueCodeRef.current) {
+      const classes = BIZ_CODE_TO_CLASSES[form.revenueCode] || [];
+      const firstClass = classes[0] || '';
+      const firstCategory = firstClass
+        ? (BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${firstClass}`] || [])[0] || ''
+        : '';
+      setForm((prev) => ({
+        ...prev,
+        revenueDescription: BIZ_CODE_TO_REVENUE_DESC[form.revenueCode] || '',
+        businessClassCode: firstClass ? (Object.entries(CODE_TO_CLASS).find(([, v]) => v === firstClass)?.[0] || '') : '',
+        businessClassDesc: firstClass,
+        category: firstCategory,
+      }));
+    }
+    prevRevenueCodeRef.current = form.revenueCode;
+  }, [form.revenueCode]);
+
+  // ── Auto-fill: Business Class → Category ────────────────────────────────
+  const prevClassRef = useRef(form.businessClassDesc);
+  useEffect(() => {
+    if (form.businessClassDesc && form.revenueCode && form.businessClassDesc !== prevClassRef.current) {
+      const cats = BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${form.businessClassDesc}`] || [];
+      const firstCat = cats[0] || '';
+      setForm((prev) => ({
+        ...prev,
+        category: firstCat,
+      }));
+    }
+    prevClassRef.current = form.businessClassDesc;
+  }, [form.businessClassDesc, form.revenueCode]);
+
   // ── Fetch amount from rate config ──────────────────────────────────────
   const fetchAmountForCode = async (code: string) => {
     if (!code) { setForm((p) => ({ ...p, amount: '' })); return; }
@@ -626,21 +660,8 @@ export function BusinessRegisterPage() {
                 <Combobox
                   name="revenueCode"
                   value={form.revenueCode}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    const value = e.target.value;
-                    const classes = BIZ_CODE_TO_CLASSES[value] || [];
-                    const firstClass = classes[0] || '';
-                    const firstCategory = firstClass
-                      ? (BIZ_CODE_CLASS_TO_CATEGORIES[`${value}|${firstClass}`] || [])[0] || ''
-                      : '';
-                    setForm((prev) => ({
-                      ...prev,
-                      revenueCode: value,
-                      revenueDescription: BIZ_CODE_TO_REVENUE_DESC[value] || '',
-                      businessClassCode: firstClass ? (Object.entries(CODE_TO_CLASS).find(([, v]) => v === firstClass)?.[0] || '') : '',
-                      businessClassDesc: firstClass,
-                      category: firstCategory,
-                    }));
+                  onValueChange={(value) => {
+                    setForm((prev) => ({ ...prev, revenueCode: value }));
                   }}
                   options={BIZ_CODE_OPTIONS.map((c) => ({ value: c, label: `${c} - ${BIZ_CODE_TO_REVENUE_DESC[c] || ''}` }))}
                   placeholder="Select business code..."
@@ -665,15 +686,11 @@ export function BusinessRegisterPage() {
                 <Combobox
                   name="businessClassDesc"
                   value={form.businessClassDesc}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    const value = e.target.value;
-                    const cats = BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${value}`] || [];
-                    const firstCat = cats[0] || '';
+                  onValueChange={(value) => {
                     setForm((prev) => ({
                       ...prev,
                       businessClassDesc: value,
                       businessClassCode: Object.entries(CODE_TO_CLASS).find(([, v]) => v === value)?.[0] || '',
-                      category: firstCat,
                     }));
                   }}
                   options={(BIZ_CODE_TO_CLASSES[form.revenueCode] || []).map((c) => ({ value: c, label: c }))}
@@ -689,8 +706,8 @@ export function BusinessRegisterPage() {
                 <Combobox
                   name="category"
                   value={form.category}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    setForm((prev) => ({ ...prev, category: e.target.value }));
+                  onValueChange={(value) => {
+                    setForm((prev) => ({ ...prev, category: value }));
                   }}
                   options={(BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${form.businessClassDesc}`] || []).map((c) => ({ value: c, label: c }))}
                   placeholder={form.businessClassDesc ? 'Select category...' : 'Select business class first'}

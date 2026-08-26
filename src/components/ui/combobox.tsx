@@ -11,7 +11,8 @@ interface ComboboxOption {
 interface ComboboxProps {
   name: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onValueChange?: (value: string) => void;
   options: ComboboxOption[];
   placeholder?: string;
   emptyMessage?: string;
@@ -23,6 +24,7 @@ export function Combobox({
   name,
   value,
   onChange,
+  onValueChange,
   options,
   placeholder = 'Type to search...',
   emptyMessage = 'No results found',
@@ -72,19 +74,18 @@ export function Combobox({
   }, [highlighted]);
 
   const selectOption = useCallback((optionValue: string) => {
-    // Create a synthetic event that mimics a select onChange
-    const syntheticEvent = {
-      target: {
-        name,
-        value: optionValue,
-        type: 'select-one',
-      },
-    } as unknown as React.ChangeEvent<HTMLSelectElement>;
-    onChange(syntheticEvent);
+    if (onValueChange) {
+      onValueChange(optionValue);
+    } else if (onChange) {
+      const syntheticEvent = {
+        target: { name, value: optionValue, type: 'select-one' },
+      } as unknown as React.ChangeEvent<HTMLSelectElement>;
+      onChange(syntheticEvent);
+    }
     setOpen(false);
     setQuery('');
     setHighlighted(-1);
-  }, [name, onChange]);
+  }, [name, onChange, onValueChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!open) {
