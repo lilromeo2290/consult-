@@ -627,13 +627,18 @@ export function BusinessRegisterPage() {
                   name="revenueCode"
                   value={form.revenueCode}
                   onChange={(name: string, value: string) => {
+                    const classes = BIZ_CODE_TO_CLASSES[value] || [];
+                    const firstClass = classes[0] || '';
+                    const firstCategory = firstClass
+                      ? (BIZ_CODE_CLASS_TO_CATEGORIES[`${value}|${firstClass}`] || [])[0] || ''
+                      : '';
                     setForm((prev) => ({
                       ...prev,
                       revenueCode: value,
                       revenueDescription: BIZ_CODE_TO_REVENUE_DESC[value] || '',
-                      businessClassCode: '',
-                      businessClassDesc: '',
-                      category: '',
+                      businessClassCode: firstClass ? (Object.entries(CODE_TO_CLASS).find(([, v]) => v === firstClass)?.[0] || '') : '',
+                      businessClassDesc: firstClass,
+                      category: firstCategory,
                     }));
                   }}
                   options={BIZ_CODE_OPTIONS.map((c) => ({ value: c, label: `${c} - ${BIZ_CODE_TO_REVENUE_DESC[c] || ''}` }))}
@@ -660,10 +665,13 @@ export function BusinessRegisterPage() {
                   name="businessClassDesc"
                   value={form.businessClassDesc}
                   onChange={(_name: string, value: string) => {
+                    const cats = BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${value}`] || [];
+                    const firstCat = cats[0] || '';
                     setForm((prev) => ({
                       ...prev,
                       businessClassDesc: value,
-                      category: '',
+                      businessClassCode: Object.entries(CODE_TO_CLASS).find(([, v]) => v === value)?.[0] || '',
+                      category: firstCat,
                     }));
                   }}
                   options={(BIZ_CODE_TO_CLASSES[form.revenueCode] || []).map((c) => ({ value: c, label: c }))}
@@ -686,7 +694,7 @@ export function BusinessRegisterPage() {
                   placeholder={form.businessClassDesc ? 'Select category...' : 'Select business class first'}
                   emptyMessage="No matching category"
                   className={inputClass}
-                  disabled={!form.businessClassDesc}
+                  disabled={!form.revenueCode}
                 />
               </div>
               {/* Amount (from rate configuration) */}

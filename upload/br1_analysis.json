@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n[\n  {\n    \"Business Code\": \"N/A\",\n    \"Revenue Description\": \"N/A\",\n    \"Business Class\": \"N/A\",\n    \"Business Category\": \"N/A\"\n  }\n]\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787746246,
+  "id": "202608262010449f9de43a610d4e5f",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202608262010449f9de43a610d4e5f",
+  "usage": {
+    "completion_tokens": 47,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1225,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 1272
+  }
+}

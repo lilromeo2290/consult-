@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n[\n  {\n    \"Business Code\": null,\n    \"Revenue Description\": null,\n    \"Business Class\": null,\n    \"Business Category\": null\n  }\n]\n```\n\n**Note:** The image provided is a **blank form template** for business registration (containing fields for DA Assignment No., Business Certificate, Owner Information, etc.). It does **not contain any data table** with business codes, revenue descriptions, classes, or categories. The form fields are all empty/unfilled, and there are no rows of data to extract.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787746253,
+  "id": "20260826201051deab967038d24504",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260826201051deab967038d24504",
+  "usage": {
+    "completion_tokens": 113,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1225,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 1338
+  }
+}
