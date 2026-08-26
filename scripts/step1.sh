@@ -1,0 +1,59 @@
+import paramiko
+ssh=paramiko.SSHClient();ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy());ssh.connect('153.75.247.4',username='root',password='Do1_BuZe4_M1-V6v1_S4',timeout=10)
+
+def r(c,t=120):
+ i,o,e=ssh.exec_command(c,timeout=t);out=o.read().decode();err=e.read().decode();print(f'>>> {c}');print(out[-2000:] if out.strip() else '');print(err[-500:] if err.strip() else '');print('---');return out
+
+r('pm2 stop kpma-rms 2>/dev/null; pm2 delete kpma-rms 2>/dev/null')
+r('rm -rf /home/rms-correct')
+r('cd /home && git clone https://github.com/lilromeo2290/Rev_Mgnt_Sys.git rms-correct 2>&1')
+
+# Upload modified layout
+print('=== UPLOAD MODIFIED LAYOUT ===')
+sftp=ssh.open_sftp()
+with open('/home/z/Rev_Mgnt_Sys/src/components/rms/rms-layout.tsx') as f:
+    content=f.read()
+content=content.replace("  { label: 'BP Payment', page: 'bp-payment', icon: Wallet },\n",'')
+with open('/tmp/rms-layout-nobp.tsx','w') as f:
+    f.write(content)
+sftp.put('/tmp/rms-layout-nobp.tsx','/home/rms-correct/src/components/rms/rms-layout.tsx')
+sftp.close()
+print('Layout uploaded')
+
+# Verify
+r("grep 'BP Payment' /home/rms-correct/src/components/rms/rms-layout.tsx")
+
+# Start npm ci in background
+print('=== NPM CI BACKGROUND ===')
+script='''#!/bin/bash
+cd /home/rms-correct
+echo "[$(date)] npm ci starting" > /tmp/correct-deploy.log
+npm ci --production=false >> /tmp/correct-deploy.log 2>&1
+echo "[$(date)] npm ci done" >> /tmp/correct-deploy.log
+npx prisma generate >> /tmp/correct-deploy.log 2>&1
+echo "[$(date)] prisma done" >> /tmp/correct-deploy.log
+npx prisma db push --accept-data-loss >> /tmp/correct-deploy.log 2>&1
+echo "[$(date)] db push done" >> /tmp/correct-deploy.log
+npx next build >> /tmp/correct-deploy.log 2>&1
+echo "[$(date)] BUILD EXIT=$?" >> /tmp/correct-deploy.log
+
+# Deploy
+echo "[$(date)] deploying" >> /tmp/correct-deploy.log
+pm2 stop kpma-rms 2>/dev/null; pm2 delete kpma-rms 2>/dev/null
+rm -rf /home/kpma-rms; mkdir -p /home/kpma-rms
+cp -a .next/standalone/. /home/kpma-rms/
+cp -r .next/static /home/kpma-rms/.next/static
+cp -r public /home/kpma-rms/public
+echo "DATABASE_URL=file:/home/rms-correct/db/custom.db" > /home/kpma-rms/.env
+cd /home/kpma-rms && HOSTNAME=0.0.0.0 PORT=3008 pm2 start server.js --name kpma-rms
+echo "[$(date)] PM2 started" >> /tmp/correct-deploy.log
+sleep 3
+curl -s -o /dev/null -w "HTTP:%{http_code}" http://localhost:3008/ >> /tmp/correct-deploy.log
+echo "[$(date)] ALL DONE" >> /tmp/correct-deploy.log
+'''
+i,o,e=ssh.exec_command('cat > /tmp/correct-deploy.sh')
+i.write(script);i.channel.shutdown_write();o.read()
+r('chmod +x /tmp/correct-deploy.sh && nohup /tmp/correct-deploy.sh &> /dev/null & echo $!')
+
+ssh.close()
+print('Full pipeline running in background. Check: tail -f /tmp/correct-deploy.log')
