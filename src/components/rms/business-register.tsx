@@ -685,6 +685,19 @@ export function BusinessRegisterPage() {
                 <label className={`${labelClass} block`}>Business Certificate Number (GCR)</label>
                 <input type="text" name="businessCertNo" value={form.businessCertNo} onChange={handleFormChange} placeholder="e.g. GCR-0001" className={inputClass} />
               </div>
+              {/* Business Code */}
+              <div>
+                <label className={`${labelClass} block`}>Business Code</label>
+                <Combobox
+                  name="businessClassCode"
+                  value={form.businessClassCode}
+                  onChange={handleFormChange}
+                  options={classCodes.map((c) => ({ value: c, label: c }))}
+                  placeholder="Select code..."
+                  emptyMessage="No matching code"
+                  className={inputClass}
+                />
+              </div>
               {/* Business Revenue Code */}
               <div>
                 <label className={`${labelClass} block`}>Business Revenue Code</label>
@@ -710,9 +723,9 @@ export function BusinessRegisterPage() {
                   )}
                 </div>
               </div>
-              {/* Business Revenue Description */}
+              {/* Revenue Description */}
               <div className="sm:col-span-2">
-                <label className={`${labelClass} block`}>Business Revenue Description</label>
+                <label className={`${labelClass} block`}>Revenue Description</label>
                 <div className="relative" ref={bizRevenueDescRef}>
                   <input
                     type="text"
@@ -735,20 +748,7 @@ export function BusinessRegisterPage() {
                   )}
                 </div>
               </div>
-              {/* Business Class Code */}
-              <div>
-                <label className={`${labelClass} block`}>Business Code</label>
-                <Combobox
-                  name="businessClassCode"
-                  value={form.businessClassCode}
-                  onChange={handleFormChange}
-                  options={classCodes.map((c) => ({ value: c, label: c }))}
-                  placeholder="Select code..."
-                  emptyMessage="No matching code"
-                  className={inputClass}
-                />
-              </div>
-              {/* Business Class Description */}
+              {/* Business Class */}
               <div>
                 <label className={`${labelClass} block`}>Business Class</label>
                 <input
@@ -759,7 +759,7 @@ export function BusinessRegisterPage() {
                   className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground cursor-not-allowed`}
                 />
               </div>
-              {/* Business Class Category */}
+              {/* Business Category */}
               <div>
                 <label className={`${labelClass} block`}>Business Category</label>
                 <input
