@@ -24,14 +24,8 @@ import {
 } from 'lucide-react';
 import { exportToExcel, importFromExcel, BUSINESS_FIELDS } from '@/lib/import-export';
 import { LOCALITIES, LOCALITY_AREA_CODE_MAP } from '@/lib/localities';
-import { BUSINESS_REVENUE_CODES, BIZ_CODE_TO_DESC, BIZ_DESC_TO_CODE } from '@/lib/business-revenue-codes';
-import {
-  CLASS_TO_FIRST_CODE,
-  CLASS_TO_CODES,
-  CODE_TO_CLASS,
-} from '@/lib/business-class-code-map';
-import { CODE_TO_CATEGORY } from '@/lib/business-code-to-category';
-import { BUSINESS_CLASS_CODES } from '@/lib/business-class-codes';
+import { BIZ_CODE_OPTIONS, BIZ_CODE_TO_REVENUE_DESC, BIZ_CODE_TO_CLASSES, BIZ_CODE_CLASS_TO_CATEGORIES } from '@/lib/business-code-class-category-map';
+import { CODE_TO_CLASS } from '@/lib/business-class-code-map';
 import { Combobox } from '@/components/ui/combobox';
 import { AutoSuggestInput } from '@/components/ui/auto-suggest-input';
 
@@ -179,51 +173,6 @@ export function BusinessRegisterPage() {
   const [form, setForm] = useState({ ...defaultForm });
   const [locating, setLocating] = useState(false);
 
-  // ── Business Revenue Code/Description Search ───────────────────────────
-  const bizRevenueCodeRef = useRef<HTMLDivElement>(null);
-  const bizRevenueDescRef = useRef<HTMLDivElement>(null);
-  const [bizRevenueCodeSearch, setBizRevenueCodeSearch] = useState('');
-  const [bizRevenueDescSearch, setBizRevenueDescSearch] = useState('');
-  const [bizRevenueCodeShowDropdown, setBizRevenueCodeShowDropdown] = useState(false);
-  const [bizRevenueDescShowDropdown, setBizRevenueDescShowDropdown] = useState(false);
-
-  const bizRevenueCodeFiltered = bizRevenueCodeSearch
-    ? BUSINESS_REVENUE_CODES.filter(
-        (item) =>
-          item.code.includes(bizRevenueCodeSearch) ||
-          item.description.toLowerCase().includes(bizRevenueCodeSearch.toLowerCase())
-      )
-    : BUSINESS_REVENUE_CODES;
-
-  const bizRevenueDescFiltered = bizRevenueDescSearch
-    ? BUSINESS_REVENUE_CODES.filter(
-        (item) =>
-          item.description.toLowerCase().includes(bizRevenueDescSearch.toLowerCase()) ||
-          item.code.includes(bizRevenueDescSearch)
-      )
-    : BUSINESS_REVENUE_CODES;
-
-  const handleBizRevenueSelect = (item: { code: string; description: string }) => {
-    setForm((prev) => ({ ...prev, revenueCode: item.code, revenueDescription: item.description }));
-    setBizRevenueCodeSearch(item.code);
-    setBizRevenueDescSearch(item.description);
-    setBizRevenueCodeShowDropdown(false);
-    setBizRevenueDescShowDropdown(false);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (bizRevenueCodeRef.current && !bizRevenueCodeRef.current.contains(e.target as Node)) {
-        setBizRevenueCodeShowDropdown(false);
-      }
-      if (bizRevenueDescRef.current && !bizRevenueDescRef.current.contains(e.target as Node)) {
-        setBizRevenueDescShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   // ── Fetch amount from rate config ──────────────────────────────────────
   const fetchAmountForCode = async (code: string) => {
     if (!code) { setForm((p) => ({ ...p, amount: '' })); return; }
@@ -248,9 +197,6 @@ export function BusinessRegisterPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFormChange(e as unknown as React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>);
   };
-
-  // Cascading: when Class Description is set, filter codes
-  const classCodes = form.businessClassDesc ? (CLASS_TO_CODES[form.businessClassDesc] || []) : BUSINESS_CLASS_CODES;
 
   // ── Fetch GPS ───────────────────────────────────────────────────────────
   const fetchGps = () => {
@@ -308,20 +254,9 @@ export function BusinessRegisterPage() {
         const nextNum = businesses.length + 1;
         updated.businessUniqueNumber = `${updated.areaCode}/BP/${String(nextNum).padStart(4, '0')}`;
       }
-      // Link Revenue Description <-> Revenue Code
-      if (name === 'revenueDescription' && BIZ_DESC_TO_CODE[updated.revenueDescription]) {
-        updated.revenueCode = BIZ_DESC_TO_CODE[updated.revenueDescription];
-      }
-      if (name === 'revenueCode' && BIZ_CODE_TO_DESC[updated.revenueCode]) {
-        updated.revenueDescription = BIZ_CODE_TO_DESC[updated.revenueCode];
-      }
-      // Link Business Code -> Business Class + Business Category
-      if (name === 'businessClassCode') {
-        const code = updated.businessClassCode;
-        updated.businessClassDesc = CODE_TO_CLASS[code] || '';
-        updated.category = CODE_TO_CATEGORY[code] || '';
-        // Fetch amount from rate config when code changes
-        setTimeout(() => fetchAmountForCode(code), 0);
+      // Fetch amount from rate config when code changes
+      if (name === 'revenueCode') {
+        setTimeout(() => fetchAmountForCode(updated.revenueCode), 0);
       }
       return updated;
     });
@@ -689,61 +624,69 @@ export function BusinessRegisterPage() {
               <div>
                 <label className={`${labelClass} block`}>Business Code</label>
                 <Combobox
-                  name="businessClassCode"
-                  value={form.businessClassCode}
-                  onChange={handleFormChange}
-                  options={classCodes.map((c) => ({ value: c, label: c }))}
-                  placeholder="Select code..."
+                  name="revenueCode"
+                  value={form.revenueCode}
+                  onChange={(name: string, value: string) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      revenueCode: value,
+                      revenueDescription: BIZ_CODE_TO_REVENUE_DESC[value] || '',
+                      businessClassCode: '',
+                      businessClassDesc: '',
+                      category: '',
+                    }));
+                  }}
+                  options={BIZ_CODE_OPTIONS.map((c) => ({ value: c, label: `${c} - ${BIZ_CODE_TO_REVENUE_DESC[c] || ''}` }))}
+                  placeholder="Select business code..."
                   emptyMessage="No matching code"
                   className={inputClass}
                 />
               </div>
               {/* Revenue Description */}
-              <div className="sm:col-span-2">
+              <div>
                 <label className={`${labelClass} block`}>Revenue Description</label>
-                <div className="relative" ref={bizRevenueDescRef}>
-                  <input
-                    type="text"
-                    value={bizRevenueDescShowDropdown ? bizRevenueDescSearch : form.revenueDescription}
-                    onChange={(e) => { setBizRevenueDescSearch(e.target.value); setBizRevenueDescShowDropdown(true); }}
-                    onFocus={() => { setBizRevenueDescSearch(form.revenueDescription || ''); setBizRevenueDescShowDropdown(true); }}
-                    placeholder="Search business revenue description..."
-                    className={inputClass}
-                  />
-                  {bizRevenueDescShowDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
-                      {bizRevenueDescFiltered.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
-                      ) : bizRevenueDescFiltered.slice(0, 50).map((item) => (
-                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueDescShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
-                          <span className="text-foreground dark:text-foreground">{item.description}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <input
+                  type="text"
+                  value={form.revenueDescription}
+                  readOnly
+                  placeholder="Auto-filled from Business Code"
+                  className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground cursor-not-allowed`}
+                />
               </div>
               {/* Business Class */}
               <div>
                 <label className={`${labelClass} block`}>Business Class</label>
-                <input
-                  type="text"
+                <Combobox
+                  name="businessClassDesc"
                   value={form.businessClassDesc}
-                  readOnly
-                  placeholder="Auto-filled from Class Code"
-                  className={`${inputClass} bg-card dark:bg-muted/50 text-muted-foreground dark:text-muted-foreground cursor-not-allowed`}
+                  onChange={(_name: string, value: string) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      businessClassDesc: value,
+                      category: '',
+                    }));
+                  }}
+                  options={(BIZ_CODE_TO_CLASSES[form.revenueCode] || []).map((c) => ({ value: c, label: c }))}
+                  placeholder={form.revenueCode ? 'Select class...' : 'Select business code first'}
+                  emptyMessage="No matching class"
+                  className={inputClass}
+                  disabled={!form.revenueCode}
                 />
               </div>
               {/* Business Category */}
               <div>
                 <label className={`${labelClass} block`}>Business Category</label>
-                <input
-                  type="text"
+                <Combobox
                   name="category"
                   value={form.category}
-                  onChange={handleFormChange}
-                  placeholder="Enter category"
+                  onChange={(name: string, value: string) => {
+                    setForm((prev) => ({ ...prev, category: value }));
+                  }}
+                  options={(BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${form.businessClassDesc}`] || []).map((c) => ({ value: c, label: c }))}
+                  placeholder={form.businessClassDesc ? 'Select category...' : 'Select business class first'}
+                  emptyMessage="No matching category"
                   className={inputClass}
+                  disabled={!form.businessClassDesc}
                 />
               </div>
               {/* Amount (from rate configuration) */}

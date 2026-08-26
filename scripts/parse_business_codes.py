@@ -1,44 +1,88 @@
-#!/usr/bin/env python3
-"""Parse the business revenue codes from the uploaded text file into a TypeScript data file."""
+import json
+import re
 
-INPUT = '/home/z/my-project/upload/Pasted Content_1786052181955.txt'
-OUTPUT = '/home/z/my-project/src/lib/business-revenue-codes.ts'
+# Read the TSV file
+with open('/home/z/my-project/upload/Pasted Content_1787744027803.txt', 'r') as f:
+    content = f.read()
 
-entries = []
-with open(INPUT, 'r') as f:
-    for line in f:
-        line = line.rstrip()
-        if not line:
-            continue
-        # Split by tab or multiple spaces
+lines = content.strip().split('\n')
+
+# Parse - some categories span multiple lines (quoted)
+rows = []
+header = lines[0]
+i = 1
+while i < len(lines):
+    line = lines[i]
+    # If line starts with a code (number), it's a new row
+    if re.match(r'^\d', line.strip()):
         parts = line.split('\t')
-        if len(parts) == 2:
-            code, desc = parts[0].strip(), parts[1].strip()
-        else:
-            # Try splitting by multiple spaces
-            idx = line.find('  ')
-            if idx > 0:
-                code = line[:idx].strip()
-                desc = line[idx:].strip()
-            else:
-                continue
-        if code and desc:
-            entries.append((code, desc))
+        if len(parts) >= 4:
+            code = parts[0].strip()
+            desc = parts[1].strip()
+            biz_class = parts[2].strip()
+            category = parts[3].strip().strip('"')
+            rows.append({'code': code, 'revenueDescription': desc, 'businessClass': biz_class, 'category': category})
+    elif rows and not re.match(r'^\d', line.strip()) and line.strip():
+        # Continuation of previous row's category
+        rows[-1]['category'] += ' ' + line.strip().strip('"')
+    i += 1
 
-with open(OUTPUT, 'w') as f:
-    f.write('// Auto-generated from Business Revenue Codes list\n')
-    f.write('export const BUSINESS_REVENUE_CODES: { code: string; description: string }[] = [\n')
-    for code, desc in entries:
-        # Escape single quotes in description
-        safe_desc = desc.replace("'", "\\'")
-        f.write(f"  {{ code: '{code}', description: '{safe_desc}' }},\n")
-    f.write('];\n\n')
-    # Build lookup maps
-    f.write('export const BIZ_CODE_TO_DESC: Record<string, string> = Object.fromEntries(\n')
-    f.write('  BUSINESS_REVENUE_CODES.map((item) => [item.code, item.description])\n')
-    f.write(');\n\n')
-    f.write('export const BIZ_DESC_TO_CODE: Record<string, string> = Object.fromEntries(\n')
-    f.write('  BUSINESS_REVENUE_CODES.map((item) => [item.description, item.code])\n')
-    f.write(');\n')
+# Build mappings
+# 1. code -> revenue description (1:1)
+code_to_desc = {}
+for r in rows:
+    code_to_desc[r['code']] = r['revenueDescription']
 
-print(f'Generated {len(entries)} entries -> {OUTPUT}')
+# 2. code -> list of unique business classes
+code_to_classes = {}
+for r in rows:
+    code = r['code']
+    if code not in code_to_classes:
+        code_to_classes[code] = []
+    if r['businessClass'] not in code_to_classes[code]:
+        code_to_classes[code].append(r['businessClass'])
+
+# 3. (code, businessClass) -> list of categories
+class_to_categories = {}
+for r in rows:
+    key = f"{r['code']}|{r['businessClass']}"
+    if key not in class_to_categories:
+        class_to_categories[key] = []
+    if r['category'] not in class_to_categories[key]:
+        class_to_categories[key].append(r['category'])
+
+# 4. Unique list of codes for dropdown
+codes = sorted(set(r['code'] for r in rows), key=lambda x: int(x))
+
+print(f'Total rows: {len(rows)}')
+print(f'Unique codes: {len(codes)}')
+print(f'Unique code->class mappings: {len(code_to_classes)}')
+print(f'Unique (code,class)->category mappings: {len(class_to_categories)}')
+
+# Write as TypeScript
+with open('/home/z/my-project/src/lib/business-code-class-category-map.ts', 'w') as f:
+    f.write('// Auto-generated from business code data\n\n')
+    
+    f.write('export interface BizCodeEntry {\n')
+    f.write('  code: string;\n')
+    f.write('  revenueDescription: string;\n')
+    f.write('  businessClass: string;\n')
+    f.write('  category: string;\n')
+    f.write('}\n\n')
+    
+    # All entries
+    f.write(f'export const BIZ_CODE_ENTRIES: BizCodeEntry[] = {json.dumps(rows, indent=2)};\n\n')
+    
+    # Code -> revenue description
+    f.write(f'export const BIZ_CODE_TO_REVENUE_DESC: Record<string, string> = {json.dumps(code_to_desc, indent=2)};\n\n')
+    
+    # Code -> list of business classes
+    f.write(f'export const BIZ_CODE_TO_CLASSES: Record<string, string[]> = {json.dumps(code_to_classes, indent=2)};\n\n')
+    
+    # (code, class) -> list of categories
+    f.write(f'export const BIZ_CODE_CLASS_TO_CATEGORIES: Record<string, string[]> = {json.dumps(class_to_categories, indent=2)};\n\n')
+    
+    # Sorted unique codes for dropdown
+    f.write(f'export const BIZ_CODE_OPTIONS = {json.dumps(codes)};\n\n')
+
+print('Written to src/lib/business-code-class-category-map.ts')
