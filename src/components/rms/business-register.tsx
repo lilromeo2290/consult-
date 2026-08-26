@@ -626,7 +626,8 @@ export function BusinessRegisterPage() {
                 <Combobox
                   name="revenueCode"
                   value={form.revenueCode}
-                  onChange={(name: string, value: string) => {
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const value = e.target.value;
                     const classes = BIZ_CODE_TO_CLASSES[value] || [];
                     const firstClass = classes[0] || '';
                     const firstCategory = firstClass
@@ -664,7 +665,8 @@ export function BusinessRegisterPage() {
                 <Combobox
                   name="businessClassDesc"
                   value={form.businessClassDesc}
-                  onChange={(_name: string, value: string) => {
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const value = e.target.value;
                     const cats = BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${value}`] || [];
                     const firstCat = cats[0] || '';
                     setForm((prev) => ({
@@ -687,8 +689,8 @@ export function BusinessRegisterPage() {
                 <Combobox
                   name="category"
                   value={form.category}
-                  onChange={(name: string, value: string) => {
-                    setForm((prev) => ({ ...prev, category: value }));
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    setForm((prev) => ({ ...prev, category: e.target.value }));
                   }}
                   options={(BIZ_CODE_CLASS_TO_CATEGORIES[`${form.revenueCode}|${form.businessClassDesc}`] || []).map((c) => ({ value: c, label: c }))}
                   placeholder={form.businessClassDesc ? 'Select category...' : 'Select business class first'}
