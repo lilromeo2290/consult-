@@ -388,9 +388,9 @@ export function LoginPage() {
               }}
             >
               <img
-                src="/logo.png"
+                src="/rms-logo.png"
                 alt="RMS Logo"
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
+                className="w-full h-full object-contain"
                 draggable={false}
               />
             </div>
