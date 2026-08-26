@@ -25,30 +25,31 @@ export const viewport: Viewport = {
   themeColor: "#123B5D",
 };
 
-export const metadata: Metadata = {
-  title: "Kpando Municipal Assembly RMS",
-  description:
-    "Revenue Management System for Kpando Municipal Assembly. Manage bills, payments, businesses, properties, rents, and building permits.",
-  keywords: [
-    "digital services",
-    "revenue management",
-    "RMS",
-    "Kpando",
-    "municipal assembly",
-    "bills",
-    "payments",
-  ],
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Kpando MA RMS",
-  },
-  icons: {
-    icon: "/pwa/icon-192x192.png",
-    apple: "/pwa/apple-touch-icon.png",
-  },
-};
+export function generateMetadata(): Metadata {
+  const appName = process.env.APP_NAME || "Revenue Management System";
+  return {
+    title: appName,
+    description:
+      `Revenue Management System. Manage bills, payments, businesses, properties, rents, and building permits.`,
+    keywords: [
+      "digital services",
+      "revenue management",
+      "RMS",
+      "bills",
+      "payments",
+    ],
+    manifest: "/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: appName,
+    },
+    icons: {
+      icon: "/pwa/icon-192x192.png",
+      apple: "/pwa/apple-touch-icon.png",
+    },
+  };
+}
 
 export default function RootLayout({
   children,
