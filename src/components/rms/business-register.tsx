@@ -698,31 +698,6 @@ export function BusinessRegisterPage() {
                   className={inputClass}
                 />
               </div>
-              {/* Business Revenue Code */}
-              <div>
-                <label className={`${labelClass} block`}>Business Revenue Code</label>
-                <div className="relative" ref={bizRevenueCodeRef}>
-                  <input
-                    type="text"
-                    value={bizRevenueCodeShowDropdown ? bizRevenueCodeSearch : form.revenueCode}
-                    onChange={(e) => { setBizRevenueCodeSearch(e.target.value); setBizRevenueCodeShowDropdown(true); }}
-                    onFocus={() => { setBizRevenueCodeSearch(form.revenueCode || ''); setBizRevenueCodeShowDropdown(true); }}
-                    placeholder="Search business revenue code..."
-                    className={inputClass}
-                  />
-                  {bizRevenueCodeShowDropdown && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-muted border border-border dark:border-border rounded-lg shadow-lg">
-                      {bizRevenueCodeFiltered.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">No matches</div>
-                      ) : bizRevenueCodeFiltered.slice(0, 50).map((item) => (
-                        <button key={item.code} type="button" onClick={() => { handleBizRevenueSelect(item); setBizRevenueCodeShowDropdown(false); }} className="w-full text-left px-3 py-1.5 text-sm hover:bg-primary/10 dark:hover:dark:bg-primary/20 transition-colors cursor-pointer border-b border-border dark:border-border last:border-0">
-                          <span className="font-mono text-foreground dark:text-foreground">{item.code}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
               {/* Revenue Description */}
               <div className="sm:col-span-2">
                 <label className={`${labelClass} block`}>Revenue Description</label>
