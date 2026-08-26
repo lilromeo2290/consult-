@@ -652,7 +652,7 @@ export function BusinessRegisterPage() {
                       category: firstCategory,
                     }));
                   }}
-                  options={BIZ_CODE_OPTIONS.map((c) => ({ value: c, label: `${c} - ${BIZ_CODE_TO_REVENUE_DESC[c] || ''}` }))}
+                  options={BIZ_CODE_OPTIONS.map((c) => ({ value: c, label: c }))}
                   placeholder="Select business code..."
                   emptyMessage="No matching code"
                   className={inputClass}
