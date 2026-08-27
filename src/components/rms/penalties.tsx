@@ -444,6 +444,10 @@ export function PenaltiesPage() {
       toast.error('Fine Class is required');
       return;
     }
+    if (!form.code) {
+      toast.error('Fine Code is required');
+      return;
+    }
     if (!form.fineAmount) {
       toast.error('Fine Amount is required');
       return;
@@ -963,14 +967,20 @@ export function PenaltiesPage() {
 
           {/* 2. Fine Code */}
           <div>
-            <label className={`block ${labelClass}`}>Fine Code</label>
-            <input
-              type="text"
+            <label className={`block ${labelClass}`}>
+              Fine Code <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="code"
               value={form.code}
-              readOnly
-              className={`${inputClass} bg-card dark:bg-muted cursor-not-allowed`}
-              placeholder="Auto-filled from Category"
-            />
+              onChange={(e) => handleFormChange({ target: { name: 'code', value: e.target.value } } as any)}
+              className={inputClass}
+            >
+              <option value="">-- Select Fine Code --</option>
+              {fineClassCodes.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
 
           {/* 3. Fine Revenue Description */}
