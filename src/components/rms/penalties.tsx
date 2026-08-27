@@ -973,6 +973,38 @@ export function PenaltiesPage() {
             </select>
           </div>
 
+          {/* Fine Code */}
+          <div>
+            <label className={`block ${labelClass}`}>Fine Code</label>
+            <select
+              name="code"
+              value={form.code}
+              onChange={(e) => handleFormChange({ target: { name: 'code', value: e.target.value } } as any)}
+              className={inputClass}
+            >
+              <option value="">{filteredClass ? '-- Select Fine Code --' : 'Select class first'}</option>
+              {fineClassCodes.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Fine Revenue Description */}
+          <div>
+            <label className={`block ${labelClass}`}>Fine Revenue Description</label>
+            <select
+              name="fineRevenueCode"
+              value={form.fineRevenueCode}
+              onChange={(e) => handleFormChange({ target: { name: 'fineRevenueCode', value: e.target.value } } as any)}
+              className={inputClass}
+            >
+              <option value="">-- Select Revenue Description --</option>
+              {FINE_REVENUE_CODES.map((item) => (
+                <option key={item.code} value={item.code}>{item.description}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Fine Amount */}
           <div>
             <label className={`block ${labelClass}`}>
