@@ -885,7 +885,7 @@ export function PenaltiesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Fine Number (auto-generated, readonly) */}
+          {/* 1. Fine Number (auto-generated, readonly) */}
           <div>
             <label className={`block ${labelClass}`}>Fine Number</label>
             <input
@@ -897,49 +897,39 @@ export function PenaltiesPage() {
             />
           </div>
 
-          {/* Fine Date */}
+          {/* 2. Fine Code */}
           <div>
-            <label className={`block ${labelClass}`}>
-              Fine Date <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              name="fineDate"
-              value={form.fineDate}
-              onChange={handleFormChange}
+            <label className={`block ${labelClass}`}>Fine Code</label>
+            <select
+              name="code"
+              value={form.code}
+              onChange={(e) => handleFormChange({ target: { name: 'code', value: e.target.value } } as any)}
               className={inputClass}
-            />
+            >
+              <option value="">{filteredClass ? '-- Select Fine Code --' : 'Select class first'}</option>
+              {fineClassCodes.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Due Date */}
+          {/* 3. Fine Revenue Description */}
           <div>
-            <label className={`block ${labelClass}`}>Due Date</label>
-            <input
-              type="date"
-              name="dueDate"
-              value={form.dueDate}
-              onChange={handleFormChange}
+            <label className={`block ${labelClass}`}>Fine Revenue Description</label>
+            <select
+              name="fineRevenueCode"
+              value={form.fineRevenueCode}
+              onChange={(e) => handleFormChange({ target: { name: 'fineRevenueCode', value: e.target.value } } as any)}
               className={inputClass}
-            />
+            >
+              <option value="">-- Select Revenue Description --</option>
+              {FINE_REVENUE_CODES.map((item) => (
+                <option key={item.code} value={item.code}>{item.description}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Section */}
-          <div>
-            <label className={`block ${labelClass}`}>
-              Section <span className="text-red-500">*</span>
-            </label>
-            <Combobox
-              name="section"
-              value={form.section}
-              onChange={handleFormChange}
-              options={SECTIONS.map((s) => ({ value: s, label: s }))}
-              placeholder="Type to search section..."
-              emptyMessage="No sections found"
-              className={inputClass}
-            />
-          </div>
-
-          {/* Fine Class */}
+          {/* 4. Fine Class */}
           <div>
             <label className={`block ${labelClass}`}>
               Fine Class <span className="text-red-500">*</span>
@@ -957,7 +947,7 @@ export function PenaltiesPage() {
             </select>
           </div>
 
-          {/* Fine Category */}
+          {/* 5. Fine Category */}
           <div>
             <label className={`block ${labelClass}`}>Fine Category</label>
             <select
@@ -973,39 +963,23 @@ export function PenaltiesPage() {
             </select>
           </div>
 
-          {/* Fine Code */}
+          {/* 6. Section */}
           <div>
-            <label className={`block ${labelClass}`}>Fine Code</label>
-            <select
-              name="code"
-              value={form.code}
-              onChange={(e) => handleFormChange({ target: { name: 'code', value: e.target.value } } as any)}
+            <label className={`block ${labelClass}`}>
+              Section <span className="text-red-500">*</span>
+            </label>
+            <Combobox
+              name="section"
+              value={form.section}
+              onChange={handleFormChange}
+              options={SECTIONS.map((s) => ({ value: s, label: s }))}
+              placeholder="Type to search section..."
+              emptyMessage="No sections found"
               className={inputClass}
-            >
-              <option value="">{filteredClass ? '-- Select Fine Code --' : 'Select class first'}</option>
-              {fineClassCodes.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+            />
           </div>
 
-          {/* Fine Revenue Description */}
-          <div>
-            <label className={`block ${labelClass}`}>Fine Revenue Description</label>
-            <select
-              name="fineRevenueCode"
-              value={form.fineRevenueCode}
-              onChange={(e) => handleFormChange({ target: { name: 'fineRevenueCode', value: e.target.value } } as any)}
-              className={inputClass}
-            >
-              <option value="">-- Select Revenue Description --</option>
-              {FINE_REVENUE_CODES.map((item) => (
-                <option key={item.code} value={item.code}>{item.description}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Fine Amount */}
+          {/* 7. Fine Amount */}
           <div>
             <label className={`block ${labelClass}`}>
               Fine Amount (GH₵) <span className="text-red-500">*</span>
@@ -1022,7 +996,33 @@ export function PenaltiesPage() {
             />
           </div>
 
-          {/* Status */}
+          {/* 8. Fine Date */}
+          <div>
+            <label className={`block ${labelClass}`}>
+              Fine Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              name="fineDate"
+              value={form.fineDate}
+              onChange={handleFormChange}
+              className={inputClass}
+            />
+          </div>
+
+          {/* 9. Due Date */}
+          <div>
+            <label className={`block ${labelClass}`}>Due Date</label>
+            <input
+              type="date"
+              name="dueDate"
+              value={form.dueDate}
+              onChange={handleFormChange}
+              className={inputClass}
+            />
+          </div>
+
+          {/* 10. Status */}
           <div>
             <label className={`block ${labelClass}`}>Status</label>
             <select
@@ -1039,7 +1039,7 @@ export function PenaltiesPage() {
             </select>
           </div>
 
-          {/* Description / Remarks (spans 3 cols) */}
+          {/* 11. Description / Remarks (spans 3 cols) */}
           <div className="md:col-span-3">
             <label className={`block ${labelClass}`}>Description / Remarks</label>
             <textarea
