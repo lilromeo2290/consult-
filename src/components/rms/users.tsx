@@ -36,6 +36,27 @@ import { ALL_RMS_PAGES, useAppStore, type RMSPage } from '@/stores/app-store';
 
 type UserRole = 'Administrator' | 'Revenue Officer' | 'Field Collector' | 'Auditor' | 'Finance Manager';
 type UserStatus = 'Active' | 'Inactive' | 'Suspended';
+type PagePermission = 'view' | 'add' | 'edit' | 'delete' | 'export' | 'import';
+
+const ALL_PAGE_PERMISSIONS: PagePermission[] = ['view', 'add', 'edit', 'delete', 'export', 'import'];
+
+const PERMISSION_LABELS: Record<PagePermission, string> = {
+  view: 'View Page',
+  add: 'Add Records',
+  edit: 'Edit Records',
+  delete: 'Delete Records',
+  export: 'Export Data',
+  import: 'Import Data',
+};
+
+const PERMISSION_ICONS: Record<PagePermission, string> = {
+  view: '👁',
+  add: '➕',
+  edit: '✏️',
+  delete: '🗑️',
+  export: '📤',
+  import: '📥',
+};
 
 interface User {
   id: string;
@@ -54,6 +75,7 @@ interface User {
   dateCreated: string;
   ghanaCard: string;
   accessiblePages: RMSPage[];
+  pagePermissions: Record<string, PagePermission[]>;
 }
 
 interface UserFormData {
@@ -68,6 +90,7 @@ interface UserFormData {
   ward: string;
   ghanaCard: string;
   accessiblePages: RMSPage[];
+  pagePermissions: Record<string, PagePermission[]>;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -96,6 +119,12 @@ const ROLE_DEFAULT_PAGES: Record<UserRole, RMSPage[]> = {
   'Finance Manager': ['dashboard', 'billing', 'payments', 'payment-history', 'receipts', 'reports', 'search'],
 };
 
+const defaultPagePermissions = (): Record<string, PagePermission[]> => {
+  const perms: Record<string, PagePermission[]> = {};
+  ALL_PAGES.forEach((p) => { perms[p] = [...ALL_PAGE_PERMISSIONS]; });
+  return perms;
+};
+
 const emptyForm: UserFormData = {
   username: '',
   password: '',
@@ -108,6 +137,7 @@ const emptyForm: UserFormData = {
   ward: '',
   ghanaCard: '',
   accessiblePages: [...ALL_PAGES],
+  pagePermissions: defaultPagePermissions(),
 };
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
@@ -115,7 +145,7 @@ const emptyForm: UserFormData = {
 const USERS_STORAGE_KEY = 'rms-users';
 
 const defaultUsers: User[] = [
-  { id: 'USR-001', staffId: 'STF-001', username: 'admin', password: 'admin123', firstName: 'System', lastName: 'Administrator', email: 'admin@kpma.gov.gh', phone: '', role: 'Administrator', zone: 'Zone A', ward: '', status: 'Active', lastLogin: new Date().toISOString().split('T')[0], dateCreated: new Date().toISOString().split('T')[0], ghanaCard: '', accessiblePages: ALL_PAGES },
+  { id: 'USR-001', staffId: 'STF-001', username: 'admin', password: 'admin123', firstName: 'System', lastName: 'Administrator', email: 'admin@kpma.gov.gh', phone: '', role: 'Administrator', zone: 'Zone A', ward: '', status: 'Active', lastLogin: new Date().toISOString().split('T')[0], dateCreated: new Date().toISOString().split('T')[0], ghanaCard: '', accessiblePages: ALL_PAGES, pagePermissions: defaultPagePermissions() },
 ];
 
 function migrateUsers(raw: unknown): User[] {
@@ -132,7 +162,15 @@ function migrateUsers(raw: unknown): User[] {
       const missing = ALL_PAGES.filter((p) => !base.accessiblePages.includes(p));
       if (missing.length > 0) {
         base.accessiblePages = [...base.accessiblePages, ...missing];
+        missing.forEach((p) => { base.pagePermissions[p] = [...ALL_PAGE_PERMISSIONS]; });
       }
+    }
+    // Migrate old users without pagePermissions
+    if (!base.pagePermissions || Object.keys(base.pagePermissions).length === 0) {
+      base.pagePermissions = {};
+      base.accessiblePages.forEach((p) => {
+        base.pagePermissions[p] = [...ALL_PAGE_PERMISSIONS];
+      });
     }
     return base;
   });
@@ -164,6 +202,15 @@ export function UsersPage() {
   const [editUser, setEditUser] = useState<User | null>(null);
   const [form, setForm] = useState<UserFormData>(emptyForm);
   const [showFilters, setShowFilters] = useState(false);
+  const [expandedPages, setExpandedPages] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (page: string) => {
+    setExpandedPages((prev) => {
+      const next = new Set(prev);
+      if (next.has(page)) next.delete(page); else next.add(page);
+      return next;
+    });
+  };
   const [viewUser, setViewUser] = useState<User | null>(null);
 
   const filtered = useMemo(() => {
@@ -195,9 +242,13 @@ export function UsersPage() {
   };
 
   const openEdit = (user: User) => {
+    const perms: Record<string, PagePermission[]> = {};
+    ALL_PAGES.forEach((p) => {
+      perms[p] = user.pagePermissions?.[p] ? [...user.pagePermissions[p]] : [...ALL_PAGE_PERMISSIONS];
+    });
     setForm({
       username: user.username || '',
-      password: '', // leave blank so admin can optionally reset
+      password: '',
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
@@ -207,6 +258,7 @@ export function UsersPage() {
       ward: user.ward,
       ghanaCard: user.ghanaCard,
       accessiblePages: user.accessiblePages || ROLE_DEFAULT_PAGES[user.role],
+      pagePermissions: perms,
     });
     setEditUser(user);
   };
@@ -221,16 +273,59 @@ export function UsersPage() {
   };
 
   const togglePage = (page: RMSPage) => {
-    setForm((prev) => ({
-      ...prev,
-      accessiblePages: prev.accessiblePages.includes(page)
+    setForm((prev) => {
+      const isSelected = prev.accessiblePages.includes(page);
+      const newPages = isSelected
         ? prev.accessiblePages.filter((p) => p !== page)
-        : [...prev.accessiblePages, page],
-    }));
+        : [...prev.accessiblePages, page];
+      const newPerms = { ...prev.pagePermissions };
+      if (isSelected) {
+        delete newPerms[page];
+      } else {
+        newPerms[page] = [...ALL_PAGE_PERMISSIONS];
+      }
+      return { ...prev, accessiblePages: newPages, pagePermissions: newPerms };
+    });
   };
 
-  const selectAllPages = () => setForm((prev) => ({ ...prev, accessiblePages: [...ALL_PAGES] }));
-  const deselectAllPages = () => setForm((prev) => ({ ...prev, accessiblePages: [] }));
+  const selectAllPages = () => {
+    const perms: Record<string, PagePermission[]> = {};
+    ALL_PAGES.forEach((p) => { perms[p] = [...ALL_PAGE_PERMISSIONS]; });
+    setForm((prev) => ({ ...prev, accessiblePages: [...ALL_PAGES], pagePermissions: perms }));
+  };
+  const deselectAllPages = () => setForm((prev) => ({ ...prev, accessiblePages: [], pagePermissions: {} }));
+
+  const togglePermission = (page: RMSPage, perm: PagePermission) => {
+    setForm((prev) => {
+      const current = prev.pagePermissions[page] || [];
+      const newPermsForPage = current.includes(perm)
+        ? current.filter((p) => p !== perm)
+        : [...current, perm];
+      const newPages = newPermsForPage.length === 0
+        ? prev.accessiblePages.filter((p) => p !== page)
+        : prev.accessiblePages.includes(page)
+          ? prev.accessiblePages
+          : [...prev.accessiblePages, page];
+      const newAllPerms = { ...prev.pagePermissions, [page]: newPermsForPage };
+      if (newPermsForPage.length === 0) delete newAllPerms[page];
+      return { ...prev, accessiblePages: newPages, pagePermissions: newAllPerms };
+    });
+  };
+
+  const toggleAllPermissionsForPage = (page: RMSPage, enable: boolean) => {
+    setForm((prev) => {
+      const newPerms = { ...prev.pagePermissions };
+      const newPages = enable
+        ? prev.accessiblePages.includes(page) ? prev.accessiblePages : [...prev.accessiblePages, page]
+        : prev.accessiblePages.filter((p) => p !== page);
+      if (enable) {
+        newPerms[page] = [...ALL_PAGE_PERMISSIONS];
+      } else {
+        delete newPerms[page];
+      }
+      return { ...prev, accessiblePages: newPages, pagePermissions: newPerms };
+    });
+  };
 
   const handleSave = () => {
     // Validate compulsory fields
@@ -747,31 +842,77 @@ export function UsersPage() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Choose which pages this user can access.
+                  Choose which pages this user can access and set action permissions.
                 </p>
-                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-lg border-border p-2 bg-card/50">
+                <div className="max-h-72 overflow-y-auto rounded-lg border border-border bg-card/50 divide-y divide-border">
                   {ALL_RMS_PAGES.map((p) => {
                     const isSelected = form.accessiblePages.includes(p.page);
+                    const perms = form.pagePermissions[p.page] || [];
+                    const allPerms = ALL_PAGE_PERMISSIONS.every((pp) => perms.includes(pp));
+                    const isExpanded = expandedPages.has(p.page);
                     return (
-                      <button
-                        key={p.page}
-                        type="button"
-                        onClick={() => togglePage(p.page)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-medium transition-all ${
-                          isSelected
-                            ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/40 dark:border-primary'
-                            : 'bg-white dark:bg-muted text-muted-foreground border border-transparent hover:border-border dark:hover:border-slate-600'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
-                          isSelected
-                            ? 'bg-primary border-primary'
-                            : 'border-border'
-                        }`}>
-                          {isSelected && <Check className="w-3 h-3 text-white" />}
+                      <div key={p.page}>
+                        <div className="flex items-center gap-2 px-3 py-2.5">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => togglePage(p.page)}
+                            className="w-4 h-4 rounded border-border accent-primary"
+                          />
+                          <span className={`flex-1 text-xs font-medium ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {p.label}
+                          </span>
+                          {isSelected && (
+                            <span className="text-[10px] text-muted-foreground mr-1">
+                              {perms.length}/{ALL_PAGE_PERMISSIONS.length}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => toggleExpand(p.page)}
+                            disabled={!isSelected}
+                            className={`text-[10px] font-medium px-2 py-0.5 rounded transition-colors ${
+                              isSelected
+                                ? 'text-primary dark:text-primary hover:bg-primary/10'
+                                : 'text-muted-foreground cursor-not-allowed'
+                            }`}
+                          >
+                            {isExpanded ? 'Collapse' : 'Permissions'}
+                          </button>
                         </div>
-                        {p.label}
-                      </button>
+                        {isExpanded && isSelected && (
+                          <div className="px-3 pb-3 pl-9 space-y-1.5">
+                            <div className="flex items-center gap-3 mb-2">
+                              <button
+                                type="button"
+                                onClick={() => toggleAllPermissionsForPage(p.page, !allPerms)}
+                                className="text-[10px] font-medium text-primary dark:text-primary hover:underline"
+                              >
+                                {allPerms ? 'Deselect All' : 'Select All'}
+                              </button>
+                            </div>
+                            {ALL_PAGE_PERMISSIONS.map((perm) => {
+                              const hasPerm = perms.includes(perm);
+                              return (
+                                <label
+                                  key={perm}
+                                  className="flex items-center gap-2 cursor-pointer group"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={hasPerm}
+                                    onChange={() => togglePermission(p.page, perm)}
+                                    className="w-3.5 h-3.5 rounded border-border accent-primary"
+                                  />
+                                  <span className={`text-[11px] ${hasPerm ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                                    {PERMISSION_LABELS[perm]}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
