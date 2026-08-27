@@ -74,6 +74,63 @@ const SECTIONS = [
 
 const STATUS_OPTIONS = ['Pending', 'Paid', 'Overdue', 'Waived', 'Appealed'];
 
+// Fine Class → Revenue Code mapping (from official fine schedule)
+const FINE_CLASS_TO_REVENUE_CODE: Record<string, string> = {
+  // Traffic Offences → 1430022
+  'Parking/Stopping/Waiting/Loading/Off-loading/Moving/Turning': '1430022',
+  'Riding bicycle and motorbike in the market': '1430022',
+  'Riding bicycle and motorbike on pedestrian walkways': '1430022',
+  'Clamping Charges (Obstruction/No Parking)': '1430022',
+  'Towing Charges': '1430022',
+  'Impounded Vehicle': '1430022',
+  'Refusal to obtain vehicle sticker': '1430022',
+  'Refusal to emboss sticker': '1430022',
+  'Refusal to acquire Taxi Driver Licence': '1430022',
+  // Impounding Fines → 1430023
+  'Collection - Sheep/Goat/Pigs/Dogs': '1430023',
+  'Collection - Donkey/Horse/Cow': '1430023',
+  'Feeding - Sheep/Goats': '1430023',
+  'Feeding - Pigs': '1430023',
+  'Feeding - Dogs': '1430023',
+  'Feeding - Donkey/Horse/Cow': '1430023',
+  // Building Offences → 1430024
+  'Penalty for development without permit': '1430024',
+  'Occupying Newly Completed Developments without Occupation Permit': '1430024',
+  'Penalty For Unauthorised Placements': '1430024',
+  'Penalty for Redevelopment/Renovation without permit': '1430024',
+  'Penalty for redevelopment in unauthorised places': '1430024',
+  "Penalty for Violating 'Stop-Work' Order": '1430024',
+  'Installation of Radio/TV/Internet/Communication Mast & Ott': '1430024',
+  // Unauthorised Diversion → 1430025
+  'Diversion of river/stream course': '1430025',
+  'Diversion of drains': '1430025',
+  'Channelling of sewage waste into drains': '1430025',
+  // Retrieval of Seized Tools → 1430026
+  'Retrieval Of Seized Tools/Machinery (For Various Offences)': '1430026',
+  // Environmental Health → 1430027
+  'Defecating at unauthorized places': '1430027',
+  'Urinating at unauthorized places': '1430027',
+  'Selling at unauthorized places': '1430027',
+  'Indiscriminate disposal/burning of refuse': '1430027',
+  'Unpaid Fees for Refuse Collection Services': '1430027',
+  'Weedy grounds': '1430027',
+  'Refusal to Re-plant Tree (after property development)': '1430027',
+  'Refusal to pay for Environmental Health Permit': '1430027',
+  'Refusal to comply with abatement': '1430027',
+  'Excessive Noise Making': '1430027',
+  'Cutting of trees without permit': '1430027',
+  // Illegal Activities → 1430029
+  'Illegal/Un-licenced Activities': '1430029',
+  // General Negligence → 1430034
+  'Removal/Missing Property number plate': '1430034',
+  'Removal/Destruction/Defacing of Street Name Signage': '1430034',
+  'Destruction of Street Light Poles/Other road furniture': '1430034',
+  'Posting of bills at unauthorized places': '1430034',
+  'Failure to pay BOP/Rate/Rent': '1430034',
+  'Penalty for bounced cheques': '1430034',
+  'Transfer of stalls/stores without Assembly approval': '1430034',
+};
+
 // Section → Fine Class mapping (built from the code structure)
 const FINE_SECTION_TO_CLASSES: Record<string, string[]> = {
   'Building Offences': [
@@ -300,6 +357,9 @@ export function PenaltiesPage() {
         const codes = FINE_CLASS_TO_CODES[value] || [];
         const firstCode = codes[0] || '';
         const firstCat = firstCode ? FINE_CODE_TO_CATEGORY[firstCode] || '' : '';
+        // Auto-fill revenue code/description from class
+        const revCode = FINE_CLASS_TO_REVENUE_CODE[value] || '';
+        const revDesc = revCode ? (FINE_REVENUE_CODE_TO_DESC[revCode] || '') : '';
         const rateAmount = finesRates[firstCode];
         if (rateAmount !== undefined && rateAmount > 0) {
           setForm((prev) => ({
@@ -307,6 +367,8 @@ export function PenaltiesPage() {
             fineClass: value,
             code: firstCode,
             category: firstCat,
+            fineRevenueCode: revCode,
+            fineRevenueClass: revDesc,
             fineAmount: String(rateAmount),
           }));
         } else {
@@ -315,6 +377,8 @@ export function PenaltiesPage() {
             fineClass: value,
             code: firstCode,
             category: firstCat,
+            fineRevenueCode: revCode,
+            fineRevenueClass: revDesc,
           }));
         }
       } else if (name === 'category') {
@@ -900,33 +964,25 @@ export function PenaltiesPage() {
           {/* 2. Fine Code */}
           <div>
             <label className={`block ${labelClass}`}>Fine Code</label>
-            <select
-              name="code"
+            <input
+              type="text"
               value={form.code}
-              onChange={(e) => handleFormChange({ target: { name: 'code', value: e.target.value } } as any)}
-              className={inputClass}
-            >
-              <option value="">{filteredClass ? '-- Select Fine Code --' : 'Select class first'}</option>
-              {fineClassCodes.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+              readOnly
+              className={`${inputClass} bg-card dark:bg-muted cursor-not-allowed`}
+              placeholder="Auto-filled from Category"
+            />
           </div>
 
           {/* 3. Fine Revenue Description */}
           <div>
             <label className={`block ${labelClass}`}>Fine Revenue Description</label>
-            <select
-              name="fineRevenueCode"
-              value={form.fineRevenueCode}
-              onChange={(e) => handleFormChange({ target: { name: 'fineRevenueCode', value: e.target.value } } as any)}
-              className={inputClass}
-            >
-              <option value="">-- Select Revenue Description --</option>
-              {FINE_REVENUE_CODES.map((item) => (
-                <option key={item.code} value={item.code}>{item.description}</option>
-              ))}
-            </select>
+            <input
+              type="text"
+              value={form.fineRevenueClass}
+              readOnly
+              className={`${inputClass} bg-card dark:bg-muted cursor-not-allowed`}
+              placeholder="Auto-filled from Fine Class"
+            />
           </div>
 
           {/* 4. Fine Class */}
