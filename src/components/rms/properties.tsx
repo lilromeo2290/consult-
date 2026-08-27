@@ -886,6 +886,8 @@ export function PropertiesPage() {
                       type: value,
                       businessClassCode: firstCode,
                       category: firstCategory,
+                      revenueCode: '1413001',
+                      revenueDescription: 'Property Rate',
                     }));
                   }}
                   options={PROPERTY_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
@@ -908,6 +910,8 @@ export function PropertiesPage() {
                       ...prev,
                       category: value,
                       businessClassCode: matchedCode || prev.businessClassCode,
+                      revenueCode: '1413001',
+                      revenueDescription: 'Property Rate',
                     }));
                   }}
                   options={classCategories.map((c) => ({ value: c, label: c }))}
