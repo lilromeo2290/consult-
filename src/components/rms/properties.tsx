@@ -415,7 +415,7 @@ export function PropertiesPage() {
       if (name === 'revenueCode' && PROP_CODE_TO_DESC[updated.revenueCode]) {
         updated.revenueDescription = PROP_CODE_TO_DESC[updated.revenueCode];
       }
-      // Link Property Class <-> Property Class Code
+      // Link Property Class <-> Property Class Code <-> Category <-> Revenue
       if (name === 'type' && PROP_CLASS_TO_FIRST_CODE[updated.type]) {
         updated.businessClassCode = PROP_CLASS_TO_FIRST_CODE[updated.type];
         // Also auto-fill category from the default code
@@ -423,6 +423,9 @@ export function PropertiesPage() {
         if (PROP_CODE_TO_CATEGORY[defaultCode]) {
           updated.category = PROP_CODE_TO_CATEGORY[defaultCode];
         }
+        // Auto-fill revenue code and description
+        updated.revenueCode = '1413001';
+        updated.revenueDescription = 'Property Rate';
       }
       if (name === 'businessClassCode') {
         const code = updated.businessClassCode;
@@ -434,6 +437,20 @@ export function PropertiesPage() {
         if (PROP_CODE_TO_CATEGORY[code]) {
           updated.category = PROP_CODE_TO_CATEGORY[code];
         }
+        // Auto-fill revenue code and description
+        updated.revenueCode = '1413001';
+        updated.revenueDescription = 'Property Rate';
+      }
+      if (name === 'category') {
+        // Find matching code for this category under current class
+        const classCodeList = updated.type ? (PROP_CLASS_TO_CODES[updated.type] || []) : PROPERTY_CLASS_CODES;
+        const matchedCode = classCodeList.find((c) => PROP_CODE_TO_CATEGORY[c] === updated.category) || '';
+        if (matchedCode) {
+          updated.businessClassCode = matchedCode;
+        }
+        // Auto-fill revenue code and description
+        updated.revenueCode = '1413001';
+        updated.revenueDescription = 'Property Rate';
       }
       return updated;
     });
@@ -875,50 +892,32 @@ export function PropertiesPage() {
               {/* 6. Property Class */}
               <div>
                 <label className={`${labelClass} block`}>Property Class</label>
-                <Combobox
+                <select
                   name="type"
                   value={form.type}
-                  onValueChange={(value: string) => {
-                    const firstCode = PROP_CLASS_TO_FIRST_CODE[value] || '';
-                    const firstCategory = firstCode ? (PROP_CODE_TO_CATEGORY[firstCode] || '') : '';
-                    setForm((prev) => ({
-                      ...prev,
-                      type: value,
-                      businessClassCode: firstCode,
-                      category: firstCategory,
-                      revenueCode: '1413001',
-                      revenueDescription: 'Property Rate',
-                    }));
-                  }}
-                  options={PROPERTY_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
-                  placeholder="Select class..."
-                  emptyMessage="No matching class"
+                  onChange={handleFormChange}
                   className={inputClass}
-                />
+                >
+                  <option value="">Select class...</option>
+                  {PROPERTY_CLASS_NAMES.map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
               </div>
               {/* 7. Property Category */}
               <div>
                 <label className={`${labelClass} block`}>Property Category</label>
-                <Combobox
+                <select
                   name="category"
                   value={form.category}
-                  onValueChange={(value: string) => {
-                    // Find the code matching this category under the selected class
-                    const classCodeList = form.type ? (PROP_CLASS_TO_CODES[form.type] || []) : PROPERTY_CLASS_CODES;
-                    const matchedCode = classCodeList.find((c) => PROP_CODE_TO_CATEGORY[c] === value) || '';
-                    setForm((prev) => ({
-                      ...prev,
-                      category: value,
-                      businessClassCode: matchedCode || prev.businessClassCode,
-                      revenueCode: '1413001',
-                      revenueDescription: 'Property Rate',
-                    }));
-                  }}
-                  options={classCategories.map((c) => ({ value: c, label: c }))}
-                  placeholder="Select category..."
-                  emptyMessage={form.type ? 'No categories' : 'Select class first'}
+                  onChange={handleFormChange}
                   className={inputClass}
-                />
+                >
+                  <option value="">{form.type ? 'Select category...' : 'Select class first'}</option>
+                  {classCategories.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
               {/* 9. Value/Amount (GHS) */}
               <div>
