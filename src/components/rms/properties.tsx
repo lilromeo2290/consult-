@@ -872,9 +872,9 @@ export function PropertiesPage() {
                   )}
                 </div>
               </div>
-              {/* 6. Property Class Code */}
+              {/* 6. Property Class */}
               <div>
-                <label className={`${labelClass} block`}>Property Class Code</label>
+                <label className={`${labelClass} block`}>Property Class</label>
                 <Combobox
                   name="businessClassCode"
                   value={form.businessClassCode}
@@ -882,19 +882,6 @@ export function PropertiesPage() {
                   options={classCodes.map((c) => ({ value: c, label: `${c} – ${PROP_CODE_TO_CLASS[c] || ''} – ${PROP_CODE_TO_CATEGORY[c] || ''}` }))}
                   placeholder="Select code..."
                   emptyMessage="No matching code"
-                  className={inputClass}
-                />
-              </div>
-              {/* 7. Property Class Description */}
-              <div>
-                <label className={`${labelClass} block`}>Property Class Description</label>
-                <Combobox
-                  name="type"
-                  value={form.type}
-                  onChange={handleFormChange}
-                  options={PROPERTY_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
-                  placeholder="Select class..."
-                  emptyMessage="No matching class"
                   className={inputClass}
                 />
               </div>
