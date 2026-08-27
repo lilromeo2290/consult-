@@ -876,25 +876,43 @@ export function PropertiesPage() {
               <div>
                 <label className={`${labelClass} block`}>Property Class</label>
                 <Combobox
-                  name="businessClassCode"
-                  value={form.businessClassCode}
-                  onChange={handleFormChange}
-                  options={classCodes.map((c) => ({ value: c, label: `${c} – ${PROP_CODE_TO_CLASS[c] || ''} – ${PROP_CODE_TO_CATEGORY[c] || ''}` }))}
-                  placeholder="Select code..."
-                  emptyMessage="No matching code"
+                  name="type"
+                  value={form.type}
+                  onValueChange={(value: string) => {
+                    const firstCode = PROP_CLASS_TO_FIRST_CODE[value] || '';
+                    const firstCategory = firstCode ? (PROP_CODE_TO_CATEGORY[firstCode] || '') : '';
+                    setForm((prev) => ({
+                      ...prev,
+                      type: value,
+                      businessClassCode: firstCode,
+                      category: firstCategory,
+                    }));
+                  }}
+                  options={PROPERTY_CLASS_NAMES.map((n) => ({ value: n, label: n }))}
+                  placeholder="Select class..."
+                  emptyMessage="No matching class"
                   className={inputClass}
                 />
               </div>
-              {/* 8. Property Category */}
+              {/* 7. Property Category */}
               <div>
                 <label className={`${labelClass} block`}>Property Category</label>
                 <Combobox
                   name="category"
                   value={form.category}
-                  onChange={handleFormChange}
+                  onValueChange={(value: string) => {
+                    // Find the code matching this category under the selected class
+                    const classCodeList = form.type ? (PROP_CLASS_TO_CODES[form.type] || []) : PROPERTY_CLASS_CODES;
+                    const matchedCode = classCodeList.find((c) => PROP_CODE_TO_CATEGORY[c] === value) || '';
+                    setForm((prev) => ({
+                      ...prev,
+                      category: value,
+                      businessClassCode: matchedCode || prev.businessClassCode,
+                    }));
+                  }}
                   options={classCategories.map((c) => ({ value: c, label: c }))}
                   placeholder="Select category..."
-                  emptyMessage={form.type ? 'No categories' : 'Select class or code first'}
+                  emptyMessage={form.type ? 'No categories' : 'Select class first'}
                   className={inputClass}
                 />
               </div>
