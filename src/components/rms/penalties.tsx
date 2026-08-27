@@ -939,93 +939,38 @@ export function PenaltiesPage() {
             />
           </div>
 
-          {/* Code */}
-          <div>
-            <label className={`block ${labelClass}`}>Business Code</label>
-            <Combobox
-              name="code"
-              value={form.code}
-              onChange={handleFormChange}
-              options={fineClassCodes.map((c) => ({
-                value: c,
-                label: c,
-              }))}
-              placeholder={
-                form.section || filteredClass
-                  ? 'Select code...'
-                  : 'Select section first...'
-              }
-              emptyMessage="No codes available"
-              className={inputClass}
-            />
-          </div>
-
-          {/* Class */}
+          {/* Fine Class */}
           <div>
             <label className={`block ${labelClass}`}>
-              Business Class <span className="text-red-500">*</span>
+              Fine Class <span className="text-red-500">*</span>
             </label>
-            <Combobox
+            <select
               name="fineClass"
               value={filteredClass}
-              onChange={handleFormChange}
-              options={sectionClasses.map((cls) => ({
-                value: cls,
-                label: cls,
-              }))}
-              placeholder="Type to search class..."
-              emptyMessage="No classes found"
+              onChange={(e) => handleFormChange({ target: { name: 'fineClass', value: e.target.value } } as any)}
               className={inputClass}
-            />
+            >
+              <option value="">-- Select Fine Class --</option>
+              {sectionClasses.map((cls) => (
+                <option key={cls} value={cls}>{cls}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Category */}
+          {/* Fine Category */}
           <div>
-            <label className={`block ${labelClass}`}>Business Category</label>
-            <Combobox
+            <label className={`block ${labelClass}`}>Fine Category</label>
+            <select
               name="category"
               value={form.category}
-              onChange={handleFormChange}
-              options={fineClassCategories.map((cat) => ({
-                value: cat,
-                label: cat,
-              }))}
-              placeholder={
-                fineClassCategories.length > 0
-                  ? 'Select category...'
-                  : 'Select code/class first...'
-              }
-              emptyMessage="No categories available"
+              onChange={(e) => handleFormChange({ target: { name: 'category', value: e.target.value } } as any)}
               className={inputClass}
-            />
-          </div>
-
-          {/* Fine Revenue Code */}
-          <div>
-            <label className={`block ${labelClass}`}>Fine Revenue Code</label>
-            <Combobox
-              name="fineRevenueCode"
-              value={form.fineRevenueCode}
-              onChange={handleFormChange}
-              options={FINE_REVENUE_CODES.map((item) => ({ value: item.code, label: item.code }))}
-              placeholder="Select fine revenue code..."
-              emptyMessage="No code found"
-              className={inputClass}
-            />
-          </div>
-
-          {/* Fine Revenue Description */}
-          <div>
-            <label className={`block ${labelClass}`}>Fine Revenue Description</label>
-            <input
-              type="text"
-              name="fineRevenueClass"
-              value={form.fineRevenueClass}
-              onChange={handleFormChange}
-              className={inputClass}
-              placeholder="Auto-populated from revenue code"
-              readOnly
-            />
+            >
+              <option value="">{filteredClass ? '-- Select Fine Category --' : 'Select class first'}</option>
+              {fineClassCategories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
           </div>
 
           {/* Fine Amount */}
