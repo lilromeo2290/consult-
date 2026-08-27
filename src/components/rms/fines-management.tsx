@@ -391,53 +391,47 @@ export function FinesManagementPage() {
           {/* Section 3: Fine Details */}
           <FormSection number={3} title='Fine Details' icon={Tag}>
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-              <div className='sm:col-span-2 lg:col-span-1'>
-                <label className={labelClass}>Fine Revenue Class <span className='text-red-500'>*</span></label>
+              <div>
+                <label className={labelClass}>Fine Class <span className='text-red-500'>*</span></label>
                 <select
                   value={form.classDescription}
-                  onChange={(e) => handleFieldChange('classDescription', e.target.value)}
+                  onChange={(e) => {
+                    const cls = e.target.value;
+                    const codes = cls ? (FINE_CLASS_TO_CODES[cls] || []) : [];
+                    const firstCode = codes[0] || '';
+                    const firstCat = firstCode ? (FINE_CODE_TO_CATEGORY[firstCode] || '') : '';
+                    handleFieldChange('classDescription', cls);
+                    handleFieldChange('fineRevenueCode', firstCode);
+                    handleFieldChange('category', firstCat);
+                  }}
                   className={selectClass}
                 >
-                  <option value=''>-- Select Offence Class --</option>
+                  <option value=''>-- Select Fine Class --</option>
                   {FINE_CLASS_NAMES.map((cls) => (
                     <option key={cls} value={cls}>{cls}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Fine Revenue Code</label>
+                <label className={labelClass}>Fine Category</label>
                 <select
-                  value={form.fineRevenueCode}
-                  onChange={(e) => handleFieldChange('fineRevenueCode', e.target.value)}
+                  value={form.category}
+                  onChange={(e) => {
+                    const cat = e.target.value;
+                    const codes = form.classDescription ? (FINE_CLASS_TO_CODES[form.classDescription] || []) : [];
+                    const matchedCode = codes.find((c) => FINE_CODE_TO_CATEGORY[c] === cat) || '';
+                    handleFieldChange('category', cat);
+                    handleFieldChange('fineRevenueCode', matchedCode);
+                  }}
                   className={selectClass}
                 >
-                  <option value=''>-- Select Revenue Code --</option>
-                  {form.classDescription && FINE_CLASS_TO_CODES[form.classDescription]
-                    ? FINE_CLASS_TO_CODES[form.classDescription].map((code) => (
-                        <option key={code} value={code}>
-                          {code} — {FINE_CODE_TO_CATEGORY[code] || ''}
-                        </option>
-                      ))
-                    : FINE_CLASS_NAMES.map((cls) => {
-                        const codes = FINE_CLASS_TO_CODES[cls] || [];
-                        return codes.map((code) => (
-                          <optgroup key={cls} label={cls}>
-                            <option value={code}>{code} — {FINE_CODE_TO_CATEGORY[code] || ''}</option>
-                          </optgroup>
-                        ));
-                      })}
+                  <option value=''>{form.classDescription ? '-- Select Fine Category --' : 'Select class first'}</option>
+                  {(form.classDescription ? (FINE_CLASS_TO_CODES[form.classDescription] || []) : []).map((code) => {
+                    const cat = FINE_CODE_TO_CATEGORY[code];
+                    if (!cat) return null;
+                    return <option key={code} value={cat}>{cat}</option>;
+                  })}
                 </select>
-              </div>
-              <div>
-                <label className={labelClass}>Fine Revenue Category</label>
-                <input
-                  type='text'
-                  value={form.category}
-                  onChange={(e) => handleFieldChange('category', e.target.value)}
-                  className={inputClass}
-                  placeholder='Auto-populated from revenue code'
-                  readOnly
-                />
               </div>
             </div>
           </FormSection>
